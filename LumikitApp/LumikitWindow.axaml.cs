@@ -33,8 +33,31 @@ public partial class LumikitWindow : Window
         };
         this.FindControl<Button>("ResumeTrackButton").Click += async (_, _) =>
         {
-            ResumePlaybackTimer();
+            playbackTime.Reset();
+            StartPlaybackTimer();
+
+
+
+            // Prime the stopwatch
+            playbackTime.Reset();
+
             await _spotifyProvider.ResumePlayback();
+
+            int progress = 0;
+            for (int i = 0; i < 50; i++)
+            {
+                await Task.Delay(5);
+                progress = _spotifyProvider.GetPlaybackProgressMs();
+                if (progress > 0)
+                    break;
+            }
+
+
+            Debug.WriteLine($"Calculated latency: {progress}ms");
+            await Task.Delay(progress);
+
+            ResumePlaybackTimer();
+
 
         };
         this.FindControl<Button>("NextTrackButton").Click += async (_, _) =>
@@ -76,7 +99,6 @@ public partial class LumikitWindow : Window
         // Prime the stopwatch
         playbackTime.Reset();
 
-        var sw = Stopwatch.StartNew();
         await _spotifyProvider.ResumePlayback();
 
         int progress = 0;
@@ -88,13 +110,9 @@ public partial class LumikitWindow : Window
                 break;
         }
 
-        sw.Stop();
 
-        long localElapsed = sw.ElapsedMilliseconds;
-        long actualPlayback = progress;
-
-        msDelay = localElapsed - actualPlayback;
-        Debug.WriteLine($"Calculated latency: {msDelay}ms");
+        Debug.WriteLine($"Calculated latency: {progress}ms");
+        await Task.Delay(progress);
 
         ResumePlaybackTimer();
     }
@@ -108,7 +126,6 @@ public partial class LumikitWindow : Window
     public async void ResumePlaybackTimer()
     {
         playbackTimeElapsedBuffer = _spotifyProvider.GetPlaybackProgressMs() - playbackTime.ElapsedMilliseconds;
-        await Task.Delay((int)msDelay);
 
         playbackTime.Start();
 

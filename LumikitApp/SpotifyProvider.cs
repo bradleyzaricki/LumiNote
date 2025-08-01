@@ -169,6 +169,7 @@ namespace LumikitApp
             try
             {
                 await _spotify.Player.SeekTo(new PlayerSeekToRequest(ms));
+                return;
             }
             catch (APIException)
             {

@@ -1,9 +1,0 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="SpotifyInformationConsole.LumikitWindow"
-        Title="Lumikit Window" Width="500" Height="300">
-
-    <StackPanel>
-        <Button Name="ClickButton" Content="Click me"/>
-    </StackPanel>
-</Window>

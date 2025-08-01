@@ -1,0 +1,15 @@
+# Visual Studio junk
+.vs/
+*.user
+*.suo
+*.vsidx
+
+# Build outputs
+bin/
+obj/
+
+# NuGet packages
+packages/
+
+# Avalonia temp
+**/build.force

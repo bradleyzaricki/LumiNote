@@ -1,0 +1,379 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Avalonia.Xaml.Interactions.Events</name>
+    </assembly>
+    <members>
+        <member name="T:Avalonia.Xaml.Interactions.Events.InteractiveBehaviorBase">
+            <summary>
+            Base class for behaviors that listen for routed events.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Events.InteractiveBehaviorBase.RoutingStrategiesProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Events.InteractiveBehaviorBase.RoutingStrategies"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Events.InteractiveBehaviorBase.RoutingStrategies">
+            <summary>
+            Gets or sets the routing strategies used when subscribing to events.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.DoubleTappedEventBehavior">
+            <summary>
+            Behavior that listens for <see cref="F:Avalonia.Input.Gestures.DoubleTappedEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.DoubleTappedEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.DoubleTappedEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.DoubleTappedEventBehavior.OnDoubleTapped(System.Object,Avalonia.Interactivity.RoutedEventArgs)">
+            <summary>
+            Called when a double tap gesture is raised on the associated object.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.GotFocusEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.InputElement.GotFocusEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.GotFocusEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.GotFocusEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.GotFocusEventBehavior.OnGotFocus(System.Object,Avalonia.Input.GotFocusEventArgs)">
+            <summary>
+            Called when the associated control receives focus.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.KeyDownEventBehavior">
+            <summary>
+            Behavior that listens for the <see cref="F:Avalonia.Input.InputElement.KeyDownEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.KeyDownEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.KeyDownEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.KeyDownEventBehavior.OnKeyDown(System.Object,Avalonia.Input.KeyEventArgs)">
+            <summary>
+            Called when a key is pressed while the associated control has focus.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.KeyUpEventBehavior">
+            <summary>
+            Behavior that listens for the <see cref="F:Avalonia.Input.InputElement.KeyUpEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.KeyUpEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.KeyUpEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.KeyUpEventBehavior.OnKeyUp(System.Object,Avalonia.Input.KeyEventArgs)">
+            <summary>
+            Called when a key is released while the associated control has focus.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.LostFocusEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.InputElement.LostFocusEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.LostFocusEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.LostFocusEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.LostFocusEventBehavior.OnLostFocus(System.Object,Avalonia.Interactivity.RoutedEventArgs)">
+            <summary>
+            Called when the associated control loses focus.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.PointerCaptureLostEventBehavior">
+            <summary>
+            Behavior that listens for the <see cref="F:Avalonia.Input.InputElement.PointerCaptureLostEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerCaptureLostEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerCaptureLostEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerCaptureLostEventBehavior.OnPointerCaptureLost(System.Object,Avalonia.Input.PointerCaptureLostEventArgs)">
+            <summary>
+            Called when pointer capture is lost on the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.PointerEnteredEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.InputElement.PointerEnteredEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerEnteredEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerEnteredEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerEnteredEventBehavior.OnPointerEnter(System.Object,Avalonia.Input.PointerEventArgs)">
+            <summary>
+            Called when a pointer enters the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.PointerEventsBehavior">
+            <summary>
+            Behavior that listens for multiple pointer events.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerEventsBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerEventsBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerEventsBehavior.OnPointerPressed(System.Object,Avalonia.Input.PointerPressedEventArgs)">
+            <summary>
+            Called when a pointer is pressed over the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerEventsBehavior.OnPointerReleased(System.Object,Avalonia.Input.PointerReleasedEventArgs)">
+            <summary>
+            Called when a pointer is released over the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerEventsBehavior.OnPointerMoved(System.Object,Avalonia.Input.PointerEventArgs)">
+            <summary>
+            Called when a pointer moves over the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.PointerExitedEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.InputElement.PointerExitedEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerExitedEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerExitedEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerExitedEventBehavior.OnPointerLeave(System.Object,Avalonia.Input.PointerEventArgs)">
+            <summary>
+            Called when a pointer leaves the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.PointerMovedEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.InputElement.PointerMovedEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerMovedEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerMovedEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerMovedEventBehavior.OnPointerMoved(System.Object,Avalonia.Input.PointerEventArgs)">
+            <summary>
+            Called when a pointer moves over the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.PointerPressedEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.InputElement.PointerPressedEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerPressedEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerPressedEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerPressedEventBehavior.OnPointerPressed(System.Object,Avalonia.Input.PointerPressedEventArgs)">
+            <summary>
+            Called when a pointer is pressed over the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.PointerReleasedEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.InputElement.PointerReleasedEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerReleasedEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerReleasedEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerReleasedEventBehavior.OnPointerReleased(System.Object,Avalonia.Input.PointerReleasedEventArgs)">
+            <summary>
+            Called when a pointer is released over the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.PointerWheelChangedEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.InputElement.PointerWheelChangedEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerWheelChangedEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerWheelChangedEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.PointerWheelChangedEventBehavior.OnPointerWheelChanged(System.Object,Avalonia.Input.PointerWheelEventArgs)">
+            <summary>
+            Called when the mouse wheel changes while over the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.RightTappedEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.Gestures.RightTappedEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.RightTappedEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.RightTappedEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.RightTappedEventBehavior.OnRightTapped(System.Object,Avalonia.Interactivity.RoutedEventArgs)">
+            <summary>
+            Called when a right-tap gesture is raised on the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.ScrollGestureEndedEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.Gestures.ScrollGestureEndedEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.ScrollGestureEndedEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.ScrollGestureEndedEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.ScrollGestureEndedEventBehavior.OnScrollGestureEnded(System.Object,Avalonia.Input.ScrollGestureEventArgs)">
+            <summary>
+            Called when a scroll gesture ends on the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.ScrollGestureEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.Gestures.ScrollGestureEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.ScrollGestureEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.ScrollGestureEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.ScrollGestureEventBehavior.OnScrollGesture(System.Object,Avalonia.Input.ScrollGestureEventArgs)">
+            <summary>
+            Called when a scroll gesture occurs on the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.TappedEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.Gestures.TappedEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.TappedEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.TappedEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.TappedEventBehavior.OnTapped(System.Object,Avalonia.Interactivity.RoutedEventArgs)">
+            <summary>
+            Called when a tap gesture is raised on the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.TextInputEventBehavior">
+            <summary>
+            Behavior that listens for the <see cref="F:Avalonia.Input.InputElement.TextInputEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.TextInputEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.TextInputEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.TextInputEventBehavior.OnTextInput(System.Object,Avalonia.Input.TextInputEventArgs)">
+            <summary>
+            Called when text input is received by the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Events.TextInputMethodClientRequestedEventBehavior">
+            <summary>
+            Behavior that handles the <see cref="F:Avalonia.Input.InputElement.TextInputMethodClientRequestedEvent"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.TextInputMethodClientRequestedEventBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.TextInputMethodClientRequestedEventBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Events.TextInputMethodClientRequestedEventBehavior.OnTextInputMethodClientRequested(System.Object,Avalonia.Input.TextInput.TextInputMethodClientRequestedEventArgs)">
+            <summary>
+            Called when a text input method client is requested for the associated control.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+    </members>
+</doc>

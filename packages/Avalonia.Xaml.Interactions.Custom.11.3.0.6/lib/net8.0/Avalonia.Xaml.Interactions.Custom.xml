@@ -1,0 +1,2936 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Avalonia.Xaml.Interactions.Custom</name>
+    </assembly>
+    <members>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.AddClassAction">
+            <summary>
+            Adds a specified <see cref="P:Avalonia.Xaml.Interactions.Custom.AddClassAction.ClassName"/> to the <see cref="P:Avalonia.StyledElement.Classes"/> collection when invoked. 
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.AddClassAction.ClassNameProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.AddClassAction.ClassName"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.AddClassAction.StyledElementProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.AddClassAction.StyledElement"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.AddClassAction.RemoveIfExistsProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.AddClassAction.RemoveIfExists"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.AddClassAction.ClassName">
+            <summary>
+            Gets or sets the class name that should be added. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.AddClassAction.StyledElement">
+            <summary>
+            Gets or sets the target styled element that class name that should be added to. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.AddClassAction.RemoveIfExists">
+            <summary>
+            Gets or sets the flag indicated whether to remove the class if already exists before adding. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AddClassAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the class is successfully added; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction">
+            <summary>
+            An action that will change a specified Avalonia property to a specified value when invoked.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.TargetPropertyProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.TargetProperty"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.TargetObjectProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.TargetObject"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.ValueProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.Value"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.TargetProperty">
+            <summary>
+            Gets or sets the name of the Avalonia property to change. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.Value">
+            <summary>
+            Gets or sets the value to set. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.TargetObject">
+            <summary>
+            Gets or sets the Avalonia object whose property will be changed.
+            If <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.TargetObject"/> is not set or cannot be resolved, the sender of <seealso cref="M:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.Execute(System.Object,System.Object)"/> will be used. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if updating the property value succeeds; else false.</returns>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ChangeAvaloniaPropertyAction.ValidateTargetProperty(Avalonia.AvaloniaProperty)">
+            <summary>
+            Ensures the property is not null and can be written to.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.CloseNotificationAction">
+            <summary>
+            Action that closes the specified <see cref="P:Avalonia.Xaml.Interactions.Custom.CloseNotificationAction.NotificationCard"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.CloseNotificationAction.NotificationCardProperty">
+            <summary>
+            Gets or sets the notification card to close.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.CloseNotificationAction.NotificationCard">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.CloseNotificationAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The associated object.</param>
+            <param name="parameter">Optional parameter.</param>
+            <returns>True if the notification was closed; otherwise, false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.FocusControlAction">
+            <summary>
+            Focuses the associated or target control when executed.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.FocusControlAction.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.FocusControlAction.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.FocusControlAction.TargetControl">
+            <summary>
+            Gets or sets the target control. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusControlAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>Returns null after executed.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.HideControlAction">
+            <summary>
+            Hides the associated or target control when executed.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.HideControlAction.TargetControlProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Custom.HideControlAction.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.HideControlAction.TargetControl">
+            <summary>
+            Gets or sets the target control. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.HideControlAction.Execute(System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.HideFlyoutAction">
+            <summary>
+            Hides a <see cref="T:Avalonia.Controls.Primitives.FlyoutBase"/> when executed.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.HideFlyoutAction.FlyoutProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.HideFlyoutAction.Flyout"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.HideFlyoutAction.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.HideFlyoutAction.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.HideFlyoutAction.Flyout">
+            <summary>
+            Gets or sets the flyout instance to hide. If not set, the attached flyout of the target control is used.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.HideFlyoutAction.TargetControl">
+            <summary>
+            Gets or sets the target control that hosts the flyout. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.HideFlyoutAction.Execute(System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PopupAction">
+            <summary>
+            An action that displays a <see cref="T:Avalonia.Controls.Primitives.Popup"/> for the associated control when executed.
+            </summary>
+            <remarks>If the associated control is of type <see cref="T:Avalonia.Controls.Control"/> than popup inherits control <see cref="P:Avalonia.StyledElement.DataContext"/>.</remarks>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.PopupAction.ChildProperty">
+            <summary>
+            Identifies the <seealso cref="F:Avalonia.Xaml.Interactions.Custom.PopupAction.ChildProperty"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PopupAction.Child">
+            <summary>
+            Gets or sets the popup Child control. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.PopupAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>Returns null after executed.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.RemoveClassAction">
+            <summary>
+            Removes a specified <see cref="P:Avalonia.Xaml.Interactions.Custom.RemoveClassAction.ClassName"/> from <see cref="P:Avalonia.StyledElement.Classes"/> collection when invoked. 
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.RemoveClassAction.ClassNameProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.RemoveClassAction.ClassName"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.RemoveClassAction.StyledElementProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.RemoveClassAction.StyledElement"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.RemoveClassAction.ClassName">
+            <summary>
+            Gets or sets the class name that should be removed. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.RemoveClassAction.StyledElement">
+            <summary>
+            Gets or sets the target styled element that class name that should be removed from. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.RemoveClassAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the class is successfully added; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.SetEnabledAction">
+            <summary>
+            Sets the <see cref="P:Avalonia.Input.InputElement.IsEnabled"/> property of a control when executed.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.SetEnabledAction.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.SetEnabledAction.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.SetEnabledAction.IsEnabledValueProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.SetEnabledAction.IsEnabledValue"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.SetEnabledAction.TargetControl">
+            <summary>
+            Gets or sets the target control. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.SetEnabledAction.IsEnabledValue">
+            <summary>
+            Gets or sets the value to assign to <see cref="P:Avalonia.Input.InputElement.IsEnabled"/>.
+            This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SetEnabledAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the property is successfully updated; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowContextMenuAction">
+            <summary>
+            Shows the <see cref="T:Avalonia.Controls.ContextMenu"/> of the associated or target control when executed.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowContextMenuAction.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowContextMenuAction.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowContextMenuAction.TargetControl">
+            <summary>
+            Gets or sets the control whose context menu will be shown. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowContextMenuAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The object that triggered the action.</param>
+            <param name="parameter">Optional parameter.</param>
+            <returns>True if a context menu was shown; otherwise false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowControlAction">
+            <summary>
+            Shows the associated or target control when executed.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowControlAction.TargetControlProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Custom.ShowControlAction.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowControlAction.TargetControl">
+            <summary>
+            Gets or sets the target control. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowControlAction.Execute(System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowFlyoutAction">
+            <summary>
+            Shows a <see cref="T:Avalonia.Controls.Primitives.FlyoutBase"/> when executed.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowFlyoutAction.FlyoutProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowFlyoutAction.Flyout"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowFlyoutAction.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowFlyoutAction.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowFlyoutAction.Flyout">
+            <summary>
+            Gets or sets the flyout instance to show. If not set, the attached flyout of the target control is used.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowFlyoutAction.TargetControl">
+            <summary>
+            Gets or sets the target control that hosts the flyout. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowFlyoutAction.Execute(System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.FadeInBehavior">
+            <summary>
+            Plays a simple fade in animation when the associated control is attached.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.FadeInBehavior.InitialDelayProperty">
+            <summary>
+            Gets or sets the delay before the animation starts.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.FadeInBehavior.DurationProperty">
+            <summary>
+            Gets or sets the duration of the fade in animation.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.FadeInBehavior.InitialDelay">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.FadeInBehavior.Duration">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FadeInBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            Called when the behavior is attached to the visual tree.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.StartAnimationAction">
+            <summary>
+            Starts an <see cref="T:Avalonia.Animation.Animation"/> on the associated control.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.StartAnimationAction.AnimationProperty">
+            <summary>
+            Gets or sets the animation to run.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.StartAnimationAction.Animation">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.StartAnimationAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The control initiating the action.</param>
+            <param name="parameter">Optional parameter.</param>
+            <returns>True if the animation was started; otherwise, false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.FocusAutoCompleteBoxTextBoxBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusAutoCompleteBoxTextBoxBehavior.OnAttachedToVisualTreeOverride">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ButtonClickEventTriggerBehavior">
+            <summary>
+            A behavior that listens for a <see cref="F:Avalonia.Controls.Button.ClickEvent"/> event on its source and executes its actions when that event is fired.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ButtonClickEventTriggerBehavior.KeyModifiersProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ButtonClickEventTriggerBehavior.KeyModifiers"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ButtonClickEventTriggerBehavior.KeyModifiers">
+            <summary>
+            Gets or sets the required key modifiers to execute <see cref="F:Avalonia.Controls.Button.ClickEvent"/> event handler. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ButtonClickEventTriggerBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ButtonClickEventTriggerBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ButtonExecuteCommandOnKeyDownBehavior">
+            <summary>
+            Executes a command when a key is pressed while the button has focus.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ButtonExecuteCommandOnKeyDownBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            Called when the behavior is attached to the visual tree.
+            </summary>
+            <returns>A disposable used to detach the key handler.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ButtonHideFlyoutBehavior">
+            <summary>
+            Behavior that hides a button's flyout when <see cref="P:Avalonia.Xaml.Interactions.Custom.ButtonHideFlyoutBehavior.IsFlyoutOpen"/> becomes false.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ButtonHideFlyoutBehavior.IsFlyoutOpenProperty">
+            <summary>
+            Gets or sets a value indicating whether the flyout is open.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ButtonHideFlyoutBehavior.IsFlyoutOpen">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ButtonHideFlyoutBehavior.OnAttachedOverride">
+            <summary>
+            Subscribes to <see cref="P:Avalonia.Xaml.Interactions.Custom.ButtonHideFlyoutBehavior.IsFlyoutOpen"/> changes.
+            </summary>
+            <returns>A disposable that removes the subscription.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ButtonHideFlyoutOnClickBehavior">
+            <summary>
+            Hides the flyout when the button is clicked.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ButtonHideFlyoutOnClickBehavior.OnAttachedToVisualTreeOverride">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlBehavior.EnableSelectionAnimationProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlBehavior.#cctor">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlBehavior.GetEnableSelectionAnimation(Avalonia.Controls.Primitives.SelectingItemsControl)">
+            <summary>
+            
+            </summary>
+            <param name="element"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlBehavior.SetEnableSelectionAnimation(Avalonia.Controls.Primitives.SelectingItemsControl,System.Boolean)">
+            <summary>
+            
+            </summary>
+            <param name="element"></param>
+            <param name="value"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.SlidingAnimation">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SlidingAnimation.SetLeft(Avalonia.Controls.Control,System.Double)">
+            <summary>
+            
+            </summary>
+            <param name="element"></param>
+            <param name="milliseconds"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SlidingAnimation.SetRight(Avalonia.Controls.Control,System.Double)">
+            <summary>
+            
+            </summary>
+            <param name="element"></param>
+            <param name="milliseconds"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SlidingAnimation.SetTop(Avalonia.Controls.Control,System.Double)">
+            <summary>
+            
+            </summary>
+            <param name="element"></param>
+            <param name="milliseconds"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SlidingAnimation.SetBottom(Avalonia.Controls.Control,System.Double)">
+            <summary>
+            
+            </summary>
+            <param name="element"></param>
+            <param name="milliseconds"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SlidingAnimation.Apply(Avalonia.Visual,System.Double,System.Double,System.TimeSpan)">
+            <summary>
+            
+            </summary>
+            <param name="visual"></param>
+            <param name="offsetX"></param>
+            <param name="offsetY"></param>
+            <param name="duration"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.BindPointerOverBehavior">
+            <summary>
+            Binds the <see cref="F:Avalonia.Input.InputElement.IsPointerOverProperty"/> to the <see cref="P:Avalonia.Xaml.Interactions.Custom.BindPointerOverBehavior.IsPointerOver"/> property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.BindPointerOverBehavior.IsPointerOverProperty">
+            <summary>
+            Gets or sets a value indicating whether the pointer is over the control.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.BindPointerOverBehavior.IsPointerOver">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.BindPointerOverBehavior.OnAttachedOverride">
+            <summary>
+            Called when the behavior is attached to the control.
+            </summary>
+            <returns>A disposable that removes the event handler.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.BindTagToVisualRootDataContextBehavior">
+            <summary>
+            Binds AssociatedObject object Tag property to root visual DataContext.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.BindTagToVisualRootDataContextBehavior.OnAttachedOverride">
+            <summary>
+            Called when the behavior is attached to the visual tree.
+            </summary>
+            <returns>A disposable that clears the binding.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.BoundsObserverBehavior">
+            <summary>
+            Observes the bounds of an associated <see cref="T:Avalonia.Controls.Control"/> and updates its Width and Height properties.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.BoundsObserverBehavior.BoundsProperty">
+            <summary>
+            Defines the <see cref="P:Avalonia.Xaml.Interactions.Custom.BoundsObserverBehavior.Bounds"/> property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.BoundsObserverBehavior.WidthProperty">
+            <summary>
+            Defines the <see cref="P:Avalonia.Xaml.Interactions.Custom.BoundsObserverBehavior.Width"/> property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.BoundsObserverBehavior.HeightProperty">
+            <summary>
+            Defines the <see cref="P:Avalonia.Xaml.Interactions.Custom.BoundsObserverBehavior.Height"/> property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.BoundsObserverBehavior.Bounds">
+            <summary>
+            Gets or sets the bounds of the associated control. This is a styled Avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.BoundsObserverBehavior.Width">
+            <summary>
+            Gets or sets the width of the associated control. This is a two-way bound Avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.BoundsObserverBehavior.Height">
+            <summary>
+            Gets or sets the height of the associated control. This is a two-way bound Avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.BoundsObserverBehavior.OnAttachedOverride">
+            <summary>
+            Attaches the behavior to the associated control and starts observing its bounds to update the Width and Height properties accordingly.
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.DragControlBehavior">
+            <summary>
+            A behavior that allows controls to be moved around the canvas using RenderTransform of <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.DragControlBehavior.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.DragControlBehavior.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.DragControlBehavior.TargetControl">
+            <summary>
+            Gets or sets the target control to be moved around instead of <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DragControlBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DragControlBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.HideAttachedFlyoutBehavior">
+            <summary>
+            Hides the flyout attached to the control when <see cref="P:Avalonia.Xaml.Interactions.Custom.HideAttachedFlyoutBehavior.IsFlyoutOpen"/> is false.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.HideAttachedFlyoutBehavior.IsFlyoutOpenProperty">
+            <summary>
+            Gets or sets a value indicating whether the flyout is open.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.HideAttachedFlyoutBehavior.IsFlyoutOpen">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.HideAttachedFlyoutBehavior.OnAttachedOverride">
+            <summary>
+            Subscribes to <see cref="P:Avalonia.Xaml.Interactions.Custom.HideAttachedFlyoutBehavior.IsFlyoutOpen"/> changes.
+            </summary>
+            <returns>A disposable that removes the subscription.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.HideOnKeyPressedBehavior">
+            <summary>
+            A behavior that allows to hide control on key down event.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.HideOnKeyPressedBehavior.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.HideOnKeyPressedBehavior.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.HideOnKeyPressedBehavior.KeyProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.HideOnKeyPressedBehavior.Key"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.HideOnKeyPressedBehavior.TargetControl">
+            <summary>
+            Gets or sets the target control. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.HideOnKeyPressedBehavior.Key">
+            <summary>
+            Gets or sets the key. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.HideOnKeyPressedBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.HideOnKeyPressedBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.HideOnLostFocusBehavior">
+            <summary>
+            A behavior that allows to hide control on lost focus event.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.HideOnLostFocusBehavior.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.HideOnLostFocusBehavior.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.HideOnLostFocusBehavior.TargetControl">
+            <summary>
+            Gets or sets the target control. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.HideOnLostFocusBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.HideOnLostFocusBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowPointerPositionBehavior">
+            <summary>
+            A behavior that displays cursor position on <see cref="E:Avalonia.Input.InputElement.PointerMoved"/> event for the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> using <see cref="P:Avalonia.Controls.TextBlock.Text"/> property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowPointerPositionBehavior.TargetTextBlockProperty">
+            <summary>
+            Identifies the <seealso cref="F:Avalonia.Xaml.Interactions.Custom.ShowPointerPositionBehavior.TargetTextBlockProperty"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowPointerPositionBehavior.TargetTextBlock">
+            <summary>
+            Gets or sets the target TextBlock object in which this behavior displays cursor position on PointerMoved event.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowPointerPositionBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowPointerPositionBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.Converters.PointerEventArgsConverter">
+            <summary>
+            Converter for <see cref="T:Avalonia.Input.PointerEventArgs"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.Converters.PointerEventArgsConverter.Instance">
+            <summary>
+            Gets the instance of <see cref="T:Avalonia.Xaml.Interactions.Custom.Converters.PointerEventArgsConverter"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.Converters.PointerEventArgsConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.Converters.PointerEventArgsConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.Converters.PointerEventArgsConverter.ProvideValue(System.IServiceProvider)">
+            <summary>
+            Provides a cached instance of the converter.
+            </summary>
+            <param name="serviceProvider">The service provider.</param>
+            <returns>The converter instance.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ActualThemeVariantChangedBehavior`1">
+            <summary>
+            A base class for behaviors using ActualThemeVariantChanged event.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ActualThemeVariantChangedBehavior`1.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ActualThemeVariantChangedBehavior`1.OnActualThemeVariantChangedEvent">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ActualThemeVariantChangedBehavior`1.OnActualThemeVariantChangedEventOverride">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> ActualThemeVariantChanged event is raised.
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ActualThemeVariantChangedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ActualThemeVariantChangedTrigger.OnActualThemeVariantChangedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.AttachedToLogicalTreeBehavior`1">
+            <summary>
+            A base class for behaviors using attached to logical tree event.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToLogicalTreeBehavior`1.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToLogicalTreeBehavior`1.OnAttachedToLogicalTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToLogicalTreeBehavior`1.OnAttachedToLogicalTreeOverride">
+            <summary>
+            Called after the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> is attached to the logical tree.
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.AttachedToLogicalTreeTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToLogicalTreeTrigger.OnAttachedToLogicalTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.AttachedToLogicalTreeTriggerBase`1">
+            <summary>
+            A trigger that executes when the associated object is attached to the logical tree.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToLogicalTreeTriggerBase`1.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToLogicalTreeTriggerBase`1.OnAttachedToLogicalTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToLogicalTreeTriggerBase`1.OnAttachedToLogicalTreeOverride">
+            <summary>
+            Called after the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> is attached to the logical tree.
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.AttachedToVisualTreeBehavior`1">
+            <summary>
+            A base class for behaviors using attached to visual tree event.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToVisualTreeBehavior`1.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToVisualTreeBehavior`1.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToVisualTreeBehavior`1.OnAttachedToVisualTreeOverride">
+            <summary>
+            Called after the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> is attached to the visual tree.
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.AttachedToVisualTreeTrigger">
+            <summary>
+            A trigger that executes when the associated object is attached to the visual tree.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToVisualTreeTrigger.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.AttachedToVisualTreeTriggerBase`1">
+            <summary>
+            A trigger that executes when the associated object is attached to the visual tree.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToVisualTreeTriggerBase`1.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToVisualTreeTriggerBase`1.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.AttachedToVisualTreeTriggerBase`1.OnAttachedToVisualTreeOverride">
+            <summary>
+            Called after the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> is attached to the visual tree.
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.BindingBehavior">
+            <summary>
+            Applies a binding to a target property when the control is attached to the visual tree.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.BindingBehavior.TargetPropertyProperty">
+            <summary>
+            Gets or sets the property that will be bound.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.BindingBehavior.TargetObjectProperty">
+            <summary>
+            Gets or sets the object that owns the <see cref="P:Avalonia.Xaml.Interactions.Custom.BindingBehavior.TargetProperty"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.BindingBehavior.BindingProperty">
+            <summary>
+            Gets or sets the binding to apply.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.BindingBehavior.TargetProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.BindingBehavior.TargetObject">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.BindingBehavior.Binding">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.BindingBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            Applies the binding when the behavior is attached to the visual tree.
+            </summary>
+            <returns>A disposable that clears the binding when disposed.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior">
+            <summary>
+            A behavior that performs actions when the bound data meets a specified condition.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.BindingProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.Binding"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.ComparisonConditionProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.ComparisonCondition"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.ValueProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.Value"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.Binding">
+            <summary>
+            Gets or sets the bound object that the <see cref="T:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior"/> will listen to. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.ComparisonCondition">
+            <summary>
+            Gets or sets the type of comparison to be performed between <see cref="P:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.Binding"/> and <see cref="P:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.Value"/>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.Value">
+            <summary>
+            Gets or sets the value to be compared with the value of <see cref="P:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.Binding"/>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.OnDetaching">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.BindingTriggerBehavior.OnInitializedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.DataContextChangedBehavior`1">
+            <summary>
+            A base class for behaviors using DataContextChanged event.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DataContextChangedBehavior`1.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DataContextChangedBehavior`1.OnDataContextChangedEvent">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DataContextChangedBehavior`1.OnDataContextChangedEventOverride">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> DataContextChanged event is raised.
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.DataContextChangedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DataContextChangedTrigger.OnDataContextChangedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.DetachedFromLogicalTreeTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DetachedFromLogicalTreeTrigger.OnDetachedFromLogicalTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.DetachedFromVisualTreeTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DetachedFromVisualTreeTrigger.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.DisposableAction">
+            <summary>
+            Represents an <see cref="T:System.IDisposable"/> that executes a specified action when disposed.
+            </summary>
+            <param name="dispose">The action to execute when disposed.</param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DisposableAction.#ctor(System.Action)">
+            <summary>
+            Represents an <see cref="T:System.IDisposable"/> that executes a specified action when disposed.
+            </summary>
+            <param name="dispose">The action to execute when disposed.</param>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.DisposableAction.Empty">
+            <summary>
+            An empty disposable that does nothing when disposed.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DisposableAction.Create(System.Action)">
+            <summary>
+            Creates a new <see cref="T:Avalonia.Xaml.Interactions.Custom.DisposableAction"/> that executes the specified action when disposed.
+            </summary>
+            <param name="dispose">The action to execute when disposed.</param>
+            <returns>A new instance of <see cref="T:Avalonia.Xaml.Interactions.Custom.DisposableAction"/>.</returns>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DisposableAction.System#IDisposable#Dispose">
+            <summary>
+            Executes the dispose action.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.DisposingBehavior`1">
+            <summary>
+            A base class for behaviors with disposable resources.
+            </summary>
+            <typeparam name="T">The object type to attach to</typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DisposingBehavior`1.OnAttached">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DisposingBehavior`1.OnAttachedOverride">
+            <summary>
+            Called after the behavior is attached to the <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>.
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DisposingBehavior`1.OnDetaching">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.DisposingTrigger`1">
+            <summary>
+            A base class for triggers that require a disposable resource.
+            </summary>
+            <typeparam name="T">The object type to attach to</typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DisposingTrigger`1.OnAttached">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DisposingTrigger`1.OnAttachedOverride">
+            <summary>
+            
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.DisposingTrigger`1.OnDetaching">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.IfElseTrigger">
+            <summary>
+            A behavior that executes different collections of actions depending on the specified condition.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.ConditionProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.Condition"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.IfActionsProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.IfActions"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.ElseActionsProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.ElseActions"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.Condition">
+            <summary>
+            Gets or sets the condition that determines which actions are executed. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.IfActions">
+            <summary>
+            Gets the actions executed when <see cref="P:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.Condition"/> evaluates to <c>true</c>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.ElseActions">
+            <summary>
+            Gets the actions executed when <see cref="P:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.Condition"/> evaluates to <c>false</c>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.IfElseTrigger.OnInitializedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.InitializedBehavior`1">
+            <summary>
+            A base class for behaviors using Initialized event.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.InitializedBehavior`1.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.InitializedBehavior`1.OnInitializedEvent">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.InitializedBehavior`1.OnInitializedEventOverride">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> Initialized event is raised.
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.InitializedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.InitializedTrigger.OnInitializedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.LoadedBehavior`1">
+            <summary>
+            A base class for behaviors using loaded event.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.LoadedBehavior`1.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.LoadedBehavior`1.OnLoaded">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.LoadedBehavior`1.OnLoadedOverride">
+            <summary>
+            Called after the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> is loaded.
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.LoadedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.LoadedTrigger.OnLoaded">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ObservableTriggerBehavior`1">
+            <summary>
+            A trigger that subscribes to an <see cref="T:System.IObservable`1"/> and executes its actions whenever a new value is produced.
+            The emitted value is exposed through the <see cref="P:Avalonia.Xaml.Interactions.Custom.ObservableTriggerBehavior`1.Value"/> property and passed to the actions as a parameter.
+            </summary>
+            <typeparam name="T">The type of the observable sequence.</typeparam>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ObservableTriggerBehavior`1.ObservableProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ObservableTriggerBehavior`1.Observable"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ObservableTriggerBehavior`1.ValueProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ObservableTriggerBehavior`1.Value"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ObservableTriggerBehavior`1.Observable">
+            <summary>
+            Gets or sets the observable sequence that triggers the actions. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ObservableTriggerBehavior`1.Value">
+            <summary>
+            Gets the last value received from the <see cref="P:Avalonia.Xaml.Interactions.Custom.ObservableTriggerBehavior`1.Observable"/>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ObservableTriggerBehavior`1.OnAttached">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ObservableTriggerBehavior`1.OnDetaching">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ObservableTriggerBehavior`1.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ResourcesChangedBehavior`1">
+            <summary>
+            A base class for behaviors using ResourcesChanged event.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ResourcesChangedBehavior`1.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ResourcesChangedBehavior`1.OnResourcesChangedEvent">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ResourcesChangedBehavior`1.OnResourcesChangedEventOverride">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> ResourcesChanged event is raised.
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ResourcesChangedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ResourcesChangedTrigger.OnResourcesChangedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBase">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBase.EventRoutingStrategyProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBase.EventRoutingStrategy">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBase.MarkAsHandled">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBase`1">
+            <summary>
+            
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBase`1.RoutedEvent">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBase`1.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBase`1.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns>A disposable resource to be disposed when the behavior is detached.</returns>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBase`1.Handler(System.Object,`0)">
+            <summary>
+            
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBase`1.Execute(`0)">
+            <summary>
+            
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior">
+            <summary>
+            A behavior that listens for a <see cref="P:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.RoutedEvent"/> event on its source and executes its actions when that event is fired.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.RoutedEventProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.RoutedEvent"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.RoutingStrategiesProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.RoutingStrategies"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.SourceInteractiveProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.SourceInteractive"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.RoutedEvent">
+            <summary>
+            Gets or sets routing event to listen for. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.RoutingStrategies">
+            <summary>
+            Gets or sets the routing event <see cref="P:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.RoutingStrategies"/>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.SourceInteractive">
+            <summary>
+            Gets or sets the source object from which this behavior listens for events.
+            If <seealso cref="P:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.SourceInteractive"/> is not set, the source will default to <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.RoutedEventTriggerBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.SizeChangedTrigger">
+            <summary>
+            A behavior that triggers its actions whenever the associated control size changes.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SizeChangedTrigger.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.UnloadedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.UnloadedTrigger.OnUnloaded">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ValueChangedTriggerBehavior">
+            <summary>
+            A behavior that performs actions when the bound data produces new value.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ValueChangedTriggerBehavior.BindingProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ValueChangedTriggerBehavior.Binding"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ValueChangedTriggerBehavior.Binding">
+            <summary>
+            Gets or sets the bound object that the <see cref="T:Avalonia.Xaml.Interactions.Custom.ValueChangedTriggerBehavior"/> will listen to. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ValueChangedTriggerBehavior.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.TopLevelProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.CommandProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.CommandParameterProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.FocusTopLevelProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.FocusControlProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.SourceControlProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.TopLevel">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.Command">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.CommandParameter">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.FocusTopLevel">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.FocusControl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.SourceControl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandBehaviorBase.ExecuteCommand">
+            <summary>
+            Executes the associated command.
+            </summary>
+            <returns>True if the command was executed; otherwise, false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnKeyBehaviorBase">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnKeyBehaviorBase.KeyProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnKeyBehaviorBase.GestureProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnKeyBehaviorBase.Key">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnKeyBehaviorBase.Gesture">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandRoutedEventBehaviorBase">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ExecuteCommandRoutedEventBehaviorBase.EventRoutingStrategyProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ExecuteCommandRoutedEventBehaviorBase.EventRoutingStrategy">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ExecuteCommandRoutedEventBehaviorBase.MarkAsHandled">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnActivatedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnActivatedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnDoubleTappedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnDoubleTappedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnGotFocusBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnGotFocusBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnHoldingBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnHoldingBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnKeyDownBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnKeyDownBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnKeyUpBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnKeyUpBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnLostFocusBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnLostFocusBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPinchBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPinchBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPinchEndedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPinchEndedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerCaptureLostBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerCaptureLostBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerEnteredBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerEnteredBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerExitedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerExitedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerMovedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerMovedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerPressedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerPressedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerReleasedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerReleasedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerTouchPadGestureMagnifyBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerTouchPadGestureMagnifyBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerTouchPadGestureRotateBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerTouchPadGestureRotateBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerTouchPadGestureSwipeBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerTouchPadGestureSwipeBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerWheelChangedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPointerWheelChangedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPullGestureBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPullGestureBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPullGestureEndedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnPullGestureEndedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnRightTappedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnRightTappedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnScrollGestureBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnScrollGestureBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnScrollGestureEndedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnScrollGestureEndedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnScrollGestureInertiaStartingBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnScrollGestureInertiaStartingBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnTappedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnTappedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnTextInputBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnTextInputBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnTextInputMethodClientRequestedBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ExecuteCommandOnTextInputMethodClientRequestedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.FocusBehavior">
+            <summary>
+            Keeps a control focused while the <see cref="P:Avalonia.Xaml.Interactions.Custom.FocusBehavior.IsFocused"/> property is set.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.FocusBehavior.IsFocusedProperty">
+            <summary>
+            Gets or sets a value indicating whether the control should be focused.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.FocusBehavior.IsFocused">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusBehavior.OnAttachedOverride">
+            <summary>
+            Subscribes to focus changes and updates <see cref="P:Avalonia.Xaml.Interactions.Custom.FocusBehavior.IsFocused"/> accordingly.
+            </summary>
+            <returns>A disposable used to detach the event handlers.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.FocusBehaviorBase">
+            <summary>
+            Base class for behaviors that manage focus on a control.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.FocusBehaviorBase.NavigationMethodProperty">
+            <summary>
+            Gets or sets the navigation method used when focusing.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.FocusBehaviorBase.KeyModifiersProperty">
+            <summary>
+            Gets or sets keyboard modifiers used when focusing.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.FocusBehaviorBase.NavigationMethod">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.FocusBehaviorBase.KeyModifiers">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusBehaviorBase.Focus">
+            <summary>
+            Sets focus on the associated control.
+            </summary>
+            <returns>True if the operation succeeds; otherwise, false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.FocusControlBehavior">
+            <summary>
+            Sets focus on the associated control when <see cref="P:Avalonia.Xaml.Interactions.Custom.FocusControlBehavior.FocusFlag"/> is true.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.FocusControlBehavior.FocusFlagProperty">
+            <summary>
+            Gets or sets a value indicating whether the control should be focused.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.FocusControlBehavior.FocusFlag">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusControlBehavior.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusControlBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            Invoked when the behavior is attached to the visual tree.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.FocusOnAttachedBehavior">
+            <summary>
+            Focuses the associated control when it is attached to the visual tree.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusOnAttachedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            Called when the behavior is attached.
+            </summary>
+            <returns>A disposable used to clean up the operation.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.FocusOnAttachedToVisualTreeBehavior">
+            <summary>
+            Focuses the <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> when attached to visual tree.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusOnAttachedToVisualTreeBehavior.OnAttachedToVisualTree">
+            <inheritdoc/>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.FocusOnPointerMovedBehavior">
+            <summary>
+            Focuses the <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> on <see cref="E:Avalonia.Input.InputElement.PointerMoved"/> event.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusOnPointerMovedBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusOnPointerMovedBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.FocusOnPointerPressedBehavior">
+            <summary>
+            Focuses the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> on <see cref="E:Avalonia.Input.InputElement.PointerPressed"/> event.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusOnPointerPressedBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusOnPointerPressedBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.FocusSelectedItemBehavior">
+            <summary>
+            Focuses the container of the currently selected item when attached.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.FocusSelectedItemBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            Subscribes to <see cref="F:Avalonia.Controls.Primitives.SelectingItemsControl.SelectedItemProperty"/> and focuses
+            the corresponding container when the selected item changes.
+            </summary>
+            <returns>A disposable used to clean up the subscription.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.DoubleTappedGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.DoubleTappedGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.HoldingGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.HoldingGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PinchEndedGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PinchEndedGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PinchGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PinchGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PointerTouchPadGestureMagnifyGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PointerTouchPadGestureMagnifyGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PointerTouchPadGestureRotateGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PointerTouchPadGestureRotateGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PointerTouchPadGestureSwipeGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PointerTouchPadGestureSwipeGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PullGestureEndedGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PullGestureEndedGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PullGestureGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PullGestureGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.RightTappedGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.RightTappedGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ScrollGestureEndedGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ScrollGestureEndedGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ScrollGestureGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ScrollGestureGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ScrollGestureInertiaStartingGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ScrollGestureInertiaStartingGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.TappedGestureTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.TappedGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.CapturePointerAction">
+            <summary>
+            Captures the pointer.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.CapturePointerAction.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.CapturePointerAction.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.CapturePointerAction.TargetControl">
+            <summary>
+            Gets or sets the target control. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.CapturePointerAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>Returns null after executed.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ReleasePointerCaptureAction">
+            <summary>
+            Releases the pointer capture.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ReleasePointerCaptureAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>Returns null after executed.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.DoubleTappedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.DoubleTappedTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.GotFocusTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.GotFocusTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.HoldingTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.HoldingTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.KeyDownTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyDownTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyDownTrigger.KeyProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyDownTrigger.GestureProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyDownTrigger.Key">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyDownTrigger.Gesture">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.KeyDownTrigger.Handler(System.Object,Avalonia.Input.KeyEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.KeyGestureTrigger">
+            <summary>
+            Trigger that listens for a key gesture.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyGestureTrigger.GestureProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Custom.KeyGestureTrigger.Gesture"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyGestureTrigger.FiredOnProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Custom.KeyGestureTrigger.FiredOn"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyGestureTrigger.Gesture">
+            <summary>
+            Gets or sets the gesture that will fire the trigger.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyGestureTrigger.FiredOn">
+            <summary>
+            Gets or sets whether the trigger reacts on key down or key up.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyGestureTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.KeyGestureTrigger.Handler(System.Object,Avalonia.Input.KeyEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.KeyGestureTriggerFiredOn">
+            <summary>
+            Specifies when a <see cref="T:Avalonia.Xaml.Interactions.Custom.KeyGestureTrigger"/> should be fired.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyGestureTriggerFiredOn.KeyDown">
+            <summary>
+            Trigger on key down.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyGestureTriggerFiredOn.KeyUp">
+            <summary>
+            Trigger on key up.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.KeyTrigger">
+            <summary>
+            A trigger that listens for key events and executes its actions when the
+            specified key or gesture is detected.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.KeyTrigger.FiredOn">
+            <summary>
+            Specifies which keyboard event will fire the trigger.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyTrigger.FiredOn.KeyDown">
+            <summary>
+            Trigger on the <see cref="F:Avalonia.Input.InputElement.KeyDownEvent"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyTrigger.FiredOn.KeyUp">
+            <summary>
+            Trigger on the <see cref="F:Avalonia.Input.InputElement.KeyUpEvent"/>.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyTrigger.KeyProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.KeyTrigger.Key"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyTrigger.GestureProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.KeyTrigger.Gesture"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyTrigger.EventProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.KeyTrigger.Event"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyTrigger.Key">
+            <summary>
+            Gets or sets the key to listen for. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyTrigger.Gesture">
+            <summary>
+            Gets or sets the key gesture to match. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyTrigger.Event">
+            <summary>
+            Gets or sets which key event fires the trigger. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.KeyTrigger.Handler(System.Object,Avalonia.Input.KeyEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.KeyUpTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyUpTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyUpTrigger.KeyProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.KeyUpTrigger.GestureProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyUpTrigger.Key">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.KeyUpTrigger.Gesture">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.KeyUpTrigger.Handler(System.Object,Avalonia.Input.KeyEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.LostFocusTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.LostFocusTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PointerCaptureLostTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PointerCaptureLostTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PointerEnteredTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PointerEnteredTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PointerExitedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PointerExitedTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PointerMovedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PointerMovedTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PointerPressedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PointerPressedTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PointerReleasedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PointerReleasedTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.PointerWheelChangedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.PointerWheelChangedTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.TappedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.TappedTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.TextInputMethodClientRequestedTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.TextInputMethodClientRequestedTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.TextInputTrigger">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.TextInputTrigger.RoutedEvent">
+            <inheritdoc />
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.TextInputTrigger.TextProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.TextInputTrigger.Text">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.TextInputTrigger.Handler(System.Object,Avalonia.Input.TextInputEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ItemNudgeDropBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ItemNudgeDropBehavior.OrientationProperty">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ItemNudgeDropBehavior.Orientation">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemNudgeDropBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemNudgeDropBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerClearingTrigger">
+            <summary>
+            A behavior that listens for a <see cref="E:Avalonia.Controls.ItemsControl.ContainerClearing"/> event on its source and executes its actions when that event is fired.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerClearingTrigger.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerClearingTrigger.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerEventsBehavior">
+            <summary>
+            Base class that exposes container related events from an <see cref="T:Avalonia.Controls.ItemsControl"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerEventsBehavior.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerEventsBehavior.OnPreparingContainer(System.Object,Avalonia.Controls.ContainerPreparedEventArgs)">
+            <summary>
+            Called before the container is prepared.
+            </summary>
+            <param name="sender">The items control raising the event.</param>
+            <param name="e">Event arguments.</param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerEventsBehavior.OnContainerPrepared(System.Object,Avalonia.Controls.ContainerPreparedEventArgs)">
+            <summary>
+            Called after the container has been prepared.
+            </summary>
+            <param name="sender">The items control raising the event.</param>
+            <param name="e">Event arguments.</param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerEventsBehavior.OnContainerIndexChanged(System.Object,Avalonia.Controls.ContainerIndexChangedEventArgs)">
+            <summary>
+            Called when the index of a container has changed.
+            </summary>
+            <param name="sender">The items control raising the event.</param>
+            <param name="e">Event arguments.</param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerEventsBehavior.OnContainerClearing(System.Object,Avalonia.Controls.ContainerClearingEventArgs)">
+            <summary>
+            Called when a container is being cleared.
+            </summary>
+            <param name="sender">The items control raising the event.</param>
+            <param name="e">Event arguments.</param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerIndexChangedTrigger">
+            <summary>
+            A behavior that listens for a <see cref="E:Avalonia.Controls.ItemsControl.ContainerIndexChanged"/> event on its source and executes its actions when that event is fired.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerIndexChangedTrigger.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerIndexChangedTrigger.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerPreparedTrigger">
+            <summary>
+            A behavior that listens for a <see cref="E:Avalonia.Controls.ItemsControl.ContainerPrepared"/> event on its source and executes its actions when that event is fired.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerPreparedTrigger.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlContainerPreparedTrigger.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ItemsControlPreparingContainerTrigger">
+            <summary>
+            A behavior that listens for a <see cref="E:Avalonia.Controls.ItemsControl.PreparingContainer"/> event on its source and executes its actions when that event is fired.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlPreparingContainerTrigger.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ItemsControlPreparingContainerTrigger.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ScrollToItemBehavior">
+            <summary>
+            Scrolls the associated <see cref="T:Avalonia.Controls.ItemsControl"/> to a specific item.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ScrollToItemBehavior.ItemProperty">
+            <summary>
+            Gets or sets the observable that produces items to scroll into view.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ScrollToItemBehavior.Item">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ScrollToItemBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            Subscribes to the <see cref="P:Avalonia.Xaml.Interactions.Custom.ScrollToItemBehavior.Item"/> observable and scrolls to incoming values.
+            </summary>
+            <returns>A disposable that unsubscribes from <see cref="P:Avalonia.Xaml.Interactions.Custom.ScrollToItemBehavior.Item"/>.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ScrollToItemIndexBehavior">
+            <summary>
+            Scrolls the associated <see cref="T:Avalonia.Controls.ItemsControl"/> to a given item index.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ScrollToItemIndexBehavior.ItemIndexProperty">
+            <summary>
+            Gets or sets the observable that produces item indexes to scroll into view.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ScrollToItemIndexBehavior.ItemIndex">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ScrollToItemIndexBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            Subscribes to the <see cref="P:Avalonia.Xaml.Interactions.Custom.ScrollToItemIndexBehavior.ItemIndex"/> observable and scrolls to incoming indexes.
+            </summary>
+            <returns>A disposable that unsubscribes from <see cref="P:Avalonia.Xaml.Interactions.Custom.ScrollToItemIndexBehavior.ItemIndex"/>.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.SelectListBoxItemOnPointerMovedBehavior">
+            <summary>
+            Sets <see cref="P:Avalonia.Controls.ListBoxItem.IsSelected"/> property to true of the associated <see cref="T:Avalonia.Controls.ListBoxItem"/> control on <see cref="E:Avalonia.Input.InputElement.PointerMoved"/> event.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SelectListBoxItemOnPointerMovedBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SelectListBoxItemOnPointerMovedBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ListBoxSelectAllBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ListBoxSelectAllBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ListBoxUnselectAllBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ListBoxUnselectAllBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.NotificationManagerBehavior">
+            <summary>
+            Provides a <see cref="T:Avalonia.Controls.Notifications.INotificationManager"/> for the associated <see cref="T:Avalonia.Controls.Control"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.NotificationManagerBehavior.NotificationManagerProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.NotificationManagerBehavior.NotificationManager"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.NotificationManagerBehavior.NotificationManager">
+            <summary>
+            Gets the <see cref="T:Avalonia.Controls.Notifications.INotificationManager"/> instance. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.NotificationManagerBehavior.OnAttachedToVisualTreeOverride">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowErrorNotificationAction">
+            <summary>
+            Shows an error notification using an <see cref="T:Avalonia.Controls.Notifications.INotificationManager"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowErrorNotificationAction.NotificationManagerProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowErrorNotificationAction.NotificationManager"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowErrorNotificationAction.TitleProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowErrorNotificationAction.Title"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowErrorNotificationAction.MessageProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowErrorNotificationAction.Message"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowErrorNotificationAction.NotificationManager">
+            <summary>
+            Gets or sets the <see cref="T:Avalonia.Controls.Notifications.INotificationManager"/> used to display the notification. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowErrorNotificationAction.Title">
+            <summary>
+            Gets or sets the notification title. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowErrorNotificationAction.Message">
+            <summary>
+            Gets or sets the notification message. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowErrorNotificationAction.Execute(System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowInformationNotificationAction">
+            <summary>
+            Shows an information notification using an <see cref="T:Avalonia.Controls.Notifications.INotificationManager"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowInformationNotificationAction.NotificationManagerProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowInformationNotificationAction.NotificationManager"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowInformationNotificationAction.TitleProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowInformationNotificationAction.Title"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowInformationNotificationAction.MessageProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowInformationNotificationAction.Message"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowInformationNotificationAction.NotificationManager">
+            <summary>
+            Gets or sets the <see cref="T:Avalonia.Controls.Notifications.INotificationManager"/> used to display the notification. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowInformationNotificationAction.Title">
+            <summary>
+            Gets or sets the notification title. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowInformationNotificationAction.Message">
+            <summary>
+            Gets or sets the notification message. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowInformationNotificationAction.Execute(System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowNotificationAction">
+            <summary>
+            Shows a notification using an <see cref="T:Avalonia.Controls.Notifications.INotificationManager"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowNotificationAction.NotificationManagerProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowNotificationAction.NotificationManager"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowNotificationAction.NotificationProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowNotificationAction.Notification"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowNotificationAction.NotificationManager">
+            <summary>
+            Gets or sets the <see cref="T:Avalonia.Controls.Notifications.INotificationManager"/> used to display the notification. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowNotificationAction.Notification">
+            <summary>
+            Gets or sets the <see cref="T:Avalonia.Controls.Notifications.INotification"/> instance to show. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowNotificationAction.Execute(System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowSuccessNotificationAction">
+            <summary>
+            Shows a success notification using an <see cref="T:Avalonia.Controls.Notifications.INotificationManager"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowSuccessNotificationAction.NotificationManagerProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowSuccessNotificationAction.NotificationManager"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowSuccessNotificationAction.TitleProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowSuccessNotificationAction.Title"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowSuccessNotificationAction.MessageProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowSuccessNotificationAction.Message"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowSuccessNotificationAction.NotificationManager">
+            <summary>
+            Gets or sets the <see cref="T:Avalonia.Controls.Notifications.INotificationManager"/> used to display the notification. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowSuccessNotificationAction.Title">
+            <summary>
+            Gets or sets the notification title. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowSuccessNotificationAction.Message">
+            <summary>
+            Gets or sets the notification message. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowSuccessNotificationAction.Execute(System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowWarningNotificationAction">
+            <summary>
+            Shows a warning notification using an <see cref="T:Avalonia.Controls.Notifications.INotificationManager"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowWarningNotificationAction.NotificationManagerProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowWarningNotificationAction.NotificationManager"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowWarningNotificationAction.TitleProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowWarningNotificationAction.Title"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowWarningNotificationAction.MessageProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowWarningNotificationAction.Message"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowWarningNotificationAction.NotificationManager">
+            <summary>
+            Gets or sets the <see cref="T:Avalonia.Controls.Notifications.INotificationManager"/> used to display the notification. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowWarningNotificationAction.Title">
+            <summary>
+            Gets or sets the notification title. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowWarningNotificationAction.Message">
+            <summary>
+            Gets or sets the notification message. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowWarningNotificationAction.Execute(System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.HorizontalScrollViewerBehavior">
+            <summary>
+            Enables horizontal scrolling of a <see cref="T:Avalonia.Controls.ScrollViewer"/> using the mouse wheel.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.HorizontalScrollViewerBehavior.ChangeSize">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.HorizontalScrollViewerBehavior.ChangeSize.Line">
+            <summary>
+            Scrolls by a single line.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.HorizontalScrollViewerBehavior.ChangeSize.Page">
+            <summary>
+            Scrolls by a full page.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.HorizontalScrollViewerBehavior.RequireShiftKeyProperty">
+            <summary>
+            Gets or sets a value indicating whether the Shift key must be held while scrolling.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.HorizontalScrollViewerBehavior.ScrollChangeSizeProperty">
+            <summary>
+            Gets or sets the scroll amount used for each wheel delta.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.HorizontalScrollViewerBehavior.RequireShiftKey">
+            <summary>
+            Called when the behavior is attached to the associated object.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.HorizontalScrollViewerBehavior.ScrollChangeSize">
+            <summary>
+            Called when the behavior is detached from the associated object.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.HorizontalScrollViewerBehavior.OnAttached">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.HorizontalScrollViewerBehavior.OnDetaching">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.HorizontalScrollViewerBehavior.OnPointerWheelChanged(System.Object,Avalonia.Input.PointerWheelEventArgs)">
+            <summary>
+            Handles the pointer wheel changed event.
+            </summary>
+            <param name="sender">Event source.</param>
+            <param name="e">Event arguments.</param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlEventsBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlEventsBehavior.OnAttachedOverride">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlEventsBehavior.OnSelectionChanged(System.Object,Avalonia.Controls.SelectionChangedEventArgs)">
+            <summary>
+            
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlSearchBehavior">
+            <summary>
+            Filters <see cref="T:Avalonia.Controls.Primitives.SelectingItemsControl"/> items based on the text of a search box.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlSearchBehavior.SearchBoxProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlSearchBehavior.SearchBox"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlSearchBehavior.NoMatchesControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlSearchBehavior.NoMatchesControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlSearchBehavior.SearchBox">
+            <summary>
+            Gets or sets the search box control.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlSearchBehavior.NoMatchesControl">
+            <summary>
+            Gets or sets the control displayed when no matches are found.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlSearchBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.SelectingItemsControlSearchBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowBehaviorBase">
+            <summary>
+            Base class for behaviors that show a control in response to an event.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowBehaviorBase.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowBehaviorBase.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowBehaviorBase.EventRoutingStrategyProperty">
+            <summary>
+            Gets or sets the routing strategy used for the triggering event.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowBehaviorBase.TargetControl">
+            <summary>
+            Gets or sets the target control. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowBehaviorBase.EventRoutingStrategy">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowBehaviorBase.Show">
+            <summary>
+            Shows the <see cref="P:Avalonia.Xaml.Interactions.Custom.ShowBehaviorBase.TargetControl"/> when the behavior is triggered.
+            </summary>
+            <returns>True if the control was shown; otherwise, false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowOnDoubleTappedBehavior">
+            <summary>
+            A behavior that allows to show control on double tapped event.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowOnDoubleTappedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            Called when the behavior is attached to the visual tree.
+            </summary>
+            <returns>A disposable that removes the event handler.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowOnKeyDownBehavior">
+            <summary>
+            A behavior that allows to show control on key down event.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowOnKeyDownBehavior.KeyProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Custom.ShowOnKeyDownBehavior.Key"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Custom.ShowOnKeyDownBehavior.GestureProperty">
+            <summary>
+            Gets or sets the key gesture used to trigger the behavior.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowOnKeyDownBehavior.Key">
+            <summary>
+            Gets or sets the key. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Custom.ShowOnKeyDownBehavior.Gesture">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowOnKeyDownBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            Called when the behavior is attached to the visual tree.
+            </summary>
+            <returns>A disposable that removes the event handler.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ShowOnTappedBehavior">
+            <summary>
+            A behavior that allows to show control on tapped event.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ShowOnTappedBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            Called when the behavior is attached to the visual tree.
+            </summary>
+            <returns>A disposable that removes the event handler.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.TextBoxSelectAllOnGotFocusBehavior">
+            <summary>
+            A behavior that allows to select all <see cref="T:Avalonia.Controls.TextBox"/> text on got focus event.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.TextBoxSelectAllOnGotFocusBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.TextBoxSelectAllOnGotFocusBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.TextBoxSelectAllTextBehavior">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.TextBoxSelectAllTextBehavior.OnAttachedToVisualTreeOverride">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Custom.ToggleIsExpandedOnDoubleTappedBehavior">
+            <summary>
+            Toggles <see cref="P:Avalonia.Controls.TreeViewItem.IsExpanded"/> property of the associated <see cref="T:Avalonia.Controls.TreeViewItem"/> control on <see cref="E:Avalonia.Input.InputElement.DoubleTapped"/> event.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ToggleIsExpandedOnDoubleTappedBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Custom.ToggleIsExpandedOnDoubleTappedBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

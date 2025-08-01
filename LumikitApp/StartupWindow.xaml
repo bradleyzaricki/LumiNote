@@ -1,0 +1,17 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LumikitApp.StartupWindow"
+        Width="300" Height="100"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Background="#1e1e1e"
+        SystemDecorations="None">
+
+    <Grid>
+        <TextBlock Text="please authenticate with spotify"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="White"
+                   FontSize="16"/>
+    </Grid>
+</Window>

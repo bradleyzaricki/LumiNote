@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Avalonia.Xaml.Interactions.Draggable</name>
+    </assembly>
+    <members>
+        <member name="T:Avalonia.Xaml.Interactions.Draggable.CanvasDragBehavior">
+            <summary>
+            Enables dragging of child controls within a <see cref="T:Avalonia.Controls.Canvas"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Draggable.CanvasDragBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Draggable.CanvasDragBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior">
+            <summary>
+            Allows dragging of grid child controls with optional layout copying.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.CopyColumnProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.CopyColumn"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.CopyRowProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.CopyRow"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.CopyColumnSpanProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.CopyColumnSpan"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.CopyRowSpanProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.CopyRowSpan"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.CopyColumn">
+            <summary>
+            Gets or sets whether to copy the dragged element's column.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.CopyRow">
+            <summary>
+            Gets or sets whether to copy the dragged element's row.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.CopyColumnSpan">
+            <summary>
+            Gets or sets whether to copy the dragged element's column span.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.CopyRowSpan">
+            <summary>
+            Gets or sets whether to copy the dragged element's row span.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Draggable.GridDragBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Draggable.ItemDragBehavior">
+            <summary>
+            Allows dragging items within an <see cref="T:Avalonia.Controls.ItemsControl"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Draggable.ItemDragBehavior.OrientationProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Draggable.ItemDragBehavior.Orientation"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Draggable.ItemDragBehavior.HorizontalDragThresholdProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Draggable.ItemDragBehavior.HorizontalDragThreshold"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Draggable.ItemDragBehavior.VerticalDragThresholdProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Draggable.ItemDragBehavior.VerticalDragThreshold"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Draggable.ItemDragBehavior.Orientation">
+            <summary>
+            Gets or sets the orientation of the drag operation.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Draggable.ItemDragBehavior.HorizontalDragThreshold">
+            <summary>
+            Gets or sets the horizontal drag threshold in pixels.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Draggable.ItemDragBehavior.VerticalDragThreshold">
+            <summary>
+            Gets or sets the vertical drag threshold in pixels.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Draggable.ItemDragBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Draggable.ItemDragBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Draggable.MouseDragElementBehavior">
+            <summary>
+            Enables dragging of a control with the mouse using a <see cref="T:Avalonia.Media.TranslateTransform"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Draggable.MouseDragElementBehavior.ConstrainToParentBoundsProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Draggable.MouseDragElementBehavior.ConstrainToParentBounds"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Draggable.MouseDragElementBehavior.ConstrainToParentBounds">
+            <summary>
+            Gets or sets whether dragging should be constrained to the bounds of the parent control.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Draggable.MouseDragElementBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Draggable.MouseDragElementBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Draggable.MultiMouseDragElementBehavior">
+            <summary>
+            Enables dragging of multiple controls with the mouse using <see cref="T:Avalonia.Media.TranslateTransform"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Draggable.MultiMouseDragElementBehavior.TargetControlsProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Draggable.MultiMouseDragElementBehavior.TargetControls"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Draggable.MultiMouseDragElementBehavior.ConstrainToParentBoundsProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Draggable.MultiMouseDragElementBehavior.ConstrainToParentBounds"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Draggable.MultiMouseDragElementBehavior.TargetControls">
+            <summary>
+            Gets the collection of controls that should be dragged together. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Draggable.MultiMouseDragElementBehavior.ConstrainToParentBounds">
+            <summary>
+            Gets or sets whether dragging should be constrained to the bounds of the parent control.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Draggable.MultiMouseDragElementBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Draggable.MultiMouseDragElementBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Draggable.SelectionAdorner">
+            <summary>
+            Simple adorner used to show selection rectangles while dragging.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Draggable.SelectionAdorner.Render(Avalonia.Media.DrawingContext)">
+            <summary>
+            Renders the selection rectangles.
+            </summary>
+            <param name="context">The drawing context.</param>
+        </member>
+    </members>
+</doc>

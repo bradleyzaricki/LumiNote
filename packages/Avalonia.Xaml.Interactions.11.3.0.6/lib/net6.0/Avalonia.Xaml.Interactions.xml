@@ -1,0 +1,1026 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Avalonia.Xaml.Interactions</name>
+    </assembly>
+    <members>
+        <member name="T:Avalonia.Xaml.Interactions.Core.ClearClipboardAction">
+            <summary>
+            An action that will clear the clipboard.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.ClearClipboardAction.ClipboardProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.ClearClipboardAction.Clipboard"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.ClearClipboardAction.Clipboard">
+            <summary>
+            Gets or sets the clipboard to use. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.ClearClipboardAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the command is successfully executed; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.GetClipboardDataAction">
+            <summary>
+            An action that will get the data from the clipboard.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.GetClipboardDataAction.ClipboardProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.GetClipboardDataAction.Clipboard"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.GetClipboardDataAction.FormatProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.GetClipboardDataAction.Format"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.GetClipboardDataAction.Clipboard">
+            <summary>
+            Gets or sets the clipboard to use. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.GetClipboardDataAction.Format">
+            <summary>
+            Gets or sets the format to get from the clipboard. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.GetClipboardDataAction.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactions.Core.GetClipboardDataAction"/> class.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.GetClipboardDataAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the command is successfully executed; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.GetClipboardFormatsAction">
+            <summary>
+            An action that will get the  clipboard formats.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.GetClipboardFormatsAction.ClipboardProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.GetClipboardFormatsAction.Clipboard"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.GetClipboardFormatsAction.Clipboard">
+            <summary>
+            Gets or sets the clipboard to use. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.GetClipboardFormatsAction.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactions.Core.GetClipboardFormatsAction"/> class.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.GetClipboardFormatsAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the command is successfully executed; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.GetClipboardTextAction">
+            <summary>
+            An action that will get the text from the clipboard.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.GetClipboardTextAction.ClipboardProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.GetClipboardTextAction.Clipboard"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.GetClipboardTextAction.Clipboard">
+            <summary>
+            Gets or sets the clipboard to use. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.GetClipboardTextAction.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactions.Core.GetClipboardTextAction"/> class.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.GetClipboardTextAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the command is successfully executed; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.SetClipboardDataObjectAction">
+            <summary>
+            An action that will set the data object to the clipboard.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.SetClipboardDataObjectAction.ClipboardProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.SetClipboardDataObjectAction.Clipboard"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.SetClipboardDataObjectAction.Clipboard">
+            <summary>
+            Gets or sets the clipboard to use. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.SetClipboardDataObjectAction.DataObjectProperty">
+            <summary>
+            Identifies the <seealso cref="T:Avalonia.Input.IDataObject"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.SetClipboardDataObjectAction.DataObject">
+            <summary>
+            Gets or sets the text to set to the clipboard. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.SetClipboardDataObjectAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the command is successfully executed; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.SetClipboardTextAction">
+            <summary>
+            An action that will set the text to the clipboard.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.SetClipboardTextAction.ClipboardProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.SetClipboardTextAction.Clipboard"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.SetClipboardTextAction.TextProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.SetClipboardTextAction.Text"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.SetClipboardTextAction.Clipboard">
+            <summary>
+            Gets or sets the clipboard to use. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.SetClipboardTextAction.Text">
+            <summary>
+            Gets or sets the text to set to the clipboard. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.SetClipboardTextAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the command is successfully executed; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.CallMethodAction">
+            <summary>
+            An action that calls a method on a specified object when invoked.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.CallMethodAction.MethodNameProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.CallMethodAction.MethodName"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.CallMethodAction.TargetObjectProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.CallMethodAction.TargetObject"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.CallMethodAction.MethodName">
+            <summary>
+            Gets or sets the name of the method to invoke. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.CallMethodAction.TargetObject">
+            <summary>
+            Gets or sets the object that exposes the method of interest. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.CallMethodAction.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.CallMethodAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the method is called; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.ChangePropertyAction">
+            <summary>
+            An action that will change a specified property to a specified value when invoked.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.PropertyNameProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.PropertyName"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.TargetObjectProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.TargetObject"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.ValueProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.Value"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.PropertyName">
+            <summary>
+            Gets or sets the name of the property to change. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.Value">
+            <summary>
+            Gets or sets the value to set. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.TargetObject">
+            <summary>
+            Gets or sets the object whose property will be changed.
+            If <seealso cref="P:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.TargetObject"/> is not set or cannot be resolved, the sender of <seealso cref="M:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.Execute(System.Object,System.Object)"/> will be used. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if updating the property value succeeds; else false.</returns>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.ChangePropertyAction.ValidateAvaloniaProperty(Avalonia.AvaloniaProperty)">
+            <summary>
+            Ensures the property is not null and can be written to.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior">
+            <summary>
+            A behavior that performs actions when the bound data meets a specified condition.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.BindingProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.Binding"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.ComparisonConditionProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.ComparisonCondition"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.ValueProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.Value"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.Binding">
+            <summary>
+            Gets or sets the bound object that the <see cref="T:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior"/> will listen to. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.ComparisonCondition">
+            <summary>
+            Gets or sets the type of comparison to be performed between <see cref="P:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.Binding"/> and <see cref="P:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.Value"/>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.Value">
+            <summary>
+            Gets or sets the value to be compared with the value of <see cref="P:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.Binding"/>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.DataTriggerBehavior.OnInitializedEvent">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior">
+            <summary>
+            A behavior that listens for a specified event on its source and executes its actions when that event is fired.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior.EventNameProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior.EventName"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior.SourceObjectProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior.SourceObject"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior.EventName">
+            <summary>
+            Gets or sets the name of the event to listen for. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior.SourceObject">
+            <summary>
+            Gets or sets the source object from which this behavior listens for events.
+            If <seealso cref="P:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior.SourceObject"/> is not set, the source will default to <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior.OnAttached">
+            <summary>
+            Called after the behavior is attached to the <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior.OnDetaching">
+            <summary>
+            Called when the behavior is being detached from its <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior.AttachedToVisualTree(System.Object,System.Object)">
+            <summary>
+            Raised when the control is attached to a rooted visual tree.
+            </summary>
+            <param name="sender">The sender object.</param>
+            <param name="eventArgs">The event args.</param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.EventTriggerBehavior.OnEvent(System.Object)">
+            <summary>
+            Executes the actions associated with this behavior.
+            </summary>
+            <param name="eventArgs">The event args.</param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.InvokeCommandAction">
+            <summary>
+            Executes a specified <see cref="T:System.Windows.Input.ICommand"/> when invoked. 
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.InvokeCommandAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the command is successfully executed; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase">
+            <summary>
+            Command action base class.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.CommandProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.Command"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.CommandParameterProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.CommandParameter"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.InputConverterProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.InputConverter"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.InputConverterParameterProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.InputConverterParameter"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.InputConverterLanguageProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.InputConverterLanguage"/> avalonia property.
+            </summary>
+            <remarks>The string.Empty used for default value string means the invariant culture.</remarks>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.Command">
+            <summary>
+            Gets or sets the command this action should invoke. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.CommandParameter">
+            <summary>
+            Gets or sets the parameter that is passed to <see cref="M:System.Windows.Input.ICommand.Execute(System.Object)"/>.
+            If this is not set, the parameter from the <seealso cref="M:Avalonia.Xaml.Interactivity.IAction.Execute(System.Object,System.Object)"/> method will be used.
+            This is an optional avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.InputConverter">
+            <summary>
+            Gets or sets the converter that is run on the parameter from the <seealso cref="M:Avalonia.Xaml.Interactivity.IAction.Execute(System.Object,System.Object)"/> method.
+            This is an optional avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.InputConverterParameter">
+            <summary>
+            Gets or sets the parameter that is passed to the <see cref="M:Avalonia.Data.Converters.IValueConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)"/>
+            method of <see cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.InputConverter"/>.
+            This is an optional avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.InputConverterLanguage">
+            <summary>
+            Gets or sets the language that is passed to the <see cref="M:Avalonia.Data.Converters.IValueConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)"/>
+            method of <see cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.InputConverter"/>.
+            This is an optional avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.PassEventArgsToCommand">
+            <summary>
+            Specifies whether the EventArgs of the event that triggered this action should be passed to the Command as a parameter.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.InvokeCommandActionBase.ResolveParameter(System.Object)">
+            <summary>
+            Resolves the command parameter that will be passed to the
+            associated <see cref="T:System.Windows.Input.ICommand"/>.
+            </summary>
+            <param name="parameter">The original parameter supplied by the caller.</param>
+            <returns>The value that will be provided to the command.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.RemoveElementAction">
+            <summary>
+            Removes the associated or target element from its parent when executed.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.RemoveElementAction.TargetObjectProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Core.RemoveElementAction.TargetObject"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.RemoveElementAction.TargetObject">
+            <summary>
+            Gets or sets the element to remove. This is an avalonia property.
+            If not set, the sender will be used.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.RemoveElementAction.Execute(System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.TimerTrigger">
+            <summary>
+            A trigger that invokes its actions after a specified interval.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.TimerTrigger.MillisecondsPerTickProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Core.TimerTrigger.MillisecondsPerTick"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.TimerTrigger.TotalTicksProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Core.TimerTrigger.TotalTicks"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.TimerTrigger.RepeatForeverProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.Core.TimerTrigger.RepeatForever"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.TimerTrigger.MillisecondsPerTick">
+            <summary>
+            Gets or sets the time, in milliseconds, between timer ticks.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.TimerTrigger.TotalTicks">
+            <summary>
+            Gets or sets the number of ticks after which the trigger stops firing.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.TimerTrigger.RepeatForever">
+            <summary>
+            Gets or sets a value indicating whether the timer repeats indefinitely.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.TimerTrigger.OnAttached">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.TimerTrigger.OnEvent(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.TimerTrigger.OnDetaching">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase">
+            <summary>
+            Invoke command behavior base class.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.CommandProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.Command"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.CommandParameterProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.CommandParameter"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.InputConverterProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.InputConverter"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.InputConverterParameterProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.InputConverterParameter"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.InputConverterLanguageProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.InputConverterLanguage"/> avalonia property.
+            </summary>
+            <remarks>The string.Empty used for default value string means the invariant culture.</remarks>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.Command">
+            <summary>
+            Gets or sets the command this action should invoke. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.CommandParameter">
+            <summary>
+            Gets or sets the parameter that is passed to <see cref="M:System.Windows.Input.ICommand.Execute(System.Object)"/>.
+            If this is not set, the parameter from the <seealso cref="M:Avalonia.Xaml.Interactivity.IAction.Execute(System.Object,System.Object)"/> method will be used.
+            This is an optional avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.InputConverter">
+            <summary>
+            Gets or sets the converter that is run on the parameter from the <seealso cref="M:Avalonia.Xaml.Interactivity.IAction.Execute(System.Object,System.Object)"/> method.
+            This is an optional avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.InputConverterParameter">
+            <summary>
+            Gets or sets the parameter that is passed to the <see cref="M:Avalonia.Data.Converters.IValueConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)"/>
+            method of <see cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.InputConverter"/>.
+            This is an optional avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.InputConverterLanguage">
+            <summary>
+            Gets or sets the language that is passed to the <see cref="M:Avalonia.Data.Converters.IValueConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)"/>
+            method of <see cref="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.InputConverter"/>.
+            This is an optional avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.PassEventArgsToCommand">
+            <summary>
+            Specifies whether the EventArgs of the event that triggered this action should be passed to the Command as a parameter.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.InvokeCommandBehaviorBase.ResolveParameter(System.Object)">
+            <summary>
+            Resolves the command parameter that will be supplied to the
+            <see cref="T:System.Windows.Input.ICommand"/> implementation.
+            </summary>
+            <param name="parameter">The original parameter provided by the trigger.</param>
+            <returns>The resolved parameter value.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.ButtonOpenFilePickerBehavior">
+            <summary>
+            Open file picker behavior for <see cref="T:Avalonia.Controls.Button"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.ButtonOpenFilePickerBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.ButtonOpenFilePickerBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.ButtonOpenFolderPickerBehavior">
+            <summary>
+            Open folder picker behavior for <see cref="T:Avalonia.Controls.Button"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.ButtonOpenFolderPickerBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.ButtonOpenFolderPickerBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.ButtonSaveFilePickerBehavior">
+            <summary>
+            Save file picker behavior for <see cref="T:Avalonia.Controls.Button"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.ButtonSaveFilePickerBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.ButtonSaveFilePickerBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.StorageFileToReadStreamConverter">
+            <summary>
+            Converts a <seealso cref="T:Avalonia.Platform.Storage.IStorageFile"/> to a read stream.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.StorageFileToReadStreamConverter.Instance">
+            <summary>
+            Gets a static instance of <see cref="T:Avalonia.Xaml.Interactions.Core.StorageFileToReadStreamConverter"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.StorageFileToReadStreamConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.StorageFileToReadStreamConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.StorageFileToWriteStreamConverter">
+            <summary>
+            Converts a <seealso cref="T:Avalonia.Platform.Storage.IStorageFile"/> to a path.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.StorageFileToWriteStreamConverter.Instance">
+            <summary>
+            Gets a static instance of <see cref="T:Avalonia.Xaml.Interactions.Core.StorageFileToWriteStreamConverter"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.StorageFileToWriteStreamConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.StorageFileToWriteStreamConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.StorageItemToPathConverter">
+            <summary>
+            Converts a <seealso cref="T:Avalonia.Platform.Storage.IStorageItem"/> to a path.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.StorageItemToPathConverter.Instance">
+            <summary>
+            Gets a static instance of <see cref="T:Avalonia.Xaml.Interactions.Core.StorageItemToPathConverter"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.StorageItemToPathConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.StorageItemToPathConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.PickerActionBase">
+            <summary>
+            Base class for picker actions.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.PickerActionBase.StorageProviderProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.PickerActionBase.StorageProvider"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.PickerActionBase.TitleProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.PickerActionBase.Title"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.PickerActionBase.SuggestedStartLocationProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.PickerActionBase.SuggestedStartLocation"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.PickerActionBase.SuggestedFileNameProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.PickerActionBase.SuggestedFileName"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.PickerActionBase.StorageProvider">
+            <summary>
+            Gets or sets the storage provider that the picker uses to access the file system. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.PickerActionBase.Title">
+            <summary>
+            Gets or sets the text that appears in the title bar of a picker. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.PickerActionBase.SuggestedStartLocation">
+            <summary>
+            Gets or sets the initial location where the file open picker looks for files to present to the user. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.PickerActionBase.SuggestedFileName">
+            <summary>
+            Gets or sets the file name that the file picker suggests to the user. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase">
+            <summary>
+            Base class for picker behaviors.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase.StorageProviderProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase.StorageProvider"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase.TitleProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase.Title"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase.SuggestedStartLocationProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase.SuggestedStartLocation"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase.SuggestedFileNameProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase.SuggestedFileName"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase.StorageProvider">
+            <summary>
+            Gets or sets the storage provider that the picker uses to access the file system. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase.Title">
+            <summary>
+            Gets or sets the text that appears in the title bar of a picker. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase.SuggestedStartLocation">
+            <summary>
+            Gets or sets the initial location where the file open picker looks for files to present to the user. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.PickerBehaviorBase.SuggestedFileName">
+            <summary>
+            Gets or sets the file name that the file picker suggests to the user. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.MenuItemOpenFilePickerBehavior">
+            <summary>
+            Open file picker behavior for <see cref="T:Avalonia.Controls.MenuItem"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.MenuItemOpenFilePickerBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.MenuItemOpenFilePickerBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.MenuItemOpenFolderPickerBehavior">
+            <summary>
+            Open folder picker behavior for <see cref="T:Avalonia.Controls.MenuItem"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.MenuItemOpenFolderPickerBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.MenuItemOpenFolderPickerBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.MenuItemSaveFilePickerBehavior">
+            <summary>
+            Save file picker behavior for <see cref="T:Avalonia.Controls.MenuItem"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.MenuItemSaveFilePickerBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.MenuItemSaveFilePickerBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.OpenFilePickerAction">
+            <summary>
+            An action that will open a file picker dialog.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.OpenFilePickerAction.AllowMultipleProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.OpenFilePickerAction.AllowMultiple"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.OpenFilePickerAction.FileTypeFilterProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.OpenFilePickerAction.FileTypeFilter"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.OpenFilePickerAction.AllowMultiple">
+            <summary>
+            Gets or sets an option indicating whether open picker allows users to select multiple files. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.OpenFilePickerAction.FileTypeFilter">
+            <summary>
+            Gets or sets the collection of file types that the file open picker displays. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.OpenFilePickerAction.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactions.Core.OpenFilePickerAction"/> class.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.OpenFilePickerAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the command is successfully executed; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.OpenFilePickerBehaviorBase">
+            <summary>
+            Open file picker behavior base.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.OpenFilePickerBehaviorBase.AllowMultipleProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.OpenFilePickerBehaviorBase.AllowMultiple"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.OpenFilePickerBehaviorBase.FileTypeFilterProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.OpenFilePickerBehaviorBase.FileTypeFilter"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.OpenFilePickerBehaviorBase.AllowMultiple">
+            <summary>
+            Gets or sets an option indicating whether open picker allows users to select multiple files. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.OpenFilePickerBehaviorBase.FileTypeFilter">
+            <summary>
+            Gets or sets the collection of file types that the file open picker displays. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.OpenFilePickerBehaviorBase.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactions.Core.OpenFilePickerBehaviorBase"/> class.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.OpenFilePickerBehaviorBase.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the open file picker using the provided sender and command parameter.
+            </summary>
+            <param name="sender">The control that triggered the behavior.</param>
+            <param name="parameter">An optional parameter used when executing the command.</param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.OpenFolderPickerAction">
+            <summary>
+            An action that will open a folder picker dialog.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.OpenFolderPickerAction.AllowMultipleProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.OpenFolderPickerAction.AllowMultiple"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.OpenFolderPickerAction.AllowMultiple">
+            <summary>
+            Gets or sets an option indicating whether open picker allows users to select multiple folders. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.OpenFolderPickerAction.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactions.Core.OpenFolderPickerAction"/> class.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.OpenFolderPickerAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the command is successfully executed; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.OpenFolderPickerBehaviorBase">
+            <summary>
+            Open folder picker behavior base.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.OpenFolderPickerBehaviorBase.AllowMultipleProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.OpenFolderPickerBehaviorBase.AllowMultiple"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.OpenFolderPickerBehaviorBase.AllowMultiple">
+            <summary>
+            Gets or sets an option indicating whether open picker allows users to select multiple folders. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.OpenFolderPickerBehaviorBase.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactions.Core.OpenFolderPickerBehaviorBase"/> class.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.OpenFolderPickerBehaviorBase.Execute(System.Object,System.Object)">
+            <summary>
+            Launches the folder picker dialog.
+            </summary>
+            <param name="sender">The initiating control.</param>
+            <param name="parameter">Optional command parameter.</param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction">
+            <summary>
+            An action that will open a file picker dialog.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction.DefaultExtensionProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction.DefaultExtension"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction.FileTypeChoicesProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction.FileTypeChoices"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction.ShowOverwritePromptProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction.ShowOverwritePrompt"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction.DefaultExtension">
+            <summary>
+            Gets or sets the default extension to be used to save the file. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction.FileTypeChoices">
+            <summary>
+            Gets or sets the collection of valid file types that the user can choose to assign to a file. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction.ShowOverwritePrompt">
+            <summary>
+            Gets or sets a value indicating whether file open picker displays a warning if the user specifies the name of a file that already exists. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction"/> class.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.SaveFilePickerAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <returns>True if the command is successfully executed; else false.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase">
+            <summary>
+            Save file picker behavior base.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase.DefaultExtensionProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase.DefaultExtension"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase.FileTypeChoicesProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase.FileTypeChoices"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase.ShowOverwritePromptProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase.ShowOverwritePrompt"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase.DefaultExtension">
+            <summary>
+            Gets or sets the default extension to be used to save the file. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase.FileTypeChoices">
+            <summary>
+            Gets or sets the collection of valid file types that the user can choose to assign to a file. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase.ShowOverwritePrompt">
+            <summary>
+            Gets or sets a value indicating whether file open picker displays a warning if the user specifies the name of a file that already exists. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase"/> class.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Core.SaveFilePickerBehaviorBase.Execute(System.Object,System.Object)">
+            <summary>
+            Launches the save file picker dialog.
+            </summary>
+            <param name="sender">The element that started the request.</param>
+            <param name="parameter">Optional parameter passed to the command.</param>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,670 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Avalonia.Xaml.Interactivity</name>
+    </assembly>
+    <members>
+        <member name="T:Avalonia.Xaml.Interactivity.Action">
+            <summary>
+            A base class for action that calls a method on a specified object when invoked.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.Action.IsEnabledProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactivity.Action.IsEnabled"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.Action.IsEnabled">
+            <summary>
+            Gets or sets a value indicating whether this instance is enabled.
+            </summary>
+            <value><c>true</c> if this instance is enabled; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Action.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <remarks> An example of parameter usage is EventTriggerBehavior, which passes the EventArgs as a parameter to its actions.</remarks>
+            <returns>Returns the result of the action.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.Behavior">
+            <summary>
+            A base class for behaviors, implementing the basic plumbing of <see cref="T:Avalonia.Xaml.Interactivity.IBehavior"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.Behavior.IsEnabledProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactivity.Behavior.IsEnabled"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject">
+            <summary>
+            Gets the <see cref="T:Avalonia.AvaloniaObject"/> to which the behavior is attached.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.Behavior.IsEnabled">
+            <summary>
+            Gets or sets a value indicating whether this instance is enabled.
+            </summary>
+            <value><c>true</c> if this instance is enabled; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.Attach(Avalonia.AvaloniaObject)">
+            <summary>
+            Attaches the behavior to the specified <see cref="T:Avalonia.AvaloniaObject"/>.
+            </summary>
+            <param name="associatedObject">The <see cref="T:Avalonia.AvaloniaObject"/> to which to attach.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="associatedObject"/> is null.</exception>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.Detach">
+            <summary>
+            Detaches the behaviors from the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.OnAttached">
+            <summary>
+            Called after the behavior is attached to the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/>.
+            </summary>
+            <remarks>
+            Override this to hook up functionality to the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/>
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.OnDetaching">
+            <summary>
+            Called when the behavior is being detached from its <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/>.
+            </summary>
+            <remarks>
+            Override this to unhook functionality from the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/>
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.OnAttachedToVisualTree">
+            <summary>
+            Called after the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is attached to the visual tree.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is of type <see cref="T:Avalonia.Visual"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.OnDetachedFromVisualTree">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is being detached from the visual tree.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is of type <see cref="T:Avalonia.Visual"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.OnAttachedToLogicalTree">
+            <summary>
+            Called after the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is attached to the logical tree.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is of type <see cref="T:Avalonia.StyledElement"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.OnDetachedFromLogicalTree">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is being detached from the logical tree.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is of type <see cref="T:Avalonia.StyledElement"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.OnLoaded">
+            <summary>
+            Called after the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is loaded.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is of type <see cref="T:Avalonia.Controls.Control"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.OnUnloaded">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is unloaded.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is of type <see cref="T:Avalonia.Controls.Control"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.OnInitializedEvent">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is initialized.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is of type <see cref="T:Avalonia.StyledElement"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.OnDataContextChangedEvent">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> DataContext changed.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is of type <see cref="T:Avalonia.StyledElement"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.OnResourcesChangedEvent">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> Resources changed.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is of type <see cref="T:Avalonia.StyledElement"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior.OnActualThemeVariantChangedEvent">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> ActualThemeVariant changed.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.Behavior.AssociatedObject"/> is of type <see cref="T:Avalonia.StyledElement"/>.
+            </remarks>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.Behavior`1">
+            <summary>
+            A base class for behaviors making them code compatible with older frameworks,
+            and allow for typed associated objects.
+            </summary>
+            <typeparam name="T">The object type to attach to</typeparam>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.Behavior`1.AssociatedObject">
+            <summary>
+            Gets the object to which this behavior is attached.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Behavior`1.OnAttached">
+            <summary>
+            Called after the behavior is attached to the <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>.
+            </summary>
+            <remarks>
+            Override this to hook up functionality to the <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>
+            </remarks>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.Trigger">
+            <summary>
+            A base class for behaviors, implementing the basic plumbing of <seealso cref="T:Avalonia.Xaml.Interactivity.ITrigger"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.Trigger.ActionsProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactivity.Trigger.Actions"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.Trigger.Actions">
+            <summary>
+            Gets the collection of actions associated with the behavior. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.Trigger`1">
+            <summary>
+            A base class for behaviors, implementing the basic plumbing of <seealso cref="T:Avalonia.Xaml.Interactivity.ITrigger"/>.
+            </summary>
+            <typeparam name="T">The object type to attach to</typeparam>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.Trigger`1.AssociatedObject">
+            <summary>
+            Gets the object to which this behavior is attached.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Trigger`1.OnAttached">
+            <summary>
+            Called after the behavior is attached to the <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>.
+            </summary>
+            <remarks>
+            Override this to hook up functionality to the <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>
+            </remarks>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.ActionCollection">
+            <summary>
+            Represents a collection of <see cref="T:Avalonia.Xaml.Interactivity.IAction"/>'s.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.ActionCollection.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactivity.ActionCollection"/> class.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.BehaviorCollection">
+            <summary>
+            Represents a collection of <see cref="T:Avalonia.Xaml.Interactivity.IBehavior"/>'s with a shared <see cref="P:Avalonia.Xaml.Interactivity.BehaviorCollection.AssociatedObject"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.BehaviorCollection.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactivity.BehaviorCollection"/> class.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.BehaviorCollection.AssociatedObject">
+            <summary>
+            Gets the <see cref="T:Avalonia.AvaloniaObject"/> to which the <see cref="T:Avalonia.Xaml.Interactivity.BehaviorCollection"/> is attached.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.BehaviorCollection.Attach(Avalonia.AvaloniaObject)">
+            <summary>
+            Attaches the collection of behaviors to the specified <see cref="T:Avalonia.AvaloniaObject"/>.
+            </summary>
+            <param name="associatedObject">The <see cref="T:Avalonia.AvaloniaObject"/> to which to attach.</param>
+            <exception cref="T:System.InvalidOperationException">The <see cref="T:Avalonia.Xaml.Interactivity.BehaviorCollection"/> is already attached to a different <see cref="T:Avalonia.AvaloniaObject"/>.</exception>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.BehaviorCollection.Detach">
+            <summary>
+            Detaches the collection of behaviors from the <see cref="P:Avalonia.Xaml.Interactivity.BehaviorCollection.AssociatedObject"/>.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.ComparisonConditionType">
+            <summary>
+            Represents one ternary condition.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.ComparisonConditionType.Equal">
+            <summary>
+            Specifies an equal condition.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.ComparisonConditionType.NotEqual">
+            <summary>
+            Specifies a not equal condition.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.ComparisonConditionType.LessThan">
+            <summary>
+            Specifies a less than condition.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.ComparisonConditionType.LessThanOrEqual">
+            <summary>
+            Specifies a less than or equal condition.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.ComparisonConditionType.GreaterThan">
+            <summary>
+            Specifies a greater than condition.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.ComparisonConditionType.GreaterThanOrEqual">
+            <summary>
+            Specifies a greater than or equal condition.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.IAction">
+            <summary>
+            Interface implemented by all custom actions.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <remarks> An example of parameter usage is EventTriggerBehavior, which passes the EventArgs as a parameter to its actions.</remarks>
+            <returns>Returns the result of the action.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.IBehavior">
+            <summary>
+            Interface implemented by all custom behaviors.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject">
+            <summary>
+            Gets the <see cref="T:Avalonia.AvaloniaObject"/> to which the <seealso cref="T:Avalonia.Xaml.Interactivity.IBehavior"/> is attached.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IBehavior.Attach(Avalonia.AvaloniaObject)">
+            <summary>
+            Attaches to the specified object.
+            </summary>
+            <param name="associatedObject">The <see cref="T:Avalonia.AvaloniaObject"/> to which the <seealso cref="T:Avalonia.Xaml.Interactivity.IBehavior"/> will be attached.</param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IBehavior.Detach">
+            <summary>
+            Detaches this instance from its associated object.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.IBehaviorEventsHandler">
+            <summary>
+            Interface implemented by base behaviors.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IBehaviorEventsHandler.AttachedToVisualTreeEventHandler">
+            <summary>
+            Called when element is attached to the visual tree.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IBehaviorEventsHandler.DetachedFromVisualTreeEventHandler">
+            <summary>
+            Called when element is detached from the visual tree.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IBehaviorEventsHandler.AttachedToLogicalTreeEventHandler">
+            <summary>
+            Called when element is attached to the logical tree.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IBehaviorEventsHandler.DetachedFromLogicalTreeEventHandler">
+            <summary>
+            Called when element is detached from the logical tree.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IBehaviorEventsHandler.LoadedEventHandler">
+            <summary>
+            Called when element is loaded.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IBehaviorEventsHandler.UnloadedEventHandler">
+            <summary>
+            Called when element is unloaded.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IBehaviorEventsHandler.InitializedEventHandler">
+            <summary>
+            Called when element is initialized.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IBehaviorEventsHandler.DataContextChangedEventHandler">
+            <summary>
+            Called when element DataContext changed.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IBehaviorEventsHandler.ResourcesChangedEventHandler">
+            <summary>
+            Called when element Resources changed.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.IBehaviorEventsHandler.ActualThemeVariantChangedEventHandler">
+            <summary>
+            Called when element ActualThemeVariant changed.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.ITrigger">
+            <summary>
+            Interface implemented by all custom triggers.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.ITrigger.Actions">
+            <summary>
+            Gets the collection of actions associated with the behavior.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.ComparisonConditionTypeHelper.EvaluateComparable(System.IComparable,Avalonia.Xaml.Interactivity.ComparisonConditionType,System.IComparable)">
+            <summary>
+            Evaluates both operands that implement the IComparable interface.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.TypeConverterHelper">
+            <summary>
+            A helper class that enables converting values specified in markup (strings) to their object representation.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.TypeConverterHelper.Convert(System.String,System.Type)">
+            <summary>
+            Converts string representation of a value to its object representation.
+            </summary>
+            <param name="value">The value to convert.</param>
+            <param name="destinationType">The destination type.</param>
+            <returns>Object representation of the string value.</returns>
+            <exception cref="T:System.ArgumentNullException">destinationType cannot be null.</exception>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.Interaction">
+            <summary>
+            Defines a <see cref="T:Avalonia.Xaml.Interactivity.BehaviorCollection"/> attached property and provides a method for executing an <seealso cref="T:Avalonia.Xaml.Interactivity.ActionCollection"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.Interaction.BehaviorsProperty">
+            <summary>
+            Gets or sets the <see cref="T:Avalonia.Xaml.Interactivity.BehaviorCollection"/> associated with a specified object.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Interaction.GetBehaviors(Avalonia.AvaloniaObject)">
+            <summary>
+            Gets the <see cref="T:Avalonia.Xaml.Interactivity.BehaviorCollection"/> associated with a specified object.
+            </summary>
+            <param name="obj">The <see cref="T:Avalonia.AvaloniaObject"/> from which to retrieve the <see cref="T:Avalonia.Xaml.Interactivity.BehaviorCollection"/>.</param>
+            <returns>A <see cref="T:Avalonia.Xaml.Interactivity.BehaviorCollection"/> containing the behaviors associated with the specified object.</returns>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Interaction.SetBehaviors(Avalonia.AvaloniaObject,Avalonia.Xaml.Interactivity.BehaviorCollection)">
+            <summary>
+            Sets the <see cref="T:Avalonia.Xaml.Interactivity.BehaviorCollection"/> associated with a specified object.
+            </summary>
+            <param name="obj">The <see cref="T:Avalonia.AvaloniaObject"/> on which to set the <see cref="T:Avalonia.Xaml.Interactivity.BehaviorCollection"/>.</param>
+            <param name="value">The <see cref="T:Avalonia.Xaml.Interactivity.BehaviorCollection"/> associated with the object.</param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.Interaction.ExecuteActions(System.Object,Avalonia.Xaml.Interactivity.ActionCollection,System.Object)">
+            <summary>
+            Executes all actions in the <see cref="T:Avalonia.Xaml.Interactivity.ActionCollection"/> and returns their results.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> which will be passed on to the action.</param>
+            <param name="actions">The set of actions to execute.</param>
+            <param name="parameter">The value of this parameter is determined by the calling behavior.</param>
+            <returns>Returns the results of the actions.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.StyledElementAction">
+            <summary>
+            A base class for action that calls a method on a specified object when invoked.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.StyledElementAction.IsEnabledProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactivity.StyledElementAction.IsEnabled"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.StyledElementAction.IsEnabled">
+            <summary>
+            Gets or sets a value indicating whether this instance is enabled.
+            </summary>
+            <value><c>true</c> if this instance is enabled; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementAction.Execute(System.Object,System.Object)">
+            <summary>
+            Executes the action.
+            </summary>
+            <param name="sender">The <see cref="T:System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+            <param name="parameter">The value of this parameter is determined by the caller.</param>
+            <remarks> An example of parameter usage is EventTriggerBehavior, which passes the EventArgs as a parameter to its actions.</remarks>
+            <returns>Returns the result of the action.</returns>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.StyledElementBehavior">
+            <summary>
+            A base class for behaviors, implementing the basic plumbing of <see cref="T:Avalonia.Xaml.Interactivity.IBehavior"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.StyledElementBehavior.IsEnabledProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.IsEnabled"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject">
+            <summary>
+            Gets the <see cref="T:Avalonia.AvaloniaObject"/> to which the behavior is attached.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedStyledElement">
+            <summary>
+            Gets the <see cref="T:Avalonia.StyledElement"/> to which this behavior is attached.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.IsEnabled">
+            <summary>
+            Gets or sets a value indicating whether this instance is enabled.
+            </summary>
+            <value><c>true</c> if this instance is enabled; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.Attach(Avalonia.AvaloniaObject)">
+            <summary>
+            Attaches the behavior to the specified <see cref="T:Avalonia.AvaloniaObject"/>.
+            </summary>
+            <param name="associatedObject">The <see cref="T:Avalonia.AvaloniaObject"/> to which to attach.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="associatedObject"/> is null.</exception>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.Detach">
+            <summary>
+            Detaches the behaviors from the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/>.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.OnAttached">
+            <summary>
+            Called after the behavior is attached to the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/>.
+            </summary>
+            <remarks>
+            Override this to hook up functionality to the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/>
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.OnDetaching">
+            <summary>
+            Called when the behavior is being detached from its <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/>.
+            </summary>
+            <remarks>
+            Override this to unhook functionality from the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/>
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.OnAttachedToVisualTree">
+            <summary>
+            Called after the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is attached to the visual tree.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is of type <see cref="T:Avalonia.Visual"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.OnDetachedFromVisualTree">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is being detached from the visual tree.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is of type <see cref="T:Avalonia.Visual"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.OnAttachedToLogicalTree">
+            <summary>
+            Called after the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is attached to the logical tree.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is of type <see cref="T:Avalonia.StyledElement"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.OnDetachedFromLogicalTree">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is being detached from the logical tree.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is of type <see cref="T:Avalonia.StyledElement"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.OnLoaded">
+            <summary>
+            Called after the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is loaded.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is of type <see cref="T:Avalonia.Controls.Control"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.OnUnloaded">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is unloaded.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is of type <see cref="T:Avalonia.Controls.Control"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.OnInitializedEvent">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is initialized.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is of type <see cref="T:Avalonia.StyledElement"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.OnDataContextChangedEvent">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> DataContext changed.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is of type <see cref="T:Avalonia.StyledElement"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.OnResourcesChangedEvent">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> Resources changed.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is of type <see cref="T:Avalonia.StyledElement"/>.
+            </remarks>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior.OnActualThemeVariantChangedEvent">
+            <summary>
+            Called when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> ActualThemeVariant changed.
+            </summary>
+            <remarks>
+            Invoked only when the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/> is of type <see cref="T:Avalonia.StyledElement"/>.
+            </remarks>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.StyledElementBehavior`1">
+            <summary>
+            A base class for behaviors making them code compatible with older frameworks,
+            and allow for typed associated objects.
+            </summary>
+            <typeparam name="T">The object type to attach to</typeparam>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject">
+            <summary>
+            Gets the object to which this behavior is attached.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.OnAttached">
+            <summary>
+            Called after the behavior is attached to the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/>.
+            </summary>
+            <remarks>
+            Override this to hook up functionality to the <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior.AssociatedObject"/>
+            </remarks>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.StyledElementTrigger">
+            <summary>
+            A base class for behaviors, implementing the basic plumbing of <seealso cref="T:Avalonia.Xaml.Interactivity.ITrigger"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactivity.StyledElementTrigger.ActionsProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactivity.StyledElementTrigger.Actions"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.StyledElementTrigger.Actions">
+            <summary>
+            Gets the collection of actions associated with the behavior. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.StyledElementTrigger`1">
+            <summary>
+            A base class for behaviors, implementing the basic plumbing of <seealso cref="T:Avalonia.Xaml.Interactivity.ITrigger"/>.
+            </summary>
+            <typeparam name="T">The object type to attach to</typeparam>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.StyledElementTrigger`1.AssociatedObject">
+            <summary>
+            Gets the object to which this behavior is attached.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.StyledElementTrigger`1.OnAttached">
+            <summary>
+            Called after the behavior is attached to the <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>.
+            </summary>
+            <remarks>
+            Override this to hook up functionality to the <see cref="P:Avalonia.Xaml.Interactivity.IBehavior.AssociatedObject"/>
+            </remarks>
+            
+        </member>
+        <member name="T:Avalonia.Xaml.Interactivity.BehaviorCollectionTemplate">
+            <summary>
+            A template for creating a collection of <see cref="T:Avalonia.Xaml.Interactivity.IBehavior"/> objects.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactivity.BehaviorCollectionTemplate.Content">
+            <summary>
+            Gets or sets the content of the template.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactivity.BehaviorCollectionTemplate.Avalonia#Styling#ITemplate#Build">
+            <summary>
+            Builds the collection of behaviors from the template.
+            </summary>
+            <returns>The collection of behaviors created from the template.</returns>
+        </member>
+    </members>
+</doc>

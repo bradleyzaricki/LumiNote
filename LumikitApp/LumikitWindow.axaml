@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LumikitApp.LumikitWindow"
+        Width="800" Height="450"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Background="#1e1e1e"
+        SystemDecorations="None">
+
+	<Grid>
+		<!-- Top Buttons -->
+		<StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="12">
+			<Button Name="NextTrackButton" Content="Next Track" Width="100" Margin="0 0 0 10"/>
+			<Button Name="PauseTrackButton" Content="Pause Track" Width="100" Margin="0 0 0 10"/>
+			<Button Name="ResumeTrackButton" Content="Resume Track" Width="100"/>
+		</StackPanel>
+
+		<TextBlock Name="StopwatchLabel"
+				   Text="0"
+				   FontSize="12"
+				   Foreground="White"
+				   HorizontalAlignment="Left"
+				   VerticalAlignment="Bottom"
+				   Margin="10,0,0,110"/>
+
+
+		<!-- Now Playing Label -->
+		<Border Background="#333" BorderBrush="#555" BorderThickness="1"
+				HorizontalAlignment="Stretch"
+				VerticalAlignment="Bottom"
+				Margin="0 0 150 0"
+				Padding="10">
+			<TextBlock Name="NowPlayingText"
+					   Text="Now playing..."
+					   FontSize="26"
+					   FontWeight="Bold"
+					   Foreground="White"
+					   TextWrapping="Wrap"/>
+		</Border>
+
+		<!-- Album Art -->
+		<Image Name="AlbumArt" Width="150" Height="150" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0 0 0 0"/>
+	</Grid>
+</Window>

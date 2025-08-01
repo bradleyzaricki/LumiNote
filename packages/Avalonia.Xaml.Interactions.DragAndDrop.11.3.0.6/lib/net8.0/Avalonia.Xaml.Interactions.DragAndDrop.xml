@@ -1,0 +1,595 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Avalonia.Xaml.Interactions.DragAndDrop</name>
+    </assembly>
+    <members>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.ContentControlFilesDropBehavior">
+            <summary>
+            Behavior that handles file drop operations for <see cref="T:Avalonia.Controls.ContentControl"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.DragAndDrop.ContentControlFilesDropBehavior.ContentDuringDragProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.DragAndDrop.ContentControlFilesDropBehavior.ContentDuringDrag"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.DragAndDrop.ContentControlFilesDropBehavior.BackgroundDuringDragProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.DragAndDrop.ContentControlFilesDropBehavior.BackgroundDuringDrag"/> avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContentControlFilesDropBehavior.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactions.DragAndDrop.ContentControlFilesDropBehavior"/> class.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.DragAndDrop.ContentControlFilesDropBehavior.ContentDuringDrag">
+            <summary>
+            If sender is ContentControl - this content will be set during drag over
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.DragAndDrop.ContentControlFilesDropBehavior.BackgroundDuringDrag">
+            <summary>
+            If sender is ContentControl - this background will be set during drag over
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehavior">
+            <summary>
+            Behavior that starts a drag operation using the associated context data.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehavior.HandlerProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehavior.Handler"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehavior.Handler">
+            <summary>
+            Gets or sets the handler that receives drag notifications.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehavior.OnBeforeDragDrop(System.Object,Avalonia.Input.PointerEventArgs,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehavior.OnAfterDragDrop(System.Object,Avalonia.Input.PointerEventArgs,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase">
+            <summary>
+            Behavior base class that starts a drag operation using the associated context data.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.ContextProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.Context"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.HorizontalDragThresholdProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.HorizontalDragThreshold"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.VerticalDragThresholdProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.VerticalDragThreshold"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.Context">
+            <summary>
+            Gets or sets context data passed to the drag handler.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.HorizontalDragThreshold">
+            <summary>
+            Gets or sets the horizontal distance in pixels required to start a drag.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.VerticalDragThreshold">
+            <summary>
+            Gets or sets the vertical distance in pixels required to start a drag.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.OnBeforeDragDrop(System.Object,Avalonia.Input.PointerEventArgs,System.Object)">
+            <summary>
+            Called before the drag operation begins.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="context"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDragBehaviorBase.OnAfterDragDrop(System.Object,Avalonia.Input.PointerEventArgs,System.Object)">
+            <summary>
+            Called after the drag operation completes.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="context"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehavior">
+            <summary>
+            Behavior that enables dropping context data onto the associated control using predefined <see cref="T:Avalonia.Xaml.Interactions.DragAndDrop.IDropHandler"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehavior.HandlerProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehavior.Handler"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehavior.Handler">
+            <summary>
+            Gets or sets the drop handler that receives drop notifications.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehavior.OnEnter(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehavior.OnLeave(System.Object,Avalonia.Interactivity.RoutedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehavior.OnOver(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehavior.OnDrop(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehaviorBase">
+            <summary>
+            Behavior base class that enables dropping context data onto the associated control.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehaviorBase.DataFormat">
+            <summary>
+            Identifies the data format used to store context information.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehaviorBase.ContextProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehaviorBase.Context"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehaviorBase.Context">
+            <summary>
+            Gets or sets context data provided to the drop handler.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehaviorBase.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehaviorBase.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehaviorBase.OnEnter(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object)">
+            <summary>
+            Called when a drag enters the target.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehaviorBase.OnLeave(System.Object,Avalonia.Interactivity.RoutedEventArgs)">
+            <summary>
+            Called when the drag leaves the target.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehaviorBase.OnOver(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object)">
+            <summary>
+            Called repeatedly as the drag moves over the target.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.ContextDropBehaviorBase.OnDrop(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object)">
+            <summary>
+            Called when the drag is dropped on the target.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.DragAndDropEventsBehavior">
+            <summary>
+            Base class for behaviors that respond to drag-and-drop events.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.DragAndDrop.DragAndDropEventsBehavior.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.DragAndDrop.DragAndDropEventsBehavior.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.DragAndDrop.DragAndDropEventsBehavior.TargetControl">
+            <summary>
+            Gets or sets the control that is used as source for drag and drop events. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DragAndDropEventsBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DragAndDropEventsBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DragAndDropEventsBehavior.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DragAndDropEventsBehavior.OnDragEnter(System.Object,Avalonia.Input.DragEventArgs)">
+            <summary>
+            Called when a drag-and-drop operation enters the element.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DragAndDropEventsBehavior.OnDragLeave(System.Object,Avalonia.Input.DragEventArgs)">
+            <summary>
+            Called when a drag-and-drop operation leaves the element.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DragAndDropEventsBehavior.OnDragOver(System.Object,Avalonia.Input.DragEventArgs)">
+            <summary>
+            Called when a drag-and-drop operation is updated while over the element.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DragAndDropEventsBehavior.OnDrop(System.Object,Avalonia.Input.DragEventArgs)">
+            <summary>
+            Called when a drag-and-drop operation should complete over the element.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.DropBehaviorBase">
+            <summary>
+            Base class for behaviors that respond to drag-and-drop events.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.DragAndDrop.DropBehaviorBase.Handler">
+            <summary>
+            Gets or sets the handler responsible for processing drop events.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropBehaviorBase.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropBehaviorBase.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropBehaviorBase.ExecuteCommand(System.Object)">
+            <summary>
+            Executes the associated <see cref="T:System.Windows.Input.ICommand"/>.
+            </summary>
+            <param name="parameter"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase">
+            <summary>
+            Provides helper methods for custom drop handlers.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase.MoveItem``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32)">
+            <summary>
+            Moves an item within a collection.
+            </summary>
+            <param name="items"></param>
+            <param name="sourceIndex"></param>
+            <param name="targetIndex"></param>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase.MoveItem``1(System.Collections.Generic.IList{``0},System.Collections.Generic.IList{``0},System.Int32,System.Int32)">
+            <summary>
+            Moves an item from one collection to another.
+            </summary>
+            <param name="sourceItems"></param>
+            <param name="targetItems"></param>
+            <param name="sourceIndex"></param>
+            <param name="targetIndex"></param>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase.SwapItem``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32)">
+            <summary>
+            Swaps two items inside a collection.
+            </summary>
+            <param name="items"></param>
+            <param name="sourceIndex"></param>
+            <param name="targetIndex"></param>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase.SwapItem``1(System.Collections.Generic.IList{``0},System.Collections.Generic.IList{``0},System.Int32,System.Int32)">
+            <summary>
+            Inserts an item into a collection at the specified index.
+            </summary>
+            <param name="sourceItems"></param>
+            <param name="targetItems"></param>
+            <param name="sourceIndex"></param>
+            <param name="targetIndex"></param>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase.InsertItem``1(System.Collections.Generic.IList{``0},``0,System.Int32)">
+            <summary>
+            Inserts an item into a collection at the specified index.
+            </summary>
+            <param name="items">Collection to insert into.</param>
+            <param name="item">Item being inserted.</param>
+            <param name="index">Target index for insertion.</param>
+            <typeparam name="T">The item type.</typeparam>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase.Enter(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object)">
+            <summary>
+            Called when a drag enters the target.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase.Over(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object)">
+            <summary>
+            Called continuously while a drag is over the target.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase.Drop(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object)">
+            <summary>
+            Called when the drag is dropped on the target.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase.Leave(System.Object,Avalonia.Interactivity.RoutedEventArgs)">
+            <summary>
+            Called when the drag leaves the target.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase.Validate(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object,System.Object)">
+            <summary>
+            Validates whether the drag operation can be performed.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+            <param name="state"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase.Execute(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object,System.Object)">
+            <summary>
+            Executes the drop operation.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+            <param name="state"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.DropHandlerBase.Cancel(System.Object,Avalonia.Interactivity.RoutedEventArgs)">
+            <summary>
+            Cancels the drag operation.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.FilesDropBehavior">
+            <summary>
+            Behavior that handles file drop operations.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.FilesDropBehavior.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactions.DragAndDrop.FilesDropBehavior"/> class.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.FilesDropBehavior.FilesDropHandler">
+            <summary>
+            Internal handler used to validate and execute file drop operations.
+            </summary>
+            <param name="execute">Callback invoked when files are successfully dropped.</param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.FilesDropBehavior.FilesDropHandler.#ctor(System.Action{System.Object})">
+            <summary>
+            Internal handler used to validate and execute file drop operations.
+            </summary>
+            <param name="execute">Callback invoked when files are successfully dropped.</param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.FilesDropBehavior.FilesDropHandler.Validate(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.FilesDropBehavior.FilesDropHandler.Execute(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.IDragHandler">
+            <summary>
+            Provides callbacks for drag operations.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.IDragHandler.BeforeDragDrop(System.Object,Avalonia.Input.PointerEventArgs,System.Object)">
+            <summary>
+            Called before the drag operation begins.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="context"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.IDragHandler.AfterDragDrop(System.Object,Avalonia.Input.PointerEventArgs,System.Object)">
+            <summary>
+            Called after the drag operation completes.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="context"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.IDropHandler">
+            <summary>
+            Defines callbacks for handling drag-and-drop operations.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.IDropHandler.Enter(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object)">
+            <summary>
+            Called when a drag enters the target.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.IDropHandler.Over(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object)">
+            <summary>
+            Called repeatedly as the drag moves over the target.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.IDropHandler.Drop(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object)">
+            <summary>
+            Called when the drag is dropped on the target.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.IDropHandler.Leave(System.Object,Avalonia.Interactivity.RoutedEventArgs)">
+            <summary>
+            Called when the drag leaves the target.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.IDropHandler.Validate(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object,System.Object)">
+            <summary>
+            Validates whether the drag can be executed.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+            <param name="state"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.IDropHandler.Execute(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object,System.Object)">
+            <summary>
+            Executes the drop logic.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="sourceContext"></param>
+            <param name="targetContext"></param>
+            <param name="state"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.IDropHandler.Cancel(System.Object,Avalonia.Interactivity.RoutedEventArgs)">
+            <summary>
+            Cancels the drag operation.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.TextDropBehavior">
+            <summary>
+            Behavior that handles text drop operations.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.TextDropBehavior.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Avalonia.Xaml.Interactions.DragAndDrop.TextDropBehavior"/> class.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.TextDropBehavior.TextDropHandler">
+            <summary>
+            Internal handler used to validate and execute text drop operations.
+            </summary>
+            <param name="execute">Callback invoked when text is successfully dropped.</param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.TextDropBehavior.TextDropHandler.#ctor(System.Action{System.Object})">
+            <summary>
+            Internal handler used to validate and execute text drop operations.
+            </summary>
+            <param name="execute">Callback invoked when text is successfully dropped.</param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.TextDropBehavior.TextDropHandler.Validate(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.TextDropBehavior.TextDropHandler.Execute(System.Object,Avalonia.Input.DragEventArgs,System.Object,System.Object,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehavior">
+            <summary>
+            Behavior that initiates a drag operation for a specific data type.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehavior.HandlerProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehavior.Handler"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehavior.Handler">
+            <summary>
+            Gets or sets the handler that receives drag notifications.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehavior.OnBeforeDragDrop(System.Object,Avalonia.Input.PointerEventArgs,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehavior.OnAfterDragDrop(System.Object,Avalonia.Input.PointerEventArgs,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehaviorBase">
+            <summary>
+            Behavior base class that initiates a drag operation for a specific data type.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehaviorBase.DataTypeProperty">
+            <summary>
+            Identifies the <see cref="P:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehaviorBase.DataType"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehaviorBase.DataType">
+            <summary>
+            Gets or sets the data type allowed for dragging.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehaviorBase.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehaviorBase.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehaviorBase.OnBeforeDragDrop(System.Object,Avalonia.Input.PointerEventArgs,System.Object)">
+            <summary>
+            Called before the drag operation begins.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="context"></param>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.DragAndDrop.TypedDragBehaviorBase.OnAfterDragDrop(System.Object,Avalonia.Input.PointerEventArgs,System.Object)">
+            <summary>
+            Called after the drag operation completes.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+            <param name="context"></param>
+        </member>
+    </members>
+</doc>

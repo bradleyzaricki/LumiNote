@@ -1,0 +1,281 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Avalonia.Xaml.Interactions.Responsive</name>
+    </assembly>
+    <members>
+        <member name="T:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior">
+            <summary>
+            Observes <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> control or <see cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.SourceControl"/> control <see cref="P:Avalonia.Visual.Bounds"/> property changes and if triggered sets or removes style classes when conditions from <see cref="T:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter"/> are met.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.SourceControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.SourceControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.SettersProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.Setters"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.SourceControl">
+            <summary>
+            Gets or sets the the source control that <see cref="F:Avalonia.Visual.BoundsProperty"/> property are observed from, if not set <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> is used. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.TargetControl">
+            <summary>
+            Gets or sets the target control that class name that should be added or removed when triggered, if not set <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> is used or <see cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.TargetControl"/> from <see cref="T:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter"/>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.Setters">
+            <summary>
+            Gets adaptive class setters collection. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.OnAttachedToVisualTree">
+            <inheritdoc/>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.OnDetachedFromVisualTree">
+            <inheritdoc/>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter">
+            <summary>
+            Conditional class setter used in <see cref="T:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior"/> behavior.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MinWidthProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MinWidth"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MinWidthOperatorProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MinWidthOperator"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MaxWidthProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MaxWidth"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MaxWidthOperatorProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MaxWidthOperator"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MinHeightProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MinHeight"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MinHeightOperatorProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MinHeightOperator"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MaxHeightProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MaxHeight"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MaxHeightOperatorProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MaxHeightOperator"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.ClassNameProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.ClassName"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.IsPseudoClassProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.IsPseudoClass"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MinWidth">
+            <summary>
+            Gets or sets minimum bounds width value used for property comparison. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MinWidthOperator">
+            <summary>
+            Gets or sets minimum bounds width value comparison operator. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MaxWidth">
+            <summary>
+            Gets or sets maximum width value used for property comparison. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MaxWidthOperator">
+            <summary>
+            Gets or sets maximum bounds width value comparison operator. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MinHeight">
+            <summary>
+            Gets or sets minimum bounds height value used for property comparison. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MinHeightOperator">
+            <summary>
+            Gets or sets minimum bounds height value comparison operator. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MaxHeight">
+            <summary>
+            Gets or sets maximum height value used for property comparison. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.MaxHeightOperator">
+            <summary>
+            Gets or sets maximum bounds height value comparison operator. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.ClassName">
+            <summary>
+            Gets or sets the class name that should be added or removed. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.IsPseudoClass">
+            <summary>
+            Gets or sets the flag whether ClassName is a PseudoClass. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveClassSetter.TargetControl">
+            <summary>
+            Gets or sets the target control that class name that should be added or removed when triggered, if not set <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> is used or <see cref="P:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior.TargetControl"/> from <see cref="T:Avalonia.Xaml.Interactions.Responsive.AdaptiveBehavior"/>. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior">
+            <summary>
+            Observes bounds changes of a control (or a specified source) and conditionally adds or removes classes
+            based on <see cref="T:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter"/> rules.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior.SourceControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior.SourceControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior.SettersProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior.Setters"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior.SourceControl">
+            <summary>
+            Gets or sets the control whose bounds are observed. If not set, <see cref="P:Avalonia.Xaml.Interactivity.StyledElementBehavior`1.AssociatedObject"/> is used. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior.TargetControl">
+            <summary>
+            Gets or sets the target control to add or remove classes from. If not set, the associated object or setter TargetControl is used. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior.Setters">
+            <summary>
+            Gets aspect ratio class setters collection. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior.OnAttachedToVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="M:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior.OnDetachedFromVisualTree">
+            <inheritdoc />
+        </member>
+        <member name="T:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter">
+            <summary>
+            Conditional class setter based on aspect ratio used in <see cref="T:Avalonia.Xaml.Interactions.Responsive.AspectRatioBehavior"/>.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.MinRatioProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.MinRatio"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.MinRatioOperatorProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.MinRatioOperator"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.MaxRatioProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.MaxRatio"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.MaxRatioOperatorProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.MaxRatioOperator"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.ClassNameProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.ClassName"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.IsPseudoClassProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.IsPseudoClass"/> avalonia property.
+            </summary>
+        </member>
+        <member name="F:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.TargetControlProperty">
+            <summary>
+            Identifies the <seealso cref="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.TargetControl"/> avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.MinRatio">
+            <summary>
+            Gets or sets minimum aspect ratio used for comparison. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.MinRatioOperator">
+            <summary>
+            Gets or sets minimum aspect ratio comparison operator. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.MaxRatio">
+            <summary>
+            Gets or sets maximum aspect ratio used for comparison. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.MaxRatioOperator">
+            <summary>
+            Gets or sets maximum aspect ratio comparison operator. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.ClassName">
+            <summary>
+            Gets or sets the class name that should be added or removed. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.IsPseudoClass">
+            <summary>
+            Gets or sets the flag whether <see cref="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.ClassName"/> is a pseudo class. This is an avalonia property.
+            </summary>
+        </member>
+        <member name="P:Avalonia.Xaml.Interactions.Responsive.AspectRatioClassSetter.TargetControl">
+            <summary>
+            Gets or sets the target control that class name should be added or removed from when triggered. This is an avalonia property.
+            </summary>
+        </member>
+    </members>
+</doc>

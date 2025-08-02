@@ -1,44 +1,34 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="LumikitApp.LumikitWindow"
-        Width="800" Height="450"
-        CanResize="False"
-        WindowStartupLocation="CenterScreen"
-        Background="#1e1e1e"
-        SystemDecorations="None">
+        Width="1000" Height="400"
+        Background="Black"
+        Title="Lumikit">
 
-	<Grid>
-		<!-- Top Buttons -->
-		<StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="12">
-			<Button Name="NextTrackButton" Content="Next Track" Width="100" Margin="0 0 0 10"/>
-			<Button Name="PauseTrackButton" Content="Pause Track" Width="100" Margin="0 0 0 10"/>
-			<Button Name="ResumeTrackButton" Content="Resume Track" Width="100"/>
+	<Grid RowDefinitions="Auto,Auto,*" Margin="10">
+
+		<!-- Playback Controls -->
+		<StackPanel Orientation="Horizontal" Spacing="10">
+			<Button Name="PauseTrackButton" Content="Pause" Width="80"/>
+			<Button Name="ResumeTrackButton" Content="Resume" Width="80"/>
+			<Button Name="NextTrackButton" Content="Next" Width="80"/>
+			<TextBlock Name="StopwatchLabel" Foreground="White" VerticalAlignment="Center" Margin="20,0,0,0"/>
 		</StackPanel>
 
-		<TextBlock Name="StopwatchLabel"
-				   Text="0"
-				   FontSize="12"
-				   Foreground="White"
-				   HorizontalAlignment="Left"
-				   VerticalAlignment="Bottom"
-				   Margin="10,0,0,110"/>
+		<!-- Track Info -->
+		<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,0">
+			<Image Name="AlbumArt" Width="60" Height="60"/>
+			<TextBlock Name="NowPlayingText" Foreground="White" FontSize="16" Margin="10,0,0,0" VerticalAlignment="Center"/>
+		</StackPanel>
 
+		<!-- Timeline + Color Palette -->
+		<DockPanel Grid.Row="2" Margin="0,10,0,0">
+			<ScrollViewer Name="TimelineScrollViewer" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled" DockPanel.Dock="Top" Height="100">
+				<Canvas Name="TimelineCanvas" Height="60"/>
+			</ScrollViewer>
 
-		<!-- Now Playing Label -->
-		<Border Background="#333" BorderBrush="#555" BorderThickness="1"
-				HorizontalAlignment="Stretch"
-				VerticalAlignment="Bottom"
-				Margin="0 0 150 0"
-				Padding="10">
-			<TextBlock Name="NowPlayingText"
-					   Text="Now playing..."
-					   FontSize="26"
-					   FontWeight="Bold"
-					   Foreground="White"
-					   TextWrapping="Wrap"/>
-		</Border>
+			<WrapPanel Name="ColorPalette" Orientation="Horizontal" Margin="0,10,0,0" DockPanel.Dock="Bottom" Height="40"/>
+		</DockPanel>
 
-		<!-- Album Art -->
-		<Image Name="AlbumArt" Width="150" Height="150" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0 0 0 0"/>
 	</Grid>
 </Window>

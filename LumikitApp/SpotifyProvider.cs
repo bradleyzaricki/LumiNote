@@ -79,10 +79,15 @@ namespace LumikitApp
             var device = devices.Devices.FirstOrDefault(d => d.IsActive) ?? devices.Devices.FirstOrDefault();
             return device;
         }
+        public bool isPlaying()
+        {
+            return _spotify.Player.GetCurrentPlayback().Result.IsPlaying;
+        }
         /// <summary>
         /// Attemps to resume playback, first a force resume for minimum latency, if that fails then it will check if a device is in playback and attempt from there
         /// </summary>
         /// <returns></returns>
+
         public async Task ResumePlayback()
         {
             try

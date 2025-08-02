@@ -33,20 +33,46 @@ namespace LumikitApp
 
         private Canvas _timelineCanvas;
         private ScrollViewer _scrollViewer;
-        private List<ResizableLightBlock> LightBlocks = new();
-        private double slotWidth = 6;
-
+        private List<LightBlock> LightBlocks = new();
+        private double slotWidth = 3;
+        private TextBlock _playheadCaret;
+        private double _bpm = 0;
+        private TextBox _bpmInput;
+        private TrackData _trackDataLocal;
         public LumikitWindow()
         {
             InitializeComponent();
             _timelineCanvas = this.FindControl<Canvas>("TimelineCanvas");
             _scrollViewer = this.FindControl<ScrollViewer>("TimelineScrollViewer");
+            _bpmInput = this.FindControl<TextBox>("BpmInput");
+            _bpmInput.Text = _bpm.ToString();
+            _bpmInput.LostFocus += (_, _) =>
+            {
+                if (double.TryParse(_bpmInput.Text, out double bpm) && bpm > 0)
+                {
+                    _bpm = bpm;
+                    DrawTimelineSlots();
+                }
+            };
             InitializeColorPalette();
             DrawTimelineSlots();
         }
 
         public void InitializeWindow(SpotifyProvider provider, SpotifyClient client)
         {
+            this.FindControl<Button>("SaveTrackDataButton").Click += async (_, _) =>
+            {
+                var track = await provider.GetCurrentlyPlayingTrack();
+                var trackData = new TrackData();
+                trackData._trackID = track.Id;
+                trackData._BPM = double.Parse(BpmInput.Text);
+                JsonDataHandler.SaveTrack(trackData);
+            };
+            this.FindControl<Button>("PauseTrackButton").Click += async (_, _) =>
+            {
+                StopPlaybackTimer();
+                await _spotifyProvider.PausePlayback();
+            };
             this.FindControl<Button>("PauseTrackButton").Click += async (_, _) =>
             {
                 StopPlaybackTimer();
@@ -76,7 +102,7 @@ namespace LumikitApp
                 progressAtStart = progress;
                 stopwatch.Restart();
                 StartPlaybackTimer();
-                UpdateTrackText(startNewLightShow: true);
+                UpdateCurrentTrack(startNewLightShow: true);
             };
             _spotifyProvider = provider;
             _spotify = client;
@@ -92,7 +118,16 @@ namespace LumikitApp
                 {
                     await Task.Delay(10);
                     playbackTimeInMs = progressAtStart + (int)stopwatch.ElapsedMilliseconds;
-                    Dispatcher.UIThread.Post(() => StopwatchLabel.Text = playbackTimeInMs.ToString());
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        StopwatchLabel.Text = playbackTimeInMs.ToString();
+
+                        double msPerSlot = 50;
+                        double slotIndex = playbackTimeInMs / msPerSlot;
+                        double caretX = slotIndex * slotWidth;
+
+                        Canvas.SetLeft(_playheadCaret, caretX - 4);
+                    });
                 }
             });
         }
@@ -105,17 +140,31 @@ namespace LumikitApp
             StopwatchLabel.Text = playbackTimeInMs.ToString();
         }
 
-        public async void UpdateTrackText(bool startNewLightShow)
+        public async void UpdateCurrentTrack(bool startNewLightShow)
         {
             var track = await _spotifyProvider.GetCurrentlyPlayingTrack();
             var trackText = this.FindControl<TextBlock>("NowPlayingText");
             trackText.Text = track.Name;
+
             var albumImages = track.Album.Images;
             if (albumImages != null && albumImages.Count > 0)
             {
                 var imageUrl = albumImages[1].Url;
                 await SetAlbumCover(imageUrl);
             }
+
+            _trackDataLocal = JsonDataHandler.GetTrack(track.Id);
+            if( _trackDataLocal != null )
+            {
+                if(_trackDataLocal._BPM != null) 
+                {
+                    _bpmInput.Text = _bpm.ToString();
+                    _bpm = _trackDataLocal._BPM;
+                    DrawTimelineSlots();
+                }
+
+            }
+
         }
 
         private async Task SetAlbumCover(string url)
@@ -163,7 +212,9 @@ namespace LumikitApp
 
         private void DrawTimelineSlots()
         {
-            for (int i = 0; i < 2000; i++)
+            _timelineCanvas.Children.Clear();
+            int totalSlots = 10000;
+            for (int i = 0; i < totalSlots; i++)
             {
                 var slot = new Border
                 {
@@ -176,8 +227,60 @@ namespace LumikitApp
                 Canvas.SetLeft(slot, i * slotWidth);
                 Canvas.SetTop(slot, 0);
                 _timelineCanvas.Children.Add(slot);
+
+                if (i % 40 == 0)
+                {
+                    double seconds = (i / 20);
+                    var label = new TextBlock
+                    {
+                        Text = $"{seconds:0.0}s",
+                        Foreground = Brushes.White,
+                        FontSize = 10
+                    };
+                    Canvas.SetLeft(label, i * slotWidth - 5);
+                    Canvas.SetTop(label, -15);
+                    _timelineCanvas.Children.Add(label);
+
+                    var caret = new TextBlock
+                    {
+                        Text = "^",
+                        Foreground = Brushes.White,
+                        FontSize = 10
+                    };
+                    Canvas.SetLeft(caret, i * slotWidth - 2);
+                    Canvas.SetTop(caret, 60);
+                    _timelineCanvas.Children.Add(caret);
+                }
             }
-            _timelineCanvas.Width = 2000 * slotWidth;
+
+            double secondsPerBeat = 60.0 / _bpm;
+            double modulesPerSecond = 20;
+            double modulesPerBeat = modulesPerSecond * secondsPerBeat;
+
+            for (double i = 0; i < totalSlots; i += modulesPerBeat)
+            {
+                var line = new Border
+                {
+                    Width = 1,
+                    Height = 60,
+                    Background = Brushes.Red
+                };
+                Canvas.SetLeft(line, i * slotWidth);
+                Canvas.SetTop(line, 0);
+                _timelineCanvas.Children.Add(line);
+            }
+
+            _timelineCanvas.Width = totalSlots * slotWidth;
+
+            _playheadCaret = new TextBlock
+            {
+                Text = "▼",
+                Foreground = Brushes.Red,
+                FontSize = 14
+            };
+            Canvas.SetLeft(_playheadCaret, 0);
+            Canvas.SetTop(_playheadCaret, 72);
+            _timelineCanvas.Children.Add(_playheadCaret);
         }
 
         private void OnCanvasDrop(object? sender, DragEventArgs e)
@@ -190,18 +293,35 @@ namespace LumikitApp
                     var pos = e.GetPosition(_timelineCanvas);
                     double snappedX = Math.Round(pos.X / slotWidth) * slotWidth;
                     snappedX = Math.Max(0, Math.Min(snappedX, _timelineCanvas.Width - slotWidth));
+                    double maxWidth = Math.Min(slotWidth * 50, _timelineCanvas.Width - snappedX);
+                    double finalWidth = maxWidth;
 
-                    foreach (var existing in LightBlocks)
+                    while (finalWidth >= slotWidth)
                     {
-                        double left = Canvas.GetLeft(existing.Container);
-                        double width = existing.Container.Width;
-                        if (snappedX < left + width && snappedX + slotWidth > left)
+                        bool collision = false;
+                        foreach (var existing in LightBlocks)
                         {
-                            return;
+                            double left = Canvas.GetLeft(existing.Container);
+                            double width = existing.Container.Width;
+                            if (snappedX < left + width && snappedX + finalWidth > left)
+                            {
+                                collision = true;
+                                break;
+                            }
                         }
+
+                        if (!collision)
+                            break;
+
+                        finalWidth -= slotWidth;
                     }
 
-                    var block = new ResizableLightBlock(color, LightBlocks, _scrollViewer, slotWidth);
+                    if (finalWidth < slotWidth)
+                        return;
+
+                    var block = new LightBlock(color, LightBlocks, _scrollViewer, slotWidth);
+                    block.Container.Width = finalWidth;
+
                     Canvas.SetLeft(block.Container, snappedX);
                     Canvas.SetTop(block.Container, 0);
                     _timelineCanvas.Children.Add(block.Container);
@@ -215,153 +335,5 @@ namespace LumikitApp
 
 
 
-namespace LumikitApp
-{
-    public class ResizableLightBlock
-    {
-        public Border Container { get; }
-        private Point dragStartCanvas;
-        private double originalLeft;
-        private double originalWidth;
-        private bool isResizingLeft;
-        private bool isResizingRight;
-        private bool isMoving;
-        private List<ResizableLightBlock> _siblings;
-        private ScrollViewer _scrollViewer;
-        private double _slotWidth;
 
-        public ResizableLightBlock(Color color, List<ResizableLightBlock> siblings, ScrollViewer scrollViewer, double slotWidth)
-        {
-            _siblings = siblings;
-            _scrollViewer = scrollViewer;
-            _slotWidth = slotWidth;
-            Container = new Border
-            {
-                Width = slotWidth,
-                Height = 60,
-                Background = new SolidColorBrush(color),
-                BorderBrush = Brushes.White,
-                BorderThickness = new Thickness(0.01f)
-            };
-
-            var grid = new Grid();
-            var leftHandle = new Border
-            {
-                Width = 0.05,
-                Background = Brushes.White,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Cursor = new Avalonia.Input. Cursor(StandardCursorType.SizeWestEast)
-            };
-            var rightHandle = new Border
-            {
-                Width = 0.05,
-                Background = Brushes.White,
-                HorizontalAlignment = HorizontalAlignment.Right,
-                Cursor = new Avalonia.Input.Cursor(StandardCursorType.SizeWestEast)
-            };
-            grid.Children.Add(leftHandle);
-            grid.Children.Add(rightHandle);
-            Container.Child = grid;
-
-            Container.PointerPressed += OnPointerPressed;
-            Container.PointerMoved += OnPointerMoved;
-            Container.PointerReleased += OnPointerReleased;
-        }
-
-        private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
-        {
-            var canvas = (Canvas?)Container.Parent;
-            if (canvas == null) return;
-
-            dragStartCanvas = e.GetPosition(canvas);
-            originalLeft = Canvas.GetLeft(Container);
-            originalWidth = Container.Width;
-
-            var local = e.GetPosition(Container);
-            isResizingLeft = local.X < 10;
-            isResizingRight = local.X > Container.Width - 10;
-            isMoving = !isResizingLeft && !isResizingRight;
-        }
-
-        private bool Collides(double newLeft, double width)
-        {
-            foreach (var block in _siblings)
-            {
-                if (block.Container == Container) continue;
-                double left = Canvas.GetLeft(block.Container);
-                double right = left + block.Container.Width;
-                double thisRight = newLeft + width;
-                if (newLeft < right && thisRight > left)
-                    return true;
-            }
-            return false;
-        }
-
-        private void OnPointerMoved(object? sender, PointerEventArgs e)
-        {
-            var canvas = (Canvas?)Container.Parent;
-            if (canvas == null || !e.GetCurrentPoint(Container).Properties.IsLeftButtonPressed) return;
-
-            var current = e.GetPosition(canvas);
-            double canvasWidth = canvas.Bounds.Width;
-
-            void ScrollIfNeeded(double edge)
-            {
-                double scrollOffset = _scrollViewer.Offset.X;
-                double viewportWidth = _scrollViewer.Viewport.Width;
-                if (edge > scrollOffset + viewportWidth - 30)
-                {
-                    _scrollViewer.Offset = new Vector(scrollOffset + 15, 0);
-                }
-                else if (edge < scrollOffset + 30)
-                {
-                    _scrollViewer.Offset = new Vector(Math.Max(scrollOffset - 15, 0), 0);
-                }
-            }
-
-            if (isResizingLeft)
-            {
-                double newLeft = originalLeft + (current.X - dragStartCanvas.X);
-                double snappedLeft = Math.Round(newLeft / _slotWidth) * _slotWidth;
-                double delta = originalLeft - snappedLeft;
-                double newWidth = originalWidth + delta;
-
-                if (newWidth >= _slotWidth && snappedLeft >= 0 && !Collides(snappedLeft, newWidth))
-                {
-                    Canvas.SetLeft(Container, snappedLeft);
-                    Container.Width = newWidth;
-                    ScrollIfNeeded(snappedLeft);
-                }
-            }
-            else if (isResizingRight)
-            {
-                double newWidth = originalWidth + (current.X - dragStartCanvas.X);
-                double snappedWidth = Math.Round(newWidth / _slotWidth) * _slotWidth;
-                double rightEdge = originalLeft + snappedWidth;
-                if (snappedWidth >= _slotWidth && rightEdge <= canvasWidth && !Collides(originalLeft, snappedWidth))
-                {
-                    Container.Width = snappedWidth;
-                    ScrollIfNeeded(rightEdge);
-                }
-            }
-            else if (isMoving)
-            {
-                double newLeft = originalLeft + (current.X - dragStartCanvas.X);
-                double snappedLeft = Math.Round(newLeft / _slotWidth) * _slotWidth;
-                if (snappedLeft >= 0 && snappedLeft + Container.Width <= canvasWidth && !Collides(snappedLeft, Container.Width))
-                {
-                    Canvas.SetLeft(Container, snappedLeft);
-                    ScrollIfNeeded(snappedLeft + Container.Width);
-                }
-            }
-        }
-
-        private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
-        {
-            isResizingLeft = false;
-            isResizingRight = false;
-            isMoving = false;
-        }
-    }
-}
 

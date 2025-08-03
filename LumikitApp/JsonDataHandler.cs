@@ -15,7 +15,11 @@ namespace LumikitApp
     internal class JsonDataHandler
     {
         public static string filePath = "C:\\Users\\bzari\\source\\repos\\SpotifyInformationConsole\\LumikitApp\\TrackInfo.json";
-
+        /// <summary>
+        /// Gets the formatted trackData class from json data
+        /// </summary>
+        /// <param name="trackID"></param>
+        /// <returns></returns>
         public static TrackData GetTrack(string trackID)
         {
             var json = File.ReadAllText(filePath);
@@ -34,6 +38,10 @@ namespace LumikitApp
             }
             return null;
         }
+        /// <summary>
+        /// Saves track Name (todo), ID, BPM, and light settings (todo) to the local json file
+        /// </summary>
+        /// <param name="track"></param>
         public static void SaveTrack(TrackData track)
         {
             List<TrackData> tracks = new();

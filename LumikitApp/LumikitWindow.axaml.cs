@@ -139,7 +139,10 @@ namespace LumikitApp
             playbackTimeInMs = _spotifyProvider.GetPlaybackProgressMs();
             StopwatchLabel.Text = playbackTimeInMs.ToString();
         }
-
+        /// <summary>
+        /// Updates current track visual and playback settings
+        /// </summary>
+        /// <param name="startNewLightShow"></param>
         public async void UpdateCurrentTrack(bool startNewLightShow)
         {
             var track = await _spotifyProvider.GetCurrentlyPlayingTrack();
@@ -156,13 +159,9 @@ namespace LumikitApp
             _trackDataLocal = JsonDataHandler.GetTrack(track.Id);
             if( _trackDataLocal != null )
             {
-                if(_trackDataLocal._BPM != null) 
-                {
-                    _bpmInput.Text = _bpm.ToString();
-                    _bpm = _trackDataLocal._BPM;
-                    DrawTimelineSlots();
-                }
-
+                _bpm = _trackDataLocal._BPM;
+                _bpmInput.Text = _bpm.ToString();
+                DrawTimelineSlots();
             }
 
         }
@@ -183,7 +182,9 @@ namespace LumikitApp
                 Console.WriteLine("Failed to set album cover: " + ex.Message);
             }
         }
-
+        /// <summary>
+        /// Initialize the pallet of draggable RGB color assets
+        /// </summary>
         private void InitializeColorPalette()
         {
             var palette = this.FindControl<WrapPanel>("ColorPalette");
@@ -209,7 +210,9 @@ namespace LumikitApp
             DragDrop.SetAllowDrop(_timelineCanvas, true);
             _timelineCanvas.AddHandler(DragDrop.DropEvent, OnCanvasDrop, RoutingStrategies.Bubble);
         }
-
+        /// <summary>
+        /// Creates playback visualizer with BPM and Current playback indicators
+        /// </summary>
         private void DrawTimelineSlots()
         {
             _timelineCanvas.Children.Clear();
@@ -282,7 +285,11 @@ namespace LumikitApp
             Canvas.SetTop(_playheadCaret, 72);
             _timelineCanvas.Children.Add(_playheadCaret);
         }
-
+        /// <summary>
+        /// Handles color block being dropped into the playback
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnCanvasDrop(object? sender, DragEventArgs e)
         {
             if (e.Data.Contains("block-color"))

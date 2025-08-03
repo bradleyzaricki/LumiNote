@@ -1,151 +1,346 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Threading;
 using SpotifyAPI.Web;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace LumikitApp;
-
-public partial class LumikitWindow : Window
+namespace LumikitApp
 {
-    private SpotifyClient _spotify;
-    private SpotifyProvider _spotifyProvider;
-    private Stopwatch playbackTime = new Stopwatch();
-    private long playbackTimeElapsedBuffer = 0;
-    private long msDelay = 0;
-    public LumikitWindow()
+    public partial class LumikitWindow : Window
     {
-        InitializeComponent();
+        private SpotifyClient _spotify;
+        private SpotifyProvider _spotifyProvider;
+        private Stopwatch stopwatch = new Stopwatch();
+        private int progressAtStart = 0;
+        private bool playbackTimerRunning = false;
+        private int playbackTimeInMs;
 
-        // UpdateTrack();
-
-    }
-    public void InitializeWindow(SpotifyProvider provider, SpotifyClient client)
-    {
-
-        this.FindControl<Button>("PauseTrackButton").Click += async (_, _) =>
+        private readonly List<Color> BlockColors = new()
         {
-            PausePlaybackTimer();
-            await _spotifyProvider.PausePlayback();
-        };
-        this.FindControl<Button>("ResumeTrackButton").Click += async (_, _) =>
-        {
-            ResumePlaybackTimer();
-            await _spotifyProvider.ResumePlayback();
-
-        };
-        this.FindControl<Button>("NextTrackButton").Click += async (_, _) =>
-        {
-            await _spotifyProvider.SkipTrack();
-            UpdateTrackText(startNewLightShow: true);
-            StartPlaybackTimer();
-            FindLatency();
+            Colors.Red, Colors.Green, Colors.Blue, Colors.Yellow,
+            Colors.Cyan, Colors.Magenta, Colors.Orange, Colors.Purple,
+            Colors.Teal, Colors.Lime, Colors.Pink, Colors.Brown
         };
 
-        _spotifyProvider = provider;
-        _spotify = client;
-        return;
-    }
-    public async void StartPlaybackTimer()
-    {
-
-        _ = Task.Run(async () =>
+        private Canvas _timelineCanvas;
+        private ScrollViewer _scrollViewer;
+        private List<LightBlock> LightBlocks = new();
+        private double slotWidth = 3;
+        private TextBlock _playheadCaret;
+        private double _bpm = 0;
+        private TextBox _bpmInput;
+        private TrackData _trackDataLocal;
+        public LumikitWindow()
         {
-            while (true)
+            InitializeComponent();
+            _timelineCanvas = this.FindControl<Canvas>("TimelineCanvas");
+            _scrollViewer = this.FindControl<ScrollViewer>("TimelineScrollViewer");
+            _bpmInput = this.FindControl<TextBox>("BpmInput");
+            _bpmInput.Text = _bpm.ToString();
+            _bpmInput.LostFocus += (_, _) =>
             {
-                await Task.Delay(1);
-
-                var ms = playbackTime.ElapsedMilliseconds + playbackTimeElapsedBuffer;
-
-                Dispatcher.UIThread.Post(() =>
+                if (double.TryParse(_bpmInput.Text, out double bpm) && bpm > 0)
                 {
-                    StopwatchLabel.Text = (ms/1000).ToString();
-                });
+                    _bpm = bpm;
+                    DrawTimelineSlots();
+                }
+            };
+            InitializeColorPalette();
+            DrawTimelineSlots();
+        }
+
+        public void InitializeWindow(SpotifyProvider provider, SpotifyClient client)
+        {
+            this.FindControl<Button>("SaveTrackDataButton").Click += async (_, _) =>
+            {
+                var track = await provider.GetCurrentlyPlayingTrack();
+                var trackData = new TrackData();
+                trackData._trackID = track.Id;
+                trackData._BPM = double.Parse(BpmInput.Text);
+                JsonDataHandler.SaveTrack(trackData);
+            };
+            this.FindControl<Button>("PauseTrackButton").Click += async (_, _) =>
+            {
+                StopPlaybackTimer();
+                await _spotifyProvider.PausePlayback();
+            };
+            this.FindControl<Button>("PauseTrackButton").Click += async (_, _) =>
+            {
+                StopPlaybackTimer();
+                await _spotifyProvider.PausePlayback();
+            };
+            this.FindControl<Button>("ResumeTrackButton").Click += async (_, _) =>
+            {
+                StopPlaybackTimer();
+                var progressBefore = _spotifyProvider.GetPlaybackProgressMs();
+                await _spotifyProvider.ResumePlayback();
+                stopwatch.Restart();
+                progressAtStart = progressBefore;
+                StartPlaybackTimer();
+            };
+            this.FindControl<Button>("NextTrackButton").Click += async (_, _) =>
+            {
+                StopPlaybackTimer();
+                await _spotifyProvider.SkipTrack();
+                int progress = 0;
+                for (int i = 0; i < 50; i++)
+                {
+                    await Task.Delay(5);
+                    progress = _spotifyProvider.GetPlaybackProgressMs();
+                    if (progress > 0)
+                        break;
+                }
+                progressAtStart = progress;
+                stopwatch.Restart();
+                StartPlaybackTimer();
+                UpdateCurrentTrack(startNewLightShow: true);
+            };
+            _spotifyProvider = provider;
+            _spotify = client;
+        }
+
+        public void StartPlaybackTimer()
+        {
+            if (playbackTimerRunning) return;
+            playbackTimerRunning = true;
+            _ = Task.Run(async () =>
+            {
+                while (playbackTimerRunning)
+                {
+                    await Task.Delay(10);
+                    playbackTimeInMs = progressAtStart + (int)stopwatch.ElapsedMilliseconds;
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        StopwatchLabel.Text = playbackTimeInMs.ToString();
+
+                        double msPerSlot = 50;
+                        double slotIndex = playbackTimeInMs / msPerSlot;
+                        double caretX = slotIndex * slotWidth;
+
+                        Canvas.SetLeft(_playheadCaret, caretX - 4);
+                    });
+                }
+            });
+        }
+
+        public void StopPlaybackTimer()
+        {
+            playbackTimerRunning = false;
+            stopwatch.Stop();
+            playbackTimeInMs = _spotifyProvider.GetPlaybackProgressMs();
+            StopwatchLabel.Text = playbackTimeInMs.ToString();
+        }
+        /// <summary>
+        /// Updates current track visual and playback settings
+        /// </summary>
+        /// <param name="startNewLightShow"></param>
+        public async void UpdateCurrentTrack(bool startNewLightShow)
+        {
+            var track = await _spotifyProvider.GetCurrentlyPlayingTrack();
+            var trackText = this.FindControl<TextBlock>("NowPlayingText");
+            trackText.Text = track.Name;
+
+            var albumImages = track.Album.Images;
+            if (albumImages != null && albumImages.Count > 0)
+            {
+                var imageUrl = albumImages[1].Url;
+                await SetAlbumCover(imageUrl);
             }
-        });
-        
-    }
-    public async Task FindLatency()
-    {
-        await _spotifyProvider.PausePlayback();
-        await _spotifyProvider.SeekToPlaybackTime(0);
 
-        // Prime the stopwatch
-        playbackTime.Reset();
+            _trackDataLocal = JsonDataHandler.GetTrack(track.Id);
+            if( _trackDataLocal != null )
+            {
+                _bpm = _trackDataLocal._BPM;
+                _bpmInput.Text = _bpm.ToString();
+                DrawTimelineSlots();
+            }
 
-        var sw = Stopwatch.StartNew();
-        await _spotifyProvider.ResumePlayback();
-
-        int progress = 0;
-        for (int i = 0; i < 50; i++)
-        {
-            await Task.Delay(5);
-            progress = _spotifyProvider.GetPlaybackProgressMs();
-            if (progress > 0)
-                break;
         }
 
-        sw.Stop();
-
-        long localElapsed = sw.ElapsedMilliseconds;
-        long actualPlayback = progress;
-
-        msDelay = localElapsed - actualPlayback;
-        Debug.WriteLine($"Calculated latency: {msDelay}ms");
-
-        ResumePlaybackTimer();
-    }
-
-    public async void PausePlaybackTimer()
-    {
-        playbackTime.Stop();
-
-        playbackTimeElapsedBuffer = _spotifyProvider.GetPlaybackProgressMs() - playbackTime.ElapsedMilliseconds;
-    }
-    public async void ResumePlaybackTimer()
-    {
-        playbackTimeElapsedBuffer = _spotifyProvider.GetPlaybackProgressMs() - playbackTime.ElapsedMilliseconds;
-        await Task.Delay((int)msDelay);
-
-        playbackTime.Start();
-
-    }
-    public async void UpdateTrackText(bool startNewLightShow)
-    {
-
-        var track = await _spotifyProvider.GetCurrentlyPlayingTrack();
-        var trackText = this.FindControl<TextBlock>("NowPlayingText");
-        trackText.Text = track.Name;
-
-        var albumImages = track.Album.Images;
-        if (albumImages != null && albumImages.Count > 0)
+        private async Task SetAlbumCover(string url)
         {
-            var imageUrl = albumImages[1].Url;
-            Console.WriteLine("Album cover URL: " + imageUrl);
-            await SetAlbumCover(imageUrl);
+            try
+            {
+                using var client = new HttpClient();
+                var data = await client.GetByteArrayAsync(url);
+                using var stream = new MemoryStream(data);
+                var bitmap = new Avalonia.Media.Imaging.Bitmap(stream);
+                var imageControl = this.FindControl<Avalonia.Controls.Image>("AlbumArt");
+                imageControl.Source = bitmap;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to set album cover: " + ex.Message);
+            }
         }
-      
-    }
-    private async Task SetAlbumCover(string url)
-    {
-        try
+        /// <summary>
+        /// Initialize the pallet of draggable RGB color assets
+        /// </summary>
+        private void InitializeColorPalette()
         {
-            using var client = new HttpClient();
-            var data = await client.GetByteArrayAsync(url);
-
-            using var stream = new MemoryStream(data);
-            var bitmap = new Avalonia.Media.Imaging.Bitmap(stream); // ✅ disambiguate here
-
-            var imageControl = this.FindControl<Avalonia.Controls.Image>("AlbumArt");
-            imageControl.Source = bitmap;
+            var palette = this.FindControl<WrapPanel>("ColorPalette");
+            foreach (var color in BlockColors)
+            {
+                var swatch = new Border
+                {
+                    Width = 30,
+                    Height = 30,
+                    Background = new SolidColorBrush(color),
+                    CornerRadius = new CornerRadius(4),
+                    Margin = new Thickness(2),
+                    Cursor = new Avalonia.Input.Cursor(StandardCursorType.Hand)
+                };
+                swatch.PointerPressed += (_, e) =>
+                {
+                    var data = new DataObject();
+                    data.Set("block-color", color.ToString());
+                    DragDrop.DoDragDrop(e, data, DragDropEffects.Copy);
+                };
+                palette.Children.Add(swatch);
+            }
+            DragDrop.SetAllowDrop(_timelineCanvas, true);
+            _timelineCanvas.AddHandler(DragDrop.DropEvent, OnCanvasDrop, RoutingStrategies.Bubble);
         }
-        catch (Exception ex)
+        /// <summary>
+        /// Creates playback visualizer with BPM and Current playback indicators
+        /// </summary>
+        private void DrawTimelineSlots()
         {
-            Console.WriteLine("Failed to set album cover: " + ex.Message);
+            _timelineCanvas.Children.Clear();
+            int totalSlots = 10000;
+            for (int i = 0; i < totalSlots; i++)
+            {
+                var slot = new Border
+                {
+                    Width = slotWidth,
+                    Height = 60,
+                    Background = Brushes.Transparent,
+                    BorderBrush = Brushes.Gray,
+                    BorderThickness = new Thickness(0.5)
+                };
+                Canvas.SetLeft(slot, i * slotWidth);
+                Canvas.SetTop(slot, 0);
+                _timelineCanvas.Children.Add(slot);
+
+                if (i % 40 == 0)
+                {
+                    double seconds = (i / 20);
+                    var label = new TextBlock
+                    {
+                        Text = $"{seconds:0.0}s",
+                        Foreground = Brushes.White,
+                        FontSize = 10
+                    };
+                    Canvas.SetLeft(label, i * slotWidth - 5);
+                    Canvas.SetTop(label, -15);
+                    _timelineCanvas.Children.Add(label);
+
+                    var caret = new TextBlock
+                    {
+                        Text = "^",
+                        Foreground = Brushes.White,
+                        FontSize = 10
+                    };
+                    Canvas.SetLeft(caret, i * slotWidth - 2);
+                    Canvas.SetTop(caret, 60);
+                    _timelineCanvas.Children.Add(caret);
+                }
+            }
+
+            double secondsPerBeat = 60.0 / _bpm;
+            double modulesPerSecond = 20;
+            double modulesPerBeat = modulesPerSecond * secondsPerBeat;
+
+            for (double i = 0; i < totalSlots; i += modulesPerBeat)
+            {
+                var line = new Border
+                {
+                    Width = 1,
+                    Height = 60,
+                    Background = Brushes.Red
+                };
+                Canvas.SetLeft(line, i * slotWidth);
+                Canvas.SetTop(line, 0);
+                _timelineCanvas.Children.Add(line);
+            }
+
+            _timelineCanvas.Width = totalSlots * slotWidth;
+
+            _playheadCaret = new TextBlock
+            {
+                Text = "▼",
+                Foreground = Brushes.Red,
+                FontSize = 14
+            };
+            Canvas.SetLeft(_playheadCaret, 0);
+            Canvas.SetTop(_playheadCaret, 72);
+            _timelineCanvas.Children.Add(_playheadCaret);
+        }
+        /// <summary>
+        /// Handles color block being dropped into the playback
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnCanvasDrop(object? sender, DragEventArgs e)
+        {
+            if (e.Data.Contains("block-color"))
+            {
+                var colorString = e.Data.Get("block-color")?.ToString();
+                if (colorString != null && Color.TryParse(colorString, out var color))
+                {
+                    var pos = e.GetPosition(_timelineCanvas);
+                    double snappedX = Math.Round(pos.X / slotWidth) * slotWidth;
+                    snappedX = Math.Max(0, Math.Min(snappedX, _timelineCanvas.Width - slotWidth));
+                    double maxWidth = Math.Min(slotWidth * 50, _timelineCanvas.Width - snappedX);
+                    double finalWidth = maxWidth;
+
+                    while (finalWidth >= slotWidth)
+                    {
+                        bool collision = false;
+                        foreach (var existing in LightBlocks)
+                        {
+                            double left = Canvas.GetLeft(existing.Container);
+                            double width = existing.Container.Width;
+                            if (snappedX < left + width && snappedX + finalWidth > left)
+                            {
+                                collision = true;
+                                break;
+                            }
+                        }
+
+                        if (!collision)
+                            break;
+
+                        finalWidth -= slotWidth;
+                    }
+
+                    if (finalWidth < slotWidth)
+                        return;
+
+                    var block = new LightBlock(color, LightBlocks, _scrollViewer, slotWidth);
+                    block.Container.Width = finalWidth;
+
+                    Canvas.SetLeft(block.Container, snappedX);
+                    Canvas.SetTop(block.Container, 0);
+                    _timelineCanvas.Children.Add(block.Container);
+                    LightBlocks.Add(block);
+                }
+            }
         }
     }
-
 }
+
+
+
+
+
+

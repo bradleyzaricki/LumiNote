@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Diagnostics;
+using SpotifyAPI.Web;
 namespace LumikitApp
 {
     internal class JsonDataHandler
@@ -46,12 +47,15 @@ namespace LumikitApp
         {
             List<TrackData> tracks = new();
 
+
             // If file exists and is not empty, read existing tracks
             if (File.Exists(filePath) && new FileInfo(filePath).Length > 0)
             {
                 string existingJson = File.ReadAllText(filePath);
                 tracks = JsonSerializer.Deserialize<List<TrackData>>(existingJson) ?? new List<TrackData>();
             }
+            tracks.RemoveAll(t => t._trackID == track._trackID);
+            
 
             // Add the new track
             tracks.Add(track);

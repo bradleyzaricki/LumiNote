@@ -26,13 +26,17 @@
 
 		<!-- Timeline + Color Palette -->
 		<DockPanel Grid.Row="2" Margin="0,10,0,0">
-			<ScrollViewer Name="TimelineScrollViewer"
-                          HorizontalScrollBarVisibility="Visible"
-                          VerticalScrollBarVisibility="Disabled"
-                          DockPanel.Dock="Top"
-                          Height="100">
-				<Canvas Name="TimelineCanvas" Height="80"/>
-			</ScrollViewer>
+			<StackPanel DockPanel.Dock="Top">
+				<Border Name="TopColorBar" Height="5" Background="Gray"/>
+				<ScrollViewer Name="TimelineScrollViewer"
+							  HorizontalScrollBarVisibility="Visible"
+							  VerticalScrollBarVisibility="Disabled"
+							  Height="130">
+					<Canvas Name="TimelineCanvas" Height="80"/>
+				</ScrollViewer>
+				<Border Name="BottomColorBar" Height="5" Background="Gray"/>
+			</StackPanel>
+
 
 			<WrapPanel Name="ColorPalette" Orientation="Horizontal"
                        Margin="0,10,0,0"

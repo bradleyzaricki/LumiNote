@@ -94,21 +94,37 @@ namespace LumikitApp
             {
                 await _spotify.Player.ResumePlayback(); // Fast path
             }
-            catch (APIException)
+            catch (APIException ex)
             {
-                var device = GetCurrentDevices().Result;
+                Debug.WriteLine("ResumePlayback failed: " + ex.Message);
 
-                if (device == null)
+                if (ex.Response?.StatusCode == HttpStatusCode.Forbidden ||
+                    ex.Response?.StatusCode == HttpStatusCode.NotFound)
                 {
-                    Console.WriteLine("No available Spotify devices found.");
-                    return;
+                    var device = await GetCurrentDevices(); // no .Result
+
+                    if (device == null)
+                    {
+                        Debug.WriteLine("No available Spotify devices found.");
+                        return;
+                    }
+
+                    try
+                    {
+                        await _spotify.Player.TransferPlayback(
+                            new PlayerTransferPlaybackRequest(new List<string> { device.Id }) { Play = true }
+                        );
+
+                        await Task.Delay(300); // Spotify needs a second
+
+                        await _spotify.Player.ResumePlayback(); // Retry
+                        Debug.WriteLine("ResumePlayback retried after transfer.");
+                    }
+                    catch (APIException ex2)
+                    {
+                        Debug.WriteLine("Retry after transfer failed: " + ex2.Message);
+                    }
                 }
-
-                // This actually starts playback
-                await _spotify.Player.TransferPlayback(
-                    new PlayerTransferPlaybackRequest(new List<string> { device.Id }) { Play = true }
-                );
-
             }
         }
         public async Task<FullTrack> GetCurrentlyPlayingTrack()
@@ -141,31 +157,38 @@ namespace LumikitApp
         {
             try
             {
-                await _spotify.Player.PausePlayback(); // Try fast pause
+                await _spotify.Player.PausePlayback();
             }
-            catch (APIException)
+            catch (APIException ex)
             {
-                var device = GetCurrentDevices().Result;
+                Debug.WriteLine("PausePlayback failed: " + ex.Message);
 
-                if (device == null)
+                // If the failure is due to no active device or playback context, recover
+                if ((int?)ex.Response?.StatusCode == 403 || (int?)ex.Response?.StatusCode == 404)
                 {
-                    Debug.WriteLine("No available Spotify devices found.");
-                    return;
-                }
+                    var device = await GetCurrentDevices(); // no .Result
 
-                await _spotify.Player.TransferPlayback(
-                    new PlayerTransferPlaybackRequest(new List<string> { device.Id }) { Play = false } // force playback
-                );
+                    if (device == null)
+                    {
+                        Debug.WriteLine("No available Spotify devices found.");
+                        return;
+                    }
 
-                await Task.Delay(300); // allow Spotify to catch up
+                    try
+                    {
+                        await _spotify.Player.TransferPlayback(
+                            new PlayerTransferPlaybackRequest(new List<string> { device.Id }) { Play = false }
+                        );
 
-                try
-                {
-                    await _spotify.Player.PausePlayback();
-                }
-                catch (APIException ex2)
-                {
-                    Debug.WriteLine("Pause failed after transfer: " + ex2.Message);
+                        await Task.Delay(300); // let Spotify settle
+
+                        await _spotify.Player.PausePlayback(); // Retry pause
+                        Debug.WriteLine("PausePlayback retried after transfer.");
+                    }
+                    catch (APIException ex2)
+                    {
+                        Debug.WriteLine("Retry after transfer failed: " + ex2.Message);
+                    }
                 }
             }
         }
@@ -176,8 +199,9 @@ namespace LumikitApp
                 await _spotify.Player.SeekTo(new PlayerSeekToRequest(ms));
                 return;
             }
-            catch (APIException)
+            catch (APIException ex)
             {
+
                 var device = GetCurrentDevices().Result;
 
                 if (device == null)

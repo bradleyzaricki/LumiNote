@@ -16,4 +16,7 @@ TODO:
 -add more lighting effects and parameters (fade in, fade out, start light & end light, strobe mode)
 
 Screenshots:
-<img width="802" height="482" alt="image" src="https://github.com/user-attachments/assets/7ad015fc-4d69-461e-a52c-2363a653c074" />
+<img width="802" height="482" alt="image" src="https://github.com/user-attachments/assets/0da375f2-340d-4fa6-b40e-905e1f4ab324" />
+
+<img width="802" height="482" alt="image" src="https://github.com/user-attachments/assets/84f3e303-4f0c-4e3d-914c-feffefa87585" />
+<img width="802" height="482" alt="image" src="https://github.com/user-attachments/assets/1f4b1086-03e9-4852-928d-6597f7f203d6" />

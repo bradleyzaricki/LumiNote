@@ -1,4 +1,4 @@
-Lumikit is a C# software application that acts as a music player by utilising spotify web services.<br/>
+Melolux is a C# software application that acts as a music player by utilising spotify web services.<br/>
 Ontop of being a music player, the user can drag and drop light configurations to play alongside music tracks.<br/>
 These light configurations will be parsed and sent to an ESP32 microcontroller which will parse that data into<br/>
   live light sequences onto a WS2812 LED light strip (utilising the FastLED library)<br/>

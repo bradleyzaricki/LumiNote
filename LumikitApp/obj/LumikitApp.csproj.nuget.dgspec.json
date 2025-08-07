@@ -70,6 +70,10 @@
               "target": "Package",
               "version": "[11.3.2, )"
             },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[9.0.8, )"
+            },
             "SpotifyAPI.Web": {
               "target": "Package",
               "version": "[7.2.1, )"

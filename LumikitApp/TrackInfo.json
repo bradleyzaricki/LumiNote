@@ -379,6 +379,31 @@
         "X": 1326,
         "Width": 192,
         "Color": "Teal"
+      },
+      {
+        "X": 378,
+        "Width": 96,
+        "Color": "Aqua"
+      },
+      {
+        "X": 285,
+        "Width": 93,
+        "Color": "Lime"
+      },
+      {
+        "X": 189,
+        "Width": 96,
+        "Color": "Teal"
+      },
+      {
+        "X": 96,
+        "Width": 93,
+        "Color": "Fuchsia"
+      },
+      {
+        "X": -0,
+        "Width": 90,
+        "Color": "Orange"
       }
     ]
   }

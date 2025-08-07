@@ -19,6 +19,5 @@ namespace LumikitApp
                 .WithInterFont()
                 .LogToTrace();
     }
-
 }
 

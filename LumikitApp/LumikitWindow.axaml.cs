@@ -19,7 +19,6 @@ namespace LumikitApp
 {
     public partial class LumikitWindow : Window
     {
-        private SpotifyClient _spotify;
         //Provider class for all api requests
         private SpotifyProvider _spotifyProvider;
         //stopwatch used for playback time
@@ -74,7 +73,7 @@ namespace LumikitApp
             DrawTimelineSlots();
         }
 
-        public void InitializeWindow(SpotifyProvider provider, SpotifyClient client)
+        public void InitializeWindow(SpotifyProvider provider)
         {
             //Saves current trackdata into local json file
             this.FindControl<Button>("""SaveTrackDataButton""").Click += async (_, _) =>
@@ -100,7 +99,7 @@ namespace LumikitApp
                     await _spotifyProvider.PausePlayback();
                     Task.Delay(200);
                     Debug.WriteLine("Pause successful");
-                    _playbackTimeInMs = _spotifyProvider.GetPlaybackProgressMs();
+                    _playbackTimeInMs = await _spotifyProvider.GetPlaybackProgressMs();
 
 
                 }
@@ -115,7 +114,7 @@ namespace LumikitApp
             {
                 try
                 {
-                    if (!_spotifyProvider.isPlaying())
+                    if (! await _spotifyProvider.IsPlaying())
                     {
 
                         await _spotifyProvider.ResumePlayback();
@@ -137,7 +136,7 @@ namespace LumikitApp
                 for (int i = 0; i < 50; i++)
                 {
                     await Task.Delay(5);
-                    progress = _spotifyProvider.GetPlaybackProgressMs();
+                    progress = await _spotifyProvider.GetPlaybackProgressMs();
                     if (progress > 0)
                         break;
                 }
@@ -146,7 +145,6 @@ namespace LumikitApp
                 UpdateCurrentTrack(startNewLightShow: true);
             };
             _spotifyProvider = provider;
-            _spotify = client;
         }
 
         public void StartPlaybackTimer(int progress)
@@ -206,11 +204,11 @@ namespace LumikitApp
             });
         }
 
-        public void StopPlaybackTimer()
+        public async void StopPlaybackTimer()
         {
             _playbackTimerRunning = false;
             _syncStopwatch.Stop();
-            _playbackTimeInMs = _spotifyProvider.GetPlaybackProgressMs();
+            _playbackTimeInMs = await _spotifyProvider.GetPlaybackProgressMs();
             StopwatchLabel.Text = _playbackTimeInMs.ToString();
         }
         /// <summary>

@@ -67,7 +67,6 @@ C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\obj\Debug\net8.
 C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\obj\Debug\net8.0\LumikitApp.AssemblyInfo.cs
 C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\obj\Debug\net8.0\LumikitApp.csproj.CoreCompileInputs.cache
 C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\obj\Debug\net8.0\LumikitApp.sourcelink.json
-C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\obj\Debug\net8.0\LumikitApp.csproj.CopyComplete
 C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\obj\Debug\net8.0\LumikitApp.dll
 C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\obj\Debug\net8.0\refint\LumikitApp.dll
 C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\obj\Debug\net8.0\LumikitApp.pdb
@@ -75,3 +74,6 @@ C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\obj\Debug\net8.
 C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\obj\Debug\net8.0\ref\LumikitApp.dll
 C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\bin\Debug\net8.0\Newtonsoft.Json.dll
 C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\bin\Debug\net8.0\SpotifyAPI.Web.dll
+C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\obj\Debug\net8.0\LumikitApp.csproj.Up2Date

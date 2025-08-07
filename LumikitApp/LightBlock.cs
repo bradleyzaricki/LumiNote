@@ -72,11 +72,11 @@ namespace LumikitApp
             originalWidth = Container.Width;
 
             var local = e.GetPosition(Container);
-            isResizingLeft = local.X < 10;
-            isResizingRight = local.X > Container.Width - 10;
+            isResizingLeft = (local.X < 20);
+            isResizingRight = (local.X > Container.Width - 20);
             isMoving = !isResizingLeft && !isResizingRight;
         }
-
+        //returns true if bordering lightblocks limit space on playback
         private bool Collides(double newLeft, double width)
         {
             foreach (var block in _siblings)

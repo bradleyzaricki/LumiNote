@@ -21,8 +21,8 @@ namespace LumikitApp
     }
     public class LightBlockData
     {
-        public double X { get; set; }          // X position on timeline
-        public double Width { get; set; }      // Width in timeline units
-        public string Color { get; set; }   // Save color as hex
+        public double X { get; set; }//position on timeline
+        public double Width { get; set; }//Width of block on timeline
+        public string Color { get; set; }//Saved color
     }
 }

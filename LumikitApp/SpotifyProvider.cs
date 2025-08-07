@@ -67,6 +67,7 @@ namespace LumikitApp
 
             var config = SpotifyClientConfig.CreateDefault().WithToken(tokenResponse.AccessToken);
             _spotify = new SpotifyClient(config);
+
             return _spotify;
         }
         /// <summary>

@@ -18,6 +18,8 @@ build_property.RootNamespace = LumikitApp
 build_property.ProjectDir = C:\Users\bzari\source\repos\SpotifyInformationConsole\LumikitApp\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
 
 [C:/Users/bzari/source/repos/SpotifyInformationConsole/LumikitApp/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

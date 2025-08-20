@@ -15,7 +15,7 @@ namespace LumikitApp
 {
     internal class JsonDataHandler
     {
-        public static string filePath = "C:\\Users\\bzari\\source\\repos\\SpotifyInformationConsole\\LumikitApp\\TrackInfo.json";
+        public static string filePath = "/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/TrackInfo.json";//"C:\\Users\\bzari\\source\\repos\\SpotifyInformationConsole\\LumikitApp\\TrackInfo.json";
         /// <summary>
         /// Gets the formatted trackData class from json data
         /// </summary>

@@ -78,7 +78,7 @@ namespace LumikitApp
             //Saves current trackdata into local json file
             this.FindControl<Button>("""SaveTrackDataButton""").Click += async (_, _) =>
             {
-                var track = await provider.GetCurrentlyPlayingTrack();
+                var track = await provider.GetCurrentlyPlayingTrackAsync();
                 var trackData = new TrackData();
                 trackData._trackID = track.Id;
                 trackData._BPM = double.Parse(BpmInput.Text);
@@ -96,10 +96,10 @@ namespace LumikitApp
                 {
                     Debug.WriteLine("Pause button clicked");
                     StopPlaybackTimer();
-                    await _spotifyProvider.PausePlayback();
+                    await _spotifyProvider.PausePlaybackAsync();
                     Task.Delay(200);
                     Debug.WriteLine("Pause successful");
-                    _playbackTimeInMs = await _spotifyProvider.GetPlaybackProgressMs();
+                    _playbackTimeInMs = await _spotifyProvider.GetPlaybackProgressMsAsync();
 
 
                 }
@@ -114,10 +114,10 @@ namespace LumikitApp
             {
                 try
                 {
-                    if (! await _spotifyProvider.IsPlaying())
+                    if (! await _spotifyProvider.IsPlayingAsync())
                     {
 
-                        await _spotifyProvider.ResumePlayback();
+                        await _spotifyProvider.ResumePlaybackAsync();
                         _syncStopwatch.Restart();
                         StartPlaybackTimer(_playbackTimeInMs);
                     }
@@ -136,7 +136,7 @@ namespace LumikitApp
                 for (int i = 0; i < 50; i++)
                 {
                     await Task.Delay(5);
-                    progress = await _spotifyProvider.GetPlaybackProgressMs();
+                    progress = await _spotifyProvider.GetPlaybackProgressMsAsync();
                     if (progress > 0)
                         break;
                 }
@@ -146,7 +146,10 @@ namespace LumikitApp
             };
             _spotifyProvider = provider;
         }
-
+        
+        /// <summary>
+        /// Start track playback, synced to the integer delay param <param name="progress"></param>
+        /// </summary>
         public void StartPlaybackTimer(int progress)
         {
             if (_playbackTimerRunning) return;
@@ -208,7 +211,7 @@ namespace LumikitApp
         {
             _playbackTimerRunning = false;
             _syncStopwatch.Stop();
-            _playbackTimeInMs = await _spotifyProvider.GetPlaybackProgressMs();
+            _playbackTimeInMs = await _spotifyProvider.GetPlaybackProgressMsAsync();
             StopwatchLabel.Text = _playbackTimeInMs.ToString();
         }
         /// <summary>
@@ -217,40 +220,49 @@ namespace LumikitApp
         /// <param name="startNewLightShow"></param>
         public async void UpdateCurrentTrack(bool startNewLightShow)
         {
-
-            var track = await _spotifyProvider.GetCurrentlyPlayingTrack();
+            
+            var track = await _spotifyProvider.GetCurrentlyPlayingTrackAsync();
+            
+            //title text
             var trackText = this.FindControl<TextBlock>("NowPlayingText");
             trackText.Text = track.Name;
 
+            //album cover
             var albumImages = track.Album.Images;
             if (albumImages != null && albumImages.Count > 0)
             {
                 var imageUrl = albumImages[1].Url;
                 await SetAlbumCover(imageUrl);
             }
+            
+            //clear and dereference lighting modules
             foreach (var block in LightBlocks)
             {
                 _timelineCanvas.Children.Remove(block.Container);
             }
             LightBlocks.Clear();
+            
+            //gather trackdata class from local json data
             _trackDataLocal = JsonDataHandler.GetTrack(track.Id);
-            if( _trackDataLocal != null )
+            if(_trackDataLocal != null)
             {
+                //bpm locals and visuals
                 _bpm = _trackDataLocal._BPM;
                 _bpmInput.Text = _bpm.ToString();
                 DrawTimelineSlots();
-
+                
+                
                 foreach (var data in _trackDataLocal._lightBlocks)
                 {
                     if (!Color.TryParse(data.Color, out var color)) continue;
-
                     var block = new LightBlock(color, LightBlocks, _scrollViewer, slotWidth);
                     block.Container.Width = data.Width;
                     Canvas.SetLeft(block.Container, data.X);
                     Canvas.SetTop(block.Container, 0);
                     _timelineCanvas.Children.Add(block.Container);
                     LightBlocks.Add(block);
-
+                    
+                    //Remove light block
                     block.Container.PointerPressed += (_, e) =>
                     {
                         if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
@@ -264,14 +276,18 @@ namespace LumikitApp
             }
             else
             {
+                //Default valuess
                 _bpm = 0;
                 _bpmInput.Text = "0";
                 DrawTimelineSlots();
-
             }
 
         }
-
+        
+        /// <summary>
+        /// Retrieve the album cover and set to apps image field
+        /// </summary>
+        /// <param name="url"></param>
         private async Task SetAlbumCover(string url)
         {
             try
@@ -333,7 +349,6 @@ namespace LumikitApp
         /// <summary>
         /// Creates playback visualizer with BPM and Current playback indicators
         /// </summary>
-        /// 
         private void DrawTimelineSlots()
         {
             _timelineCanvas.Children.Clear();
@@ -424,7 +439,8 @@ namespace LumikitApp
                     snappedX = Math.Max(0, Math.Min(snappedX, _timelineCanvas.Width - slotWidth));
                     double maxWidth = Math.Min(slotWidth * 50, _timelineCanvas.Width - snappedX);
                     double finalWidth = maxWidth;
-
+                    
+                    //Collision checking with other light block modules
                     while (finalWidth >= slotWidth)
                     {
                         bool collision = false;

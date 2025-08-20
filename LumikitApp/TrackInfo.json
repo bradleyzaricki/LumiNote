@@ -132,53 +132,6 @@
     ]
   },
   {
-    "_BPM": 76,
-    "_trackID": "3eekarcy7kvN4yt5ZFzltW",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 381,
-        "Width": 93,
-        "Color": "Purple"
-      },
-      {
-        "X": 567,
-        "Width": 96,
-        "Color": "Purple"
-      },
-      {
-        "X": 759,
-        "Width": 201,
-        "Color": "Red"
-      },
-      {
-        "X": 474,
-        "Width": 93,
-        "Color": "Fuchsia"
-      },
-      {
-        "X": 282,
-        "Width": 96,
-        "Color": "Fuchsia"
-      },
-      {
-        "X": 663,
-        "Width": 96,
-        "Color": "Fuchsia"
-      },
-      {
-        "X": 960,
-        "Width": 177,
-        "Color": "Orange"
-      },
-      {
-        "X": 1137,
-        "Width": 150,
-        "Color": "Purple"
-      }
-    ]
-  },
-  {
     "_BPM": 135,
     "_trackID": "0gWVilx5PbHEf0zrpp1TmQ",
     "_trackName": null,
@@ -199,33 +152,6 @@
         "X": 420,
         "Width": 225,
         "Color": "Red"
-      }
-    ]
-  },
-  {
-    "_BPM": 77,
-    "_trackID": "2ygMBIctKIAfbEBcT9065L",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 420,
-        "Width": 189,
-        "Color": "Red"
-      },
-      {
-        "X": 795,
-        "Width": 150,
-        "Color": "Red"
-      },
-      {
-        "X": 609,
-        "Width": 48,
-        "Color": "Brown"
-      },
-      {
-        "X": 702,
-        "Width": 48,
-        "Color": "Brown"
       }
     ]
   },
@@ -330,6 +256,183 @@
         "X": 1476,
         "Width": 135,
         "Color": "Blue"
+      }
+    ]
+  },
+  {
+    "_BPM": 135,
+    "_trackID": "1BpKJw4RZxaFB88NE5uxXf",
+    "_trackName": null,
+    "_lightBlocks": [
+      {
+        "X": 852,
+        "Width": 15,
+        "Color": "Brown"
+      },
+      {
+        "X": 867,
+        "Width": 12,
+        "Color": "Pink"
+      },
+      {
+        "X": 879,
+        "Width": 150,
+        "Color": "Red"
+      }
+    ]
+  },
+  {
+    "_BPM": 198,
+    "_trackID": "6XITRM4V1hVSQXw62diAoj",
+    "_trackName": null,
+    "_lightBlocks": [
+      {
+        "X": 255,
+        "Width": 18,
+        "Color": "Orange"
+      },
+      {
+        "X": 273,
+        "Width": 150,
+        "Color": "Teal"
+      }
+    ]
+  },
+  {
+    "_BPM": 109,
+    "_trackID": "3KCNiDi9Pza6ZD8FggNoaw",
+    "_trackName": null,
+    "_lightBlocks": [
+      {
+        "X": 264,
+        "Width": 99,
+        "Color": "Aqua"
+      }
+    ]
+  },
+  {
+    "_BPM": 0,
+    "_trackID": "7LSpFCvRZZot2AlmkUzy9k",
+    "_trackName": null,
+    "_lightBlocks": [
+      {
+        "X": 1518,
+        "Width": 150,
+        "Color": "Purple"
+      }
+    ]
+  },
+  {
+    "_BPM": 38.5,
+    "_trackID": "2ygMBIctKIAfbEBcT9065L",
+    "_trackName": null,
+    "_lightBlocks": [
+      {
+        "X": 375,
+        "Width": 189,
+        "Color": "Red"
+      },
+      {
+        "X": 795,
+        "Width": 150,
+        "Color": "Red"
+      },
+      {
+        "X": 609,
+        "Width": 48,
+        "Color": "Brown"
+      },
+      {
+        "X": 702,
+        "Width": 48,
+        "Color": "Brown"
+      }
+    ]
+  },
+  {
+    "_BPM": 76,
+    "_trackID": "3eekarcy7kvN4yt5ZFzltW",
+    "_trackName": null,
+    "_lightBlocks": [
+      {
+        "X": 567,
+        "Width": 96,
+        "Color": "Purple"
+      },
+      {
+        "X": 759,
+        "Width": 186,
+        "Color": "Red"
+      },
+      {
+        "X": 474,
+        "Width": 93,
+        "Color": "Fuchsia"
+      },
+      {
+        "X": 663,
+        "Width": 96,
+        "Color": "Fuchsia"
+      },
+      {
+        "X": 945,
+        "Width": 192,
+        "Color": "Orange"
+      },
+      {
+        "X": 1137,
+        "Width": 189,
+        "Color": "Purple"
+      },
+      {
+        "X": 1704,
+        "Width": 192,
+        "Color": "Lime"
+      },
+      {
+        "X": 2085,
+        "Width": 189,
+        "Color": "Fuchsia"
+      },
+      {
+        "X": 2463,
+        "Width": 102,
+        "Color": "Purple"
+      },
+      {
+        "X": 1326,
+        "Width": 192,
+        "Color": "Teal"
+      },
+      {
+        "X": 378,
+        "Width": 96,
+        "Color": "Aqua"
+      },
+      {
+        "X": 285,
+        "Width": 93,
+        "Color": "Lime"
+      },
+      {
+        "X": 189,
+        "Width": 96,
+        "Color": "Teal"
+      },
+      {
+        "X": 96,
+        "Width": 93,
+        "Color": "Fuchsia"
+      },
+      {
+        "X": -0,
+        "Width": 90,
+        "Color": "Orange"
+      },
+      {
+        "X": 3504,
+        "Width": 150,
+        "Color": "Orange"
       }
     ]
   }

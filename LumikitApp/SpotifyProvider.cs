@@ -7,28 +7,40 @@ using SpotifyAPI.Web;
 using System.Linq;
 using System.Collections.Generic;
 using Avalonia.Controls;
-using Avalonia.Threading;
-using Avalonia.Controls.Primitives;
+
 namespace LumikitApp
 {
-
-    public class SpotifyProvider
+    public class SpotifyProvider : ISpotifyProvider
     {
-        static string clientId = "7a3be16d49114bcb8317330636aa2647"; // replace this
-        static string redirectUri = "http://localhost:5000/callback";
-        Window _LumikitWindow;
-        SpotifyClient _spotify;
-        public SpotifyProvider(Window mainWindow)
+        private readonly string _clientId;
+        private readonly string _redirectUri;
+        private Window _mainWindow;
+        private SpotifyClient _spotify;
+
+        /// <summary>
+        /// Spotify API wrapper for Lumikit procedures
+        /// </summary>
+        /// <param name="mainWindow"></param>
+        /// <param name="clientId"></param>
+        /// <param name="redirectUri"></param>
+        public SpotifyProvider(Window mainWindow, string clientId, string redirectUri)
         {
-            _LumikitWindow = mainWindow;
+            _mainWindow = mainWindow;
+            _clientId = clientId;
+            _redirectUri = redirectUri;
         }
+        
+        /// <summary>
+        /// Initialize a new spotify web API connection to be used 
+        /// </summary>
+        /// <returns></returns>
         public async Task<SpotifyClient> InitializeClient()
         {
             var (verifier, challenge) = PKCEUtil.GenerateCodes();
 
             var loginRequest = new LoginRequest(
-                new Uri(redirectUri),
-                clientId,
+                new Uri(_redirectUri),
+                _clientId,
                 LoginRequest.ResponseType.Code
             )
             {
@@ -62,37 +74,40 @@ namespace LumikitApp
             http.Stop();
 
             var tokenResponse = await new OAuthClient().RequestToken(
-                new PKCETokenRequest(clientId, code, new Uri(redirectUri), verifier)
+                new PKCETokenRequest(_clientId, code, new Uri(_redirectUri), verifier)
             );
 
             var config = SpotifyClientConfig.CreateDefault().WithToken(tokenResponse.AccessToken);
             _spotify = new SpotifyClient(config);
+
             return _spotify;
         }
+
         /// <summary>
-        /// Get list of active devices and returns the first in that list
+        /// Get the current device 
         /// </summary>
         /// <returns></returns>
-        private async Task<Device> GetCurrentDevices()
+        private async Task<Device> GetCurrentDeviceAsync()
         {
             var devices = await _spotify.Player.GetAvailableDevices();
-            var device = devices.Devices.FirstOrDefault(d => d.IsActive) ?? devices.Devices.FirstOrDefault();
-            return device;
+            return devices.Devices.FirstOrDefault(d => d.IsActive) ?? devices.Devices.FirstOrDefault();
+            
         }
-        public bool isPlaying()
-        {
-            return _spotify.Player.GetCurrentPlayback().Result.IsPlaying;
-        }
-        /// <summary>
-        /// Attemps to resume playback, first a force resume for minimum latency, if that fails then it will check if a device is in playback and attempt from there
-        /// </summary>
-        /// <returns></returns>
 
-        public async Task ResumePlayback()
+        public async Task<bool> IsPlayingAsync()
+        {
+            var playback = await _spotify.Player.GetCurrentPlayback();
+            return playback?.IsPlaying ?? false;
+        }
+
+        /// <summary>
+        /// Resume current playback as fast as possible to avoid any latency
+        /// </summary>
+        public async Task ResumePlaybackAsync()
         {
             try
             {
-                await _spotify.Player.ResumePlayback(); // Fast path
+                await _spotify.Player.ResumePlayback(); 
             }
             catch (APIException ex)
             {
@@ -101,7 +116,7 @@ namespace LumikitApp
                 if (ex.Response?.StatusCode == HttpStatusCode.Forbidden ||
                     ex.Response?.StatusCode == HttpStatusCode.NotFound)
                 {
-                    var device = await GetCurrentDevices(); // no .Result
+                    var device = await GetCurrentDeviceAsync(); 
 
                     if (device == null)
                     {
@@ -127,33 +142,11 @@ namespace LumikitApp
                 }
             }
         }
-        public async Task<FullTrack> GetCurrentlyPlayingTrack()
-        {
-            try
-            {
-                var playback = await _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest());
-                var track = playback?.Item as FullTrack;
-                if (track != null) return track;
-            }
-            catch
-            {
-                Console.WriteLine("Error Updating Track: Could not get CurrentlyPlaying item");
-            }
-            return null;
 
-        }
-        public int GetPlaybackProgressMs()
-        {
-            var playback =  _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest()).Result;
-            var progress = playback.ProgressMs;
-            if (progress != null) return progress.Value;
-            return 0;
-        }
         /// <summary>
-        /// Attemps to pause playback, first a force pause for minimum latency, if that fails then it will check if a device is in playback and attempt from there
+        /// Pause current playback as soon as possible to avoid latency
         /// </summary>
-        /// <returns></returns>
-        public async Task PausePlayback()
+        public async Task PausePlaybackAsync()
         {
             try
             {
@@ -166,7 +159,7 @@ namespace LumikitApp
                 // If the failure is due to no active device or playback context, recover
                 if ((int?)ex.Response?.StatusCode == 403 || (int?)ex.Response?.StatusCode == 404)
                 {
-                    var device = await GetCurrentDevices(); // no .Result
+                    var device = await GetCurrentDeviceAsync(); // no .Result
 
                     if (device == null)
                     {
@@ -192,6 +185,33 @@ namespace LumikitApp
                 }
             }
         }
+
+        public async Task<FullTrack> GetCurrentlyPlayingTrackAsync()
+        {
+            try
+            {
+                var playback = await _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest());
+                var track = playback?.Item as FullTrack;
+                if (track != null) return track;
+            }
+            catch
+            {
+                Console.WriteLine("Error Updating Track: Could not get CurrentlyPlaying item");
+            }
+            return null;
+
+        }
+
+        /// <summary>
+        /// GET integer value of playback progress in ms 
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> GetPlaybackProgressMsAsync()
+        {
+            var playback = await _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest());
+            return playback?.ProgressMs ?? 0;
+        }
+
         public async Task SeekToPlaybackTime(int ms)
         {
             try
@@ -202,7 +222,7 @@ namespace LumikitApp
             catch (APIException ex)
             {
 
-                var device = GetCurrentDevices().Result;
+                var device = await GetCurrentDeviceAsync();
 
                 if (device == null)
                 {
@@ -226,6 +246,10 @@ namespace LumikitApp
                 }
             }
         }
+
+        /// <summary>
+        /// Skip the current track and 
+        /// </summary>
         public async Task SkipTrack()
         {
             var playback = await _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest());
@@ -234,11 +258,7 @@ namespace LumikitApp
             await _spotify.Player.SkipNext();
             await WaitForTrackChange(oldId);
         }
-        /// <summary>
-        /// When a track is expected to change, this will watch for that change and update UI accordingly
-        /// </summary>
-        /// <param name="oldTrackId"></param>
-        /// <returns></returns>
+
         private async Task WaitForTrackChange(string oldTrackId)
         {
             for (int i = 0; i < 1000; i++)//try to fetch track for 1 second, more than enough time for API
@@ -256,6 +276,10 @@ namespace LumikitApp
 
             throw new TimeoutException("Track didn't change within expected time.");
         }
-        
+
+        public void SetMainWindow(Window mainWindow)
+        {
+            _mainWindow = mainWindow;
+        }
     }
 }

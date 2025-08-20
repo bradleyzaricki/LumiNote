@@ -13,6 +13,7 @@
           "Avalonia.Diagnostics": "11.3.2",
           "Avalonia.Fonts.Inter": "11.3.2",
           "Avalonia.Themes.Fluent": "11.3.2",
+          "Microsoft.Extensions.DependencyInjection": "9.0.8",
           "SpotifyAPI.Web": "7.2.1"
         },
         "runtime": {
@@ -77,17 +78,17 @@
           "runtimes/win-arm64/native/av_libglesv2.dll": {
             "rid": "win-arm64",
             "assetType": "native",
-            "fileVersion": "2.1.25606.0"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-x64/native/av_libglesv2.dll": {
             "rid": "win-x64",
             "assetType": "native",
-            "fileVersion": "2.1.25606.0"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-x86/native/av_libglesv2.dll": {
             "rid": "win-x86",
             "assetType": "native",
-            "fileVersion": "2.1.25606.0"
+            "fileVersion": "0.0.0.0"
           }
         }
       },
@@ -357,6 +358,25 @@
           }
         }
       },
+      "Microsoft.Extensions.DependencyInjection/9.0.8": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.8"
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.825.36511"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.8": {
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.825.36511"
+          }
+        }
+      },
       "Newtonsoft.Json/13.0.3": {
         "runtime": {
           "lib/net6.0/Newtonsoft.Json.dll": {
@@ -617,6 +637,20 @@
       "sha512": "sha512-MEnrZ3UIiH40hjzMDsxrTyi8dtqB5ziv3iBeeU4bXsL/7NLSal9F1lZKpK+tfBRnUoDSdtcW3KufE4yhATOMCA==",
       "path": "microcom.runtime/0.11.0",
       "hashPath": "microcom.runtime.0.11.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyInjection/9.0.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-JJjI2Fa+QtZcUyuNjbKn04OjIUX5IgFGFu/Xc+qvzh1rXdZHLcnqqVXhR4093bGirTwacRlHiVg1XYI9xum6QQ==",
+      "path": "microsoft.extensions.dependencyinjection/9.0.8",
+      "hashPath": "microsoft.extensions.dependencyinjection.9.0.8.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-xY3lTjj4+ZYmiKIkyWitddrp1uL5uYiweQjqo4BKBw01ZC4HhcfgLghDpPZcUlppgWAFqFy9SgkiYWOMx365pw==",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/9.0.8",
+      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.9.0.8.nupkg.sha512"
     },
     "Newtonsoft.Json/13.0.3": {
       "type": "package",

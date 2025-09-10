@@ -8,33 +8,30 @@ using Avalonia.Threading;
 using SpotifyAPI.Web;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace LumikitApp
 {
     public partial class LumikitWindow : Window
     {
-        //Provider class for all api requests
         private SpotifyProvider _spotifyProvider;
-        //stopwatch used for playback time
-        private Stopwatch _syncStopwatch = new Stopwatch();
-        //true if playback timer is running
-        private bool _playbackTimerRunning = false;
-        //time in ms of playback track
-        private int _playbackTimeInMs;
-        //true if automatic scrolling is enabled
         private bool scrollLock = true;
-        //width of lightdata slots
-        private readonly double slotWidth = 3;
-        //bpm of current track
+        private double _slotWidth = 3;
+
+        //Scaling variables for playback
+        private const int _totalModules = 10000;
+        private const double _msPerSlot = 50.0;
+        private const double _modulesPerSecond = 1000.0 / _msPerSlot;
+
+        //bpm variable for better editing
         private double _bpm = 0;
 
-        //List of colors for the pallet
+        private LightBlock? _selectedBlock = null;
+
+        //Possible color blocks for lightshow editing
         private readonly List<Color> BlockColors = new()
         {
             Colors.Red, Colors.Green, Colors.Blue, Colors.Yellow,
@@ -42,23 +39,33 @@ namespace LumikitApp
             Colors.Teal, Colors.Lime, Colors.Pink, Colors.Brown
         };
 
-        //UI objects
+        //Avalonia UI elements
         private Canvas _timelineCanvas;
         private ScrollViewer _scrollViewer;
         private List<LightBlock> LightBlocks = new();
         private TextBlock _playheadCaret;
         private TextBox _bpmInput;
+        private TextBox _lightIntensityTextBox;
+        private TextBox _endLightTextbox;
+        private TextBox _startLightInputBox;
+
+        //POCO object to parse stored json data into
         private TrackData _trackDataLocal;
+
+        //Handles unique playback logic
+        private IPlaybackHandler _playbackHandler;
+
         public LumikitWindow()
         {
             InitializeComponent();
-            //Canvas that will hold all user playback and live lighting info
             _timelineCanvas = this.FindControl<Canvas>("TimelineCanvas");
-            //Scrollviewer scrollable viewer object that will hold timelineCanvas
             _scrollViewer = this.FindControl<ScrollViewer>("TimelineScrollViewer");
+            _startLightInputBox = this.FindControl<TextBox>("StartLightInput");
+            _endLightTextbox = this.FindControl<TextBox>("EndLightInput");
+            _lightIntensityTextBox = this.FindControl<TextBox>("IntensityInput");
             _scrollViewer.PointerPressed += (_, _) => scrollLock = false;
             _scrollViewer.AddHandler(PointerWheelChangedEvent, OnPointerWheelChanged, RoutingStrategies.Tunnel);
-            //BPM input textbox
+
             _bpmInput = this.FindControl<TextBox>("BpmInput");
             _bpmInput.Text = _bpm.ToString();
             _bpmInput.LostFocus += (_, _) =>
@@ -69,202 +76,130 @@ namespace LumikitApp
                     DrawTimelineSlots();
                 }
             };
+
             InitializeColorPalette();
             DrawTimelineSlots();
         }
 
         public void InitializeWindow(SpotifyProvider provider)
         {
-            //Saves current trackdata into local json file
-            this.FindControl<Button>("""SaveTrackDataButton""").Click += async (_, _) =>
+            this.FindControl<Button>("SaveTrackDataButton").Click += async (_, _) =>
             {
                 var track = await provider.GetCurrentlyPlayingTrackAsync();
-                var trackData = new TrackData();
-                trackData._trackID = track.Id;
-                trackData._BPM = double.Parse(BpmInput.Text);
-                trackData._lightBlocks = LightBlocks.Select(b => new LightBlockData
+                var trackData = new TrackData
                 {
-                    X = Canvas.GetLeft(b.Container),
-                    Width = b.Container.Width,
-                    Color = ((SolidColorBrush)b.Container.Background).Color.ToString()
-                }).ToList();
+                    _trackID = track.Id,
+                    _BPM = double.Parse(_bpmInput.Text),
+                    _lightBlocks = LightBlocks.Select(b => new LightBlockData
+                    {
+                        X = Canvas.GetLeft(b.Container),
+                        Width = b.Container.Width,
+                        Color = ((SolidColorBrush)b.Container.Background).Color.ToString(),
+                        StartLight = b.StartLight,
+                        EndLight = b.EndLight,
+                        BlockEffect = b.BlockEffect,
+                        LightIntensity = b.Intensity
+
+
+
+                    }).ToList()
+                };
                 JsonDataHandler.SaveTrack(trackData);
             };
-            this.FindControl<Button>("""PauseTrackButton""").Click += async (_, _) =>
+
+            _playbackHandler = new PlaybackHandler(provider);
+            _playbackHandler.ProgressUpdated += ms =>
             {
-                try
+                Dispatcher.UIThread.Post(() =>
                 {
-                    Debug.WriteLine("Pause button clicked");
-                    StopPlaybackTimer();
-                    await _spotifyProvider.PausePlaybackAsync();
-                    Task.Delay(200);
-                    Debug.WriteLine("Pause successful");
-                    _playbackTimeInMs = await _spotifyProvider.GetPlaybackProgressMsAsync();
+                    StopwatchLabel.Text = ms.ToString();
+                    UpdateCaretAndScroll(ms);
+                });
+            };
+            this.FindControl<Button>("ApplyBlockChangesButton").Click += (_, _) =>
+            {
+                if (_selectedBlock == null) return;
 
+                if (int.TryParse(this.FindControl<TextBox>("StartLightInput").Text, out int start))
+                    _selectedBlock.StartLight = start;
 
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Pause failed: " + ex.Message);
-                    Debug.WriteLine("StackTrace: " + ex.StackTrace);
-                }
+                if (int.TryParse(this.FindControl<TextBox>("EndLightInput").Text, out int end))
+                    _selectedBlock.EndLight = end;
+
+                if (int.TryParse(this.FindControl<TextBox>("IntensityInput").Text, out int intensity))
+                    _selectedBlock.Intensity = Math.Clamp(intensity, 0, 255);
+
+                // Effect radio buttons
+                if (this.FindControl<RadioButton>("Effect_FadeIn").IsChecked == true)
+                    _selectedBlock.BlockEffect = LightBlock.Effect.FadeIn;
+                else if (this.FindControl<RadioButton>("Effect_FadeOut").IsChecked == true)
+                    _selectedBlock.BlockEffect = LightBlock.Effect.FadeOut;
+                else if (this.FindControl<RadioButton>("Effect_FadeStrobe").IsChecked == true)
+                    _selectedBlock.BlockEffect = LightBlock.Effect.Strobe;
+                else
+                    _selectedBlock.BlockEffect = LightBlock.Effect.None;
             };
 
-            this.FindControl<Button>("ResumeTrackButton").Click += async (_, _) =>
-            {
-                try
-                {
-                    if (! await _spotifyProvider.IsPlayingAsync())
-                    {
-
-                        await _spotifyProvider.ResumePlaybackAsync();
-                        _syncStopwatch.Restart();
-                        StartPlaybackTimer(_playbackTimeInMs);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Resume failed: " + ex.Message);
-                }
-            };
-
+            this.FindControl<Button>("PauseTrackButton").Click += async (_, _) => await _playbackHandler.PauseAsync();
+            this.FindControl<Button>("ResumeTrackButton").Click += async (_, _) => await _playbackHandler.ResumeAsync();
             this.FindControl<Button>("NextTrackButton").Click += async (_, _) =>
             {
-                StopPlaybackTimer();
-                await _spotifyProvider.SkipTrack();
-                int progress = 0;
-                for (int i = 0; i < 50; i++)
-                {
-                    await Task.Delay(5);
-                    progress = await _spotifyProvider.GetPlaybackProgressMsAsync();
-                    if (progress > 0)
-                        break;
-                }
-                _syncStopwatch.Restart();
-                StartPlaybackTimer(progress);
-                UpdateCurrentTrack(startNewLightShow: true);
+                await _playbackHandler.SkipAsync();
+                UpdateCurrentTrack(true); // << refresh on next track
             };
             _spotifyProvider = provider;
         }
-        
+
         /// <summary>
-        /// Start track playback, synced to the integer delay param <param name="progress"></param>
-        /// </summary>
-        public void StartPlaybackTimer(int progress)
-        {
-            if (_playbackTimerRunning) return;
-            _playbackTimerRunning = true;
-            _ = Task.Run(async () =>
-            {
-                while (_playbackTimerRunning)
-                {
-                    _playbackTimeInMs = progress + (int)_syncStopwatch.ElapsedMilliseconds;
-
-                        Dispatcher.UIThread.Post(() =>
-                        {
-                            StopwatchLabel.Text = _playbackTimeInMs.ToString();
-
-                            double msPerSlot = 50;
-                            double slotIndex = _playbackTimeInMs / msPerSlot;
-                            double caretX = slotIndex * slotWidth;
-
-                            Canvas.SetLeft(_playheadCaret, caretX - 4);
-                            if (scrollLock)
-                            {
-                                double viewportWidth = _scrollViewer.Viewport.Width;
-                                double scrollTo = caretX - viewportWidth / 6;
-                                scrollTo = Math.Max(0, scrollTo);
-                                _scrollViewer.Offset = new Vector(scrollTo, _scrollViewer.Offset.Y);
-                            }
-                            var caretMs = _playbackTimeInMs;
-
-                            // Find the block under the caret
-                            var activeBlock = LightBlocks.FirstOrDefault(b =>
-                            {
-                                double left = Canvas.GetLeft(b.Container);
-                                double width = b.Container.Width;
-                                return caretX >= left && caretX <= left + width;
-                            });
-
-                            // Update color bars
-                            var topBar = this.FindControl<Border>("TopColorBar");
-                            var bottomBar = this.FindControl<Border>("BottomColorBar");
-
-                            if (activeBlock != null && activeBlock.Container.Background is SolidColorBrush brush)
-                            {
-                                topBar.Background = new SolidColorBrush(brush.Color);
-                                bottomBar.Background = new SolidColorBrush(brush.Color);
-                            }
-                            else
-                            {
-                                topBar.Background = Brushes.Gray;
-                                bottomBar.Background = Brushes.Gray;
-                            }
-                    });
-                    await Task.Delay(10);
-
-                }
-            });
-        }
-
-        public async void StopPlaybackTimer()
-        {
-            _playbackTimerRunning = false;
-            _syncStopwatch.Stop();
-            _playbackTimeInMs = await _spotifyProvider.GetPlaybackProgressMsAsync();
-            StopwatchLabel.Text = _playbackTimeInMs.ToString();
-        }
-        /// <summary>
-        /// Updates current track visual and playback settings
+        /// Retrieve and set track info locally for editing and viewing
         /// </summary>
         /// <param name="startNewLightShow"></param>
         public async void UpdateCurrentTrack(bool startNewLightShow)
         {
-            
             var track = await _spotifyProvider.GetCurrentlyPlayingTrackAsync();
-            
-            //title text
-            var trackText = this.FindControl<TextBlock>("NowPlayingText");
-            trackText.Text = track.Name;
 
-            //album cover
+            this.FindControl<TextBlock>("NowPlayingText").Text = track.Name;
             var albumImages = track.Album.Images;
             if (albumImages != null && albumImages.Count > 0)
             {
                 var imageUrl = albumImages[1].Url;
                 await SetAlbumCover(imageUrl);
             }
-            
-            //clear and dereference lighting modules
-            foreach (var block in LightBlocks)
-            {
-                _timelineCanvas.Children.Remove(block.Container);
-            }
+
+            //Start playback editor setup
+            foreach (var block in LightBlocks) _timelineCanvas.Children.Remove(block.Container);
             LightBlocks.Clear();
-            
-            //gather trackdata class from local json data
+
             _trackDataLocal = JsonDataHandler.GetTrack(track.Id);
-            if(_trackDataLocal != null)
+            if (_trackDataLocal != null)
             {
-                //bpm locals and visuals
                 _bpm = _trackDataLocal._BPM;
                 _bpmInput.Text = _bpm.ToString();
                 DrawTimelineSlots();
-                
-                
+
                 foreach (var data in _trackDataLocal._lightBlocks)
                 {
                     if (!Color.TryParse(data.Color, out var color)) continue;
-                    var block = new LightBlock(color, LightBlocks, _scrollViewer, slotWidth);
+                    var block = new LightBlock(color, LightBlocks, _scrollViewer, _slotWidth);
+                    block.StartLight = data.StartLight;
+                    block.EndLight = data.EndLight;
+                    block.BlockEffect = data.BlockEffect;
+                    block.Intensity = data.LightIntensity;
                     block.Container.Width = data.Width;
                     Canvas.SetLeft(block.Container, data.X);
                     Canvas.SetTop(block.Container, 0);
                     _timelineCanvas.Children.Add(block.Container);
+
                     LightBlocks.Add(block);
-                    
-                    //Remove light block
+
                     block.Container.PointerPressed += (_, e) =>
                     {
+                        if (e.GetCurrentPoint(block.Container).Properties.IsLeftButtonPressed)
+                        {
+                            LoadBlockIntoEditor(block);
+                            e.Handled = true;
+                        }
+
                         if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
                         {
                             _timelineCanvas.Children.Remove(block.Container);
@@ -276,16 +211,31 @@ namespace LumikitApp
             }
             else
             {
-                //Default valuess
                 _bpm = 0;
                 _bpmInput.Text = "0";
                 DrawTimelineSlots();
             }
+        }
+
+        private void LoadBlockIntoEditor(LightBlock block)
+        {
+            _selectedBlock = block;
+            _startLightInputBox.Text = block.StartLight.ToString();
+            _endLightTextbox.Text = block.EndLight.ToString();
+            _lightIntensityTextBox.Text = block.Intensity.ToString();
+
+            // Reset effect selection
+            this.FindControl<RadioButton>("Effect_None").IsChecked = block.BlockEffect == LightBlock.Effect.None;
+            this.FindControl<RadioButton>("Effect_FadeIn").IsChecked = block.BlockEffect == LightBlock.Effect.FadeIn;
+            this.FindControl<RadioButton>("Effect_FadeOut").IsChecked = block.BlockEffect == LightBlock.Effect.FadeOut;
+            this.FindControl<RadioButton>("Effect_FadeStrobe").IsChecked =
+                block.BlockEffect == LightBlock.Effect.Strobe;
+
 
         }
-        
+
         /// <summary>
-        /// Retrieve the album cover and set to apps image field
+        /// Parse and set album cover visual
         /// </summary>
         /// <param name="url"></param>
         private async Task SetAlbumCover(string url)
@@ -304,9 +254,7 @@ namespace LumikitApp
                 Console.WriteLine("Failed to set album cover: " + ex.Message);
             }
         }
-        /// <summary>
-        /// Initialize the pallet of draggable RGB color swatches and create listener for dropping color swatches
-        /// </summary>
+
         private void InitializeColorPalette()
         {
             var palette = this.FindControl<WrapPanel>("ColorPalette");
@@ -329,54 +277,96 @@ namespace LumikitApp
                 };
                 palette.Children.Add(swatch);
             }
+
             DragDrop.SetAllowDrop(_timelineCanvas, true);
             _timelineCanvas.AddHandler(DragDrop.DropEvent, OnCanvasDrop, RoutingStrategies.Bubble);
         }
+
         private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
         {
-            // Reverse direction if needed
-            double delta = e.Delta.Y * -40;
+            if ((e.KeyModifiers & KeyModifiers.Control) != 0)
+            {
+                e.Handled = true;
 
-            // Apply horizontal scroll
+                double old = _slotWidth;
+                double mouseX = e.GetPosition(_scrollViewer).X;
+                double worldX = _scrollViewer.Offset.X + mouseX;
+                double focusModule = worldX / old;
+
+                double step = e.Delta.Y > 0 ? 1.1 : 1.0 / 1.1;
+                double next = Math.Clamp(_slotWidth * step, 1.0, 30.0);
+                if (Math.Abs(next - _slotWidth) < 0.0001) return;
+
+                _slotWidth = next;
+                ScaleTimelineChildren(old, _slotWidth);
+
+                double newWorldX = focusModule * _slotWidth;
+                double newOffsetX = Math.Max(0, newWorldX - mouseX);
+                _scrollViewer.Offset = new Vector(newOffsetX, _scrollViewer.Offset.Y);
+                return;
+            }
+
+            double delta = e.Delta.Y * -40;
             var currentOffset = _scrollViewer.Offset;
             double newX = Math.Max(0, currentOffset.X + delta);
             _scrollViewer.Offset = new Vector(newX, currentOffset.Y);
             scrollLock = false;
-            // Prevent default vertical scrolling
             e.Handled = true;
         }
 
-        /// <summary>
-        /// Creates playback visualizer with BPM and Current playback indicators
-        /// </summary>
+        private void ScaleTimelineChildren(double oldSlotWidth, double newSlotWidth)
+        {
+            double factor = newSlotWidth / oldSlotWidth;
+
+            foreach (var child in _timelineCanvas.Children)
+            {
+                if (ReferenceEquals(child, _playheadCaret)) continue;
+
+                double left = Canvas.GetLeft((Control)child);
+                if (!double.IsNaN(left))
+                    Canvas.SetLeft((Control)child, left * factor);
+
+                if (child is Border b && !double.IsNaN(b.Width) && b.Width > 0)
+                    b.Width *= factor;
+
+                if (child is TextBlock tb && tb.Text == "^")
+                {
+                    double caretLeft = Canvas.GetLeft(tb);
+                    Canvas.SetLeft(tb, caretLeft);
+                }
+            }
+
+            _timelineCanvas.Width = _totalModules * newSlotWidth;
+        }
+
         private void DrawTimelineSlots()
         {
             _timelineCanvas.Children.Clear();
-            int totalSlots = 10000;
-            for (int i = 0; i < totalSlots; i++)
+
+            for (int i = 0; i < _totalModules; i++)
             {
                 var slot = new Border
                 {
-                    Width = slotWidth,
+                    Width = _slotWidth,
                     Height = 60,
                     Background = Brushes.Transparent,
                     BorderBrush = Brushes.Gray,
                     BorderThickness = new Thickness(0.5)
                 };
-                Canvas.SetLeft(slot, i * slotWidth);
+                Canvas.SetLeft(slot, i * _slotWidth);
                 Canvas.SetTop(slot, 0);
                 _timelineCanvas.Children.Add(slot);
 
-                if (i % 40 == 0)//every 2 seconds create seconds label (40 * 5ms = 2s)
+                if (i % 40 == 0)
                 {
-                    double seconds = (i / 20);
+                    double seconds = (i / _modulesPerSecond);
                     var label = new TextBlock
                     {
                         Text = $"{seconds:0.0}s",
                         Foreground = Brushes.White,
                         FontSize = 10
                     };
-                    Canvas.SetLeft(label, i * slotWidth - 5);
+                    Canvas.SetLeft(label, i * _slotWidth - 5);
                     Canvas.SetTop(label, -15);
                     _timelineCanvas.Children.Add(label);
 
@@ -386,35 +376,44 @@ namespace LumikitApp
                         Foreground = Brushes.White,
                         FontSize = 10
                     };
-                    Canvas.SetLeft(caret, i * slotWidth - 2);
+                    Canvas.SetLeft(caret, i * _slotWidth - 2);
                     Canvas.SetTop(caret, 60);
                     _timelineCanvas.Children.Add(caret);
                 }
             }
 
-            double secondsPerBeat = 60.0 / _bpm;
-            double modulesPerSecond = 20;
-            double modulesPerBeat = modulesPerSecond * secondsPerBeat;
+            double secondsPerBeat = _bpm > 0 ? 60.0 / _bpm : 0;
+            double modulesPerBeat = secondsPerBeat * _modulesPerSecond;
 
-            //Bpm lines
-            for (double i = 0; i < totalSlots; i += modulesPerBeat)
+            if (_bpm > 0 && modulesPerBeat > 0)
             {
-                var line = new Border
+                var bpmindicatorNumber = 0;
+                for (double i = 0; i < _totalModules; i += modulesPerBeat)
                 {
-                    Width = 1,
-                    Height = 60,
-                    Background = Brushes.Red
-                };
-                Canvas.SetLeft(line, i * slotWidth);
-                Canvas.SetTop(line, 0);
-                _timelineCanvas.Children.Add(line);
+                    var color = Brushes.Brown;
+                    if (bpmindicatorNumber % 4 == 0)
+                        color = Brushes.Red;
+
+                    var line = new Border
+                    {
+                        Width = 1,
+                        Height = 60,
+                        Background = color
+
+
+                    };
+                    Canvas.SetLeft(line, i * _slotWidth);
+                    Canvas.SetTop(line, 0);
+                    _timelineCanvas.Children.Add(line);
+                    bpmindicatorNumber++;
+                }
             }
 
-            _timelineCanvas.Width = totalSlots * slotWidth;
+            _timelineCanvas.Width = _totalModules * _slotWidth;
 
             _playheadCaret = new TextBlock
             {
-                Text = "▲", 
+                Text = "▲",
                 Foreground = Brushes.Red,
                 FontSize = 14
             };
@@ -422,72 +421,150 @@ namespace LumikitApp
             Canvas.SetTop(_playheadCaret, 72);
             _timelineCanvas.Children.Add(_playheadCaret);
         }
-        /// <summary>
-        /// Handles color block being dropped into the playback. Adds light block both visually and it the backend list
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+
         private void OnCanvasDrop(object? sender, DragEventArgs e)
         {
-            if (e.Data.Contains("block-color"))
+            if (!e.Data.Contains("block-color")) return;
+
+            var colorString = e.Data.Get("block-color")?.ToString();
+            if (colorString == null || !Color.TryParse(colorString, out var color)) return;
+
+            var pos = e.GetPosition(_timelineCanvas);
+            double snappedX = Math.Round(pos.X / _slotWidth) * _slotWidth;
+            snappedX = Math.Max(0, Math.Min(snappedX, _timelineCanvas.Width - _slotWidth));
+            double maxWidth = Math.Min(_slotWidth * 50, _timelineCanvas.Width - snappedX);
+            double finalWidth = maxWidth;
+
+            while (finalWidth >= _slotWidth)
             {
-                var colorString = e.Data.Get("block-color")?.ToString();
-                if (colorString != null && Color.TryParse(colorString, out var color))
+                bool collision = false;
+                foreach (var existing in LightBlocks)
                 {
-                    var pos = e.GetPosition(_timelineCanvas);
-                    double snappedX = Math.Round(pos.X / slotWidth) * slotWidth;
-                    snappedX = Math.Max(0, Math.Min(snappedX, _timelineCanvas.Width - slotWidth));
-                    double maxWidth = Math.Min(slotWidth * 50, _timelineCanvas.Width - snappedX);
-                    double finalWidth = maxWidth;
-                    
-                    //Collision checking with other light block modules
-                    while (finalWidth >= slotWidth)
+                    double left = Canvas.GetLeft(existing.Container);
+                    double width = existing.Container.Width;
+                    if (snappedX < left + width && snappedX + finalWidth > left)
                     {
-                        bool collision = false;
-                        foreach (var existing in LightBlocks)
-                        {
-                            double left = Canvas.GetLeft(existing.Container);
-                            double width = existing.Container.Width;
-                            if (snappedX < left + width && snappedX + finalWidth > left)
-                            {
-                                collision = true;
-                                break;
-                            }
-                        }
-
-                        if (!collision)
-                            break;
-
-                        finalWidth -= slotWidth;
+                        collision = true;
+                        break;
                     }
-
-                    if (finalWidth < slotWidth)
-                        return;
-
-                    var block = new LightBlock(color, LightBlocks, _scrollViewer, slotWidth);
-                    block.Container.Width = finalWidth;
-
-                    Canvas.SetLeft(block.Container, snappedX);
-                    Canvas.SetTop(block.Container, 0);
-                    _timelineCanvas.Children.Add(block.Container);
-                    LightBlocks.Add(block);
-                    block.Container.PointerPressed += (_, e) =>
-                    {
-                        if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
-                        {
-                            _timelineCanvas.Children.Remove(block.Container);
-                            LightBlocks.Remove(block);
-                            e.Handled = true;
-                        }
-                    };
                 }
+
+                if (!collision) break;
+                finalWidth -= _slotWidth;
+            }
+
+            if (finalWidth < _slotWidth) return;
+
+            var block = new LightBlock(color, LightBlocks, _scrollViewer, _slotWidth);
+            block.Container.Width = finalWidth;
+
+            Canvas.SetLeft(block.Container, snappedX);
+            Canvas.SetTop(block.Container, 0);
+            _timelineCanvas.Children.Add(block.Container);
+            LightBlocks.Add(block);
+            block.Container.PointerPressed += (_, e) =>
+            {
+                if (e.GetCurrentPoint(block.Container).Properties.IsLeftButtonPressed)
+                {
+                    LoadBlockIntoEditor(block); // works here
+                    e.Handled = true;
+                }
+
+                if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
+                {
+                    _timelineCanvas.Children.Remove(block.Container);
+                    LightBlocks.Remove(block);
+                    e.Handled = true;
+                }
+            };
+
+        }
+
+        private void UpdateCaretAndScroll(int ms)
+        {
+            double slotIndex = ms / _msPerSlot;
+            double caretX = slotIndex * _slotWidth;
+            Canvas.SetLeft(_playheadCaret, caretX - 4);
+
+            if (scrollLock)
+            {
+                double viewportWidth = _scrollViewer.Viewport.Width;
+                double scrollTo = Math.Max(0, caretX - viewportWidth / 6);
+                _scrollViewer.Offset = new Vector(scrollTo, _scrollViewer.Offset.Y);
+            }
+
+            var activeBlock = LightBlocks.FirstOrDefault(b =>
+            {
+                double left = Canvas.GetLeft(b.Container);
+                double width = b.Container.Width;
+                return caretX >= left && caretX <= left + width;
+            });
+
+            var topBar = this.FindControl<Border>("TopColorBar");
+            var bottomBar = this.FindControl<Border>("BottomColorBar");
+
+            if (activeBlock?.Container.Background is SolidColorBrush brush)
+            {
+                // Calculate effect-modified color first
+                Color displayColor = brush.Color;
+                double left = Canvas.GetLeft(activeBlock.Container);
+                double width = activeBlock.Container.Width;
+                double relPos = Math.Clamp((caretX - left) / width, 0, 1);
+
+                switch (activeBlock.BlockEffect)
+                {
+                    case LightBlock.Effect.Strobe:
+                        if (((int)slotIndex % 2) != 0)
+                            displayColor = Colors.Gray;
+                        break;
+
+                    case LightBlock.Effect.FadeIn:
+                        int fadeInValue = (int)(activeBlock.Intensity + relPos * (255 - activeBlock.Intensity));
+                        displayColor = Color.FromArgb(
+                            255,
+                            (byte)(brush.Color.R * fadeInValue / 255),
+                            (byte)(brush.Color.G * fadeInValue / 255),
+                            (byte)(brush.Color.B * fadeInValue / 255));
+                        break;
+
+                    case LightBlock.Effect.FadeOut:
+                        int fadeOutValue = (int)(255 - relPos * (255 - activeBlock.Intensity));
+                        displayColor = Color.FromArgb(
+                            255,
+                            (byte)(brush.Color.R * fadeOutValue / 255),
+                            (byte)(brush.Color.G * fadeOutValue / 255),
+                            (byte)(brush.Color.B * fadeOutValue / 255));
+                        break;
+                }
+
+                // Map StartLight/EndLight to percentage of the bar
+                double totalLights = 100.0; // change if your max LED count is different
+                double startPercent = activeBlock.StartLight / totalLights;
+                double endPercent = activeBlock.EndLight / totalLights;
+
+                var brushFill = new LinearGradientBrush
+                {
+                    StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
+                    EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
+                    GradientStops = new GradientStops
+                    {
+                        new GradientStop(Colors.Gray, 0),
+                        new GradientStop(Colors.Gray, startPercent),
+                        new GradientStop(displayColor, startPercent),
+                        new GradientStop(displayColor, endPercent),
+                        new GradientStop(Colors.Gray, endPercent),
+                        new GradientStop(Colors.Gray, 1)
+                    }
+                };
+
+                topBar.Background = brushFill;
+                bottomBar.Background = brushFill;
+            }
+            else
+            {
+                topBar.Background = Brushes.Gray;
+                bottomBar.Background = Brushes.Gray;
             }
         }
     }
 }
-
-
-
-
-
-

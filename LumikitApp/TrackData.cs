@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace LumikitApp
 {
+    
     internal class TrackData
     {
         public double _BPM { get; set; }
@@ -24,5 +25,13 @@ namespace LumikitApp
         public double X { get; set; }//position on timeline
         public double Width { get; set; }//Width of block on timeline
         public string Color { get; set; }//Saved color
+        
+        public LightBlock.Effect BlockEffect { get; set; }
+        
+        public int StartLight { get; set; }
+        
+        public int EndLight { get; set; }
+        
+        public int LightIntensity { get; set; }
     }
 }

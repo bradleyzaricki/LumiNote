@@ -14,6 +14,18 @@ namespace LumikitApp
     public class LightBlock
     {
         public Border Container { get; }
+        public int StartLight { get; set; }
+        public int EndLight { get; set; }
+        public int Intensity { get; set; }
+
+        public Effect BlockEffect { get; set; } = Effect.None;
+        public enum Effect
+        {
+            None,
+            FadeIn,
+            FadeOut,
+            Strobe
+        }
         private Point dragStartCanvas;
         private double originalLeft;
         private double originalWidth;
@@ -35,20 +47,20 @@ namespace LumikitApp
                 Height = 60,
                 Background = new SolidColorBrush(color),
                 BorderBrush = Brushes.White,
-                BorderThickness = new Thickness(0.01f)
+                BorderThickness = new Thickness(0.01)
             };
 
             var grid = new Grid();
             var leftHandle = new Border
             {
-                Width = 0.05,
+                Width = 6,
                 Background = Brushes.White,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Cursor = new Avalonia.Input.Cursor(StandardCursorType.SizeWestEast)
             };
             var rightHandle = new Border
             {
-                Width = 0.05,
+                Width = 6,
                 Background = Brushes.White,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 Cursor = new Avalonia.Input.Cursor(StandardCursorType.SizeWestEast)
@@ -72,8 +84,8 @@ namespace LumikitApp
             originalWidth = Container.Width;
 
             var local = e.GetPosition(Container);
-            isResizingLeft = (local.X < 20);
-            isResizingRight = (local.X > Container.Width - 20);
+            isResizingLeft = (local.X < 6);
+            isResizingRight = (local.X > Container.Width - 6);
             isMoving = !isResizingLeft && !isResizingRight;
         }
         //returns true if bordering lightblocks limit space on playback

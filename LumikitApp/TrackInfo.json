@@ -1,438 +1,87 @@
 [
   {
-    "_BPM": 1,
-    "_trackID": "25vG6krgfp2FQGNXzP4ZFV",
+    "_BPM": 12,
+    "_trackID": "4d8BSdhx6WT5GtTOWpv4rh",
     "_trackName": null,
     "_lightBlocks": [
       {
-        "X": 690,
+        "X": 423,
         "Width": 150,
-        "Color": "Purple"
-      },
-      {
-        "X": 177,
-        "Width": 150,
-        "Color": "Purple"
-      },
-      {
-        "X": 477,
-        "Width": 150,
-        "Color": "Lime"
+        "Color": "Brown",
+        "BlockEffect": 0,
+        "StartLight": 0,
+        "EndLight": 0,
+        "LightIntensity": 0
       }
     ]
   },
   {
-    "_BPM": 70,
-    "_trackID": "6fAyRZ0GHuuvSOEIOwi58N",
+    "_BPM": 103,
+    "_trackID": "5YnS9oWrGcwf1tgode1F7z",
     "_trackName": null,
     "_lightBlocks": [
       {
-        "X": 336,
-        "Width": 150,
-        "Color": "Lime"
+        "X": 0,
+        "Width": 690,
+        "Color": "Red",
+        "BlockEffect": 2,
+        "StartLight": 10,
+        "EndLight": 100,
+        "LightIntensity": 100
       },
       {
-        "X": 516,
-        "Width": 150,
-        "Color": "Brown"
+        "X": 1188,
+        "Width": 735,
+        "Color": "Orange",
+        "BlockEffect": 3,
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
       },
       {
-        "X": 336,
-        "Width": 150,
-        "Color": "Lime"
+        "X": 2340,
+        "Width": 585,
+        "Color": "Brown",
+        "BlockEffect": 1,
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
       },
       {
-        "X": 516,
-        "Width": 150,
-        "Color": "Brown"
-      },
-      {
-        "X": 336,
-        "Width": 150,
-        "Color": "Lime"
-      },
-      {
-        "X": 516,
-        "Width": 150,
-        "Color": "Brown"
-      },
-      {
-        "X": 270,
-        "Width": 66,
-        "Color": "Aqua"
-      }
-    ]
-  },
-  {
-    "_BPM": 0,
-    "_trackID": "6FGrBYBdIAS2asaP54AnZo",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 162,
-        "Width": 150,
-        "Color": "Orange"
-      },
-      {
-        "X": 690,
-        "Width": 150,
-        "Color": "Purple"
-      },
-      {
-        "X": 177,
-        "Width": 150,
-        "Color": "Purple"
-      },
-      {
-        "X": 477,
-        "Width": 150,
-        "Color": "Lime"
-      },
-      {
-        "X": 360,
-        "Width": 96,
-        "Color": "Orange"
-      }
-    ]
-  },
-  {
-    "_BPM": 0,
-    "_trackID": "4fRTe59xEeNHT4uyAGsV27",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 387,
-        "Width": 150,
-        "Color": "Brown"
-      }
-    ]
-  },
-  {
-    "_BPM": 0,
-    "_trackID": "46s57QULU02Voy0Kup6UEb",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 633,
-        "Width": 150,
-        "Color": "Orange"
-      }
-    ]
-  },
-  {
-    "_BPM": 0,
-    "_trackID": "1Oii7zshrI6ihftpguVoj8",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 720,
-        "Width": 150,
-        "Color": "Orange"
-      }
-    ]
-  },
-  {
-    "_BPM": 135,
-    "_trackID": "0gWVilx5PbHEf0zrpp1TmQ",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 960,
-        "Width": 285,
-        "Color": "Red"
-      }
-    ]
-  },
-  {
-    "_BPM": 77,
-    "_trackID": "7l2nxyx7IkBX5orhkALg0V",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 420,
-        "Width": 225,
-        "Color": "Red"
-      }
-    ]
-  },
-  {
-    "_BPM": 105,
-    "_trackID": "0d28khcov6AiegSCpG5TuT",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 36,
-        "Width": 33,
-        "Color": "Purple"
-      },
-      {
-        "X": -0,
-        "Width": 36,
-        "Color": "Blue"
-      },
-      {
-        "X": 69,
-        "Width": 36,
-        "Color": "Blue"
-      },
-      {
-        "X": 105,
-        "Width": 33,
-        "Color": "Purple"
-      },
-      {
-        "X": 1212,
-        "Width": 150,
-        "Color": "Pink"
-      },
-      {
-        "X": 1362,
-        "Width": 81,
-        "Color": "Blue"
-      },
-      {
-        "X": 1062,
-        "Width": 150,
-        "Color": "Blue"
-      },
-      {
-        "X": 1443,
-        "Width": 33,
-        "Color": "Fuchsia"
-      },
-      {
-        "X": 1476,
-        "Width": 135,
-        "Color": "Blue"
-      }
-    ]
-  },
-  {
-    "_BPM": 105,
-    "_trackID": "3yfqSUWxFvZELEM4PmlwIR",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 36,
-        "Width": 33,
-        "Color": "Purple"
-      },
-      {
-        "X": -0,
-        "Width": 36,
-        "Color": "Blue"
-      },
-      {
-        "X": 69,
-        "Width": 36,
-        "Color": "Blue"
-      },
-      {
-        "X": 105,
-        "Width": 33,
-        "Color": "Purple"
-      },
-      {
-        "X": 1212,
-        "Width": 150,
-        "Color": "Pink"
-      },
-      {
-        "X": 1362,
-        "Width": 81,
-        "Color": "Blue"
-      },
-      {
-        "X": 1062,
-        "Width": 150,
-        "Color": "Blue"
-      },
-      {
-        "X": 1443,
-        "Width": 33,
-        "Color": "Fuchsia"
-      },
-      {
-        "X": 1476,
-        "Width": 135,
-        "Color": "Blue"
-      }
-    ]
-  },
-  {
-    "_BPM": 135,
-    "_trackID": "1BpKJw4RZxaFB88NE5uxXf",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 852,
-        "Width": 15,
-        "Color": "Brown"
-      },
-      {
-        "X": 867,
-        "Width": 12,
-        "Color": "Pink"
-      },
-      {
-        "X": 879,
-        "Width": 150,
-        "Color": "Red"
-      }
-    ]
-  },
-  {
-    "_BPM": 198,
-    "_trackID": "6XITRM4V1hVSQXw62diAoj",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 255,
+        "X": 1170,
         "Width": 18,
-        "Color": "Orange"
+        "Color": "Green",
+        "BlockEffect": 0,
+        "StartLight": 0,
+        "EndLight": 50,
+        "LightIntensity": 255
       },
       {
-        "X": 273,
-        "Width": 150,
-        "Color": "Teal"
-      }
-    ]
-  },
-  {
-    "_BPM": 109,
-    "_trackID": "3KCNiDi9Pza6ZD8FggNoaw",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 264,
-        "Width": 99,
-        "Color": "Aqua"
-      }
-    ]
-  },
-  {
-    "_BPM": 0,
-    "_trackID": "7LSpFCvRZZot2AlmkUzy9k",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 1518,
-        "Width": 150,
-        "Color": "Purple"
-      }
-    ]
-  },
-  {
-    "_BPM": 38.5,
-    "_trackID": "2ygMBIctKIAfbEBcT9065L",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 375,
-        "Width": 189,
-        "Color": "Red"
+        "X": 1152,
+        "Width": 18,
+        "Color": "Blue",
+        "BlockEffect": 0,
+        "StartLight": 50,
+        "EndLight": 100,
+        "LightIntensity": 255
       },
       {
-        "X": 795,
-        "Width": 150,
-        "Color": "Red"
+        "X": 1134,
+        "Width": 18,
+        "Color": "Yellow",
+        "BlockEffect": 0,
+        "StartLight": 0,
+        "EndLight": 50,
+        "LightIntensity": 255
       },
       {
-        "X": 609,
-        "Width": 48,
-        "Color": "Brown"
-      },
-      {
-        "X": 702,
-        "Width": 48,
-        "Color": "Brown"
-      }
-    ]
-  },
-  {
-    "_BPM": 76,
-    "_trackID": "3eekarcy7kvN4yt5ZFzltW",
-    "_trackName": null,
-    "_lightBlocks": [
-      {
-        "X": 567,
-        "Width": 96,
-        "Color": "Purple"
-      },
-      {
-        "X": 759,
-        "Width": 186,
-        "Color": "Red"
-      },
-      {
-        "X": 474,
-        "Width": 93,
-        "Color": "Fuchsia"
-      },
-      {
-        "X": 663,
-        "Width": 96,
-        "Color": "Fuchsia"
-      },
-      {
-        "X": 945,
-        "Width": 192,
-        "Color": "Orange"
-      },
-      {
-        "X": 1137,
-        "Width": 189,
-        "Color": "Purple"
-      },
-      {
-        "X": 1704,
-        "Width": 192,
-        "Color": "Lime"
-      },
-      {
-        "X": 2085,
-        "Width": 189,
-        "Color": "Fuchsia"
-      },
-      {
-        "X": 2463,
-        "Width": 102,
-        "Color": "Purple"
-      },
-      {
-        "X": 1326,
-        "Width": 192,
-        "Color": "Teal"
-      },
-      {
-        "X": 378,
-        "Width": 96,
-        "Color": "Aqua"
-      },
-      {
-        "X": 285,
-        "Width": 93,
-        "Color": "Lime"
-      },
-      {
-        "X": 189,
-        "Width": 96,
-        "Color": "Teal"
-      },
-      {
-        "X": 96,
-        "Width": 93,
-        "Color": "Fuchsia"
-      },
-      {
-        "X": -0,
-        "Width": 90,
-        "Color": "Orange"
-      },
-      {
-        "X": 3504,
-        "Width": 150,
-        "Color": "Orange"
+        "X": 1116,
+        "Width": 18,
+        "Color": "Aqua",
+        "BlockEffect": 0,
+        "StartLight": 50,
+        "EndLight": 100,
+        "LightIntensity": 255
       }
     ]
   }

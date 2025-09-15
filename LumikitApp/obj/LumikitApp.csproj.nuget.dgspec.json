@@ -71,6 +71,10 @@
             "SpotifyAPI.Web": {
               "target": "Package",
               "version": "[7.2.1, )"
+            },
+            "System.IO.Ports": {
+              "target": "Package",
+              "version": "[9.0.9, )"
             }
           },
           "imports": [

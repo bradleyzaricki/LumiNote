@@ -17,7 +17,7 @@ namespace LumikitApp
         public int StartLight { get; set; }
         public int EndLight { get; set; }
         public int Intensity { get; set; }
-
+        public Color BlockColor { get; set; }
         public Effect BlockEffect { get; set; } = Effect.None;
         public enum Effect
         {
@@ -36,7 +36,7 @@ namespace LumikitApp
         private ScrollViewer _scrollViewer;
         private double _slotWidth;
 
-        public LightBlock(Color color, List<LightBlock> siblings, ScrollViewer scrollViewer, double slotWidth)
+        public LightBlock(List<LightBlock> siblings, ScrollViewer scrollViewer, double slotWidth)
         {
             _siblings = siblings;
             _scrollViewer = scrollViewer;
@@ -45,7 +45,6 @@ namespace LumikitApp
             {
                 Width = slotWidth,
                 Height = 60,
-                Background = new SolidColorBrush(color),
                 BorderBrush = Brushes.White,
                 BorderThickness = new Thickness(0.01)
             };
@@ -74,6 +73,11 @@ namespace LumikitApp
             Container.PointerReleased += OnPointerReleased;
         }
 
+        public void UpdateColor(Color color)
+        {
+            BlockColor = color;
+            Container.Background = new SolidColorBrush(color);
+        }
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             var canvas = (Canvas?)Container.Parent;

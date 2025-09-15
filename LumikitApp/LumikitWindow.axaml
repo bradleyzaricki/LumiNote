@@ -31,8 +31,16 @@
                           HorizontalScrollBarVisibility="Visible"
                           VerticalScrollBarVisibility="Disabled"
                           Height="130">
-                <Canvas Name="TimelineCanvas" Height="80"/>
+                <Grid>
+                    <!-- Block Layer -->
+                    <Canvas Name="TimelineCanvas" Height="80"/>
+
+                    <!-- BPM Overlay Layer -->
+                    <Canvas Name="BpmCanvas" Height="80"
+                            IsHitTestVisible="False"/> <!-- overlay, mouse ignores it -->
+                </Grid>
             </ScrollViewer>
+
             <Border Name="BottomColorBar" Height="5" Background="Gray"/>
             <WrapPanel Name="ColorPalette"
                        Orientation="Horizontal"

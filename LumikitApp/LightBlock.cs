@@ -18,7 +18,7 @@ namespace LumikitApp
         public int EndLight { get; set; }
         public int Intensity { get; set; }
         public Color BlockColor { get; set; }
-        public Effect BlockEffect { get; set; } = Effect.None;
+        public List<Effect> BlockEffects { get; set; } = new List<Effect>(){Effect.None};
         public enum Effect
         {
             None,
@@ -50,22 +50,11 @@ namespace LumikitApp
             };
 
             var grid = new Grid();
-            var leftHandle = new Border
-            {
-                Width = 6,
-                Background = Brushes.White,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Cursor = new Avalonia.Input.Cursor(StandardCursorType.SizeWestEast)
-            };
-            var rightHandle = new Border
-            {
-                Width = 6,
-                Background = Brushes.White,
-                HorizontalAlignment = HorizontalAlignment.Right,
-                Cursor = new Avalonia.Input.Cursor(StandardCursorType.SizeWestEast)
-            };
-            grid.Children.Add(leftHandle);
-            grid.Children.Add(rightHandle);
+            grid.Children.Add(MakeCorner(HorizontalAlignment.Left, VerticalAlignment.Top));
+            grid.Children.Add(MakeCorner(HorizontalAlignment.Right, VerticalAlignment.Top));
+            grid.Children.Add(MakeCorner(HorizontalAlignment.Left, VerticalAlignment.Bottom));
+            grid.Children.Add(MakeCorner(HorizontalAlignment.Right, VerticalAlignment.Bottom));
+
             Container.Child = grid;
 
             Container.PointerPressed += OnPointerPressed;
@@ -172,5 +161,34 @@ namespace LumikitApp
             isResizingRight = false;
             isMoving = false;
         }
+        
+        
+        
+        /// <summary>
+        /// Helper method to draw UI corners
+        /// </summary>
+        /// <param name="h"></param>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        private Control MakeCorner(HorizontalAlignment h, VerticalAlignment v)
+        {
+            return new Border
+            {
+                Width = 8,
+                Height = 8,
+                BorderBrush = Brushes.White,
+                BorderThickness = new Thickness(
+                    h == HorizontalAlignment.Left ? 2 : 0,
+                    v == VerticalAlignment.Top ? 2 : 0,
+                    h == HorizontalAlignment.Right ? 2 : 0,
+                    v == VerticalAlignment.Bottom ? 2 : 0
+                ),
+                HorizontalAlignment = h,
+                VerticalAlignment = v,
+                Cursor = new Cursor(StandardCursorType.SizeWestEast)
+
+            };
+        }
+
     }
 }

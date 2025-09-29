@@ -12,11 +12,16 @@
             <Button Name="PauseTrackButton" Content="Pause" Width="80"/>
             <Button Name="ResumeTrackButton" Content="Resume" Width="80"/>
             <Button Name="NextTrackButton" Content="Next" Width="80"/>
+            <Button Name="RestartTrackButton" Content="Restart" Width="80"/> <!-- NEW -->
+            <Button Name="ZoomInButton" Content="+" Width="40"/>
+            <Button Name="ZoomOutButton" Content="-" Width="40"/>
+
             <TextBlock Name="StopwatchLabel" Foreground="White" VerticalAlignment="Center" Margin="20,0,0,0"/>
             <TextBlock Text="BPM:" Foreground="White" VerticalAlignment="Center" Margin="20,0,0,0"/>
             <TextBox Name="BpmInput" Width="60" Text="120" />
             <Button Name="SaveTrackDataButton" Content="Save" Width="80"/>
         </StackPanel>
+
 
         <!-- Track Info -->
         <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,0">

@@ -8,6 +8,7 @@ namespace LumikitApp
         Task PauseAsync();
         Task ResumeAsync();
         Task SkipAsync();
+        Task RestartAsync();
         void StartTimer(int initialProgressMs);
         void StopTimer();
 

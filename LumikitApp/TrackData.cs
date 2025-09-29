@@ -26,7 +26,7 @@ namespace LumikitApp
         public double Width { get; set; }//Width of block on timeline
         public string Color { get; set; }//Saved color
         
-        public LightBlock.Effect BlockEffect { get; set; }
+        public List<LightBlock.Effect> BlockEffects { get; set; }
         
         public int StartLight { get; set; }
         

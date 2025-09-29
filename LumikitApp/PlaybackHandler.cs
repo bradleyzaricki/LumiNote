@@ -78,6 +78,17 @@ namespace LumikitApp
             }
         }
 
+        public async Task RestartAsync()
+        {      
+            _spotifyProvider.SeekToPlaybackTime(0);
+
+            await PauseAsync();
+            _spotifyProvider.SeekToPlaybackTime(0);
+
+            await ResumeAsync();
+
+        }
+
         public void StartTimer(int initialProgressMs)
         {
             if (_timerRunning) return;

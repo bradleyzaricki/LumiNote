@@ -77,10 +77,10 @@
                 <!-- Effect Options -->
                 <TextBlock Text="Effect" Foreground="White" Margin="0,10,0,0"/>
                 <StackPanel>
-                    <RadioButton Name="Effect_None" GroupName="EffectGroup" Content="None" Foreground="White" IsChecked="True"/>
-                    <RadioButton Name="Effect_FadeIn" GroupName="EffectGroup" Content="Fade In" Foreground="White"/>
-                    <RadioButton Name="Effect_FadeOut" GroupName="EffectGroup" Content="Fade Out" Foreground="White"/>
-                    <RadioButton Name="Effect_FadeStrobe" GroupName="EffectGroup" Content="Strobe" Foreground="White"/>
+                    <CheckBox Name="Effect_None" Content="None" Foreground="White" IsChecked="True"/>
+                    <CheckBox Name="Effect_FadeIn"  Content="Fade In" Foreground="White"/>
+                    <CheckBox Name="Effect_FadeOut"  Content="Fade Out" Foreground="White"/>
+                    <CheckBox Name="Effect_FadeStrobe" Content="Strobe" Foreground="White"/>
                 </StackPanel>
 
                 <Button Name="ApplyBlockChangesButton"

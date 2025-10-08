@@ -4280,5 +4280,144 @@
         "LightIntensity": 255
       }
     ]
+  },
+  {
+    "_BPM": 0,
+    "_trackID": "0bkV1iQHSxBaksUqgEkcbc",
+    "_trackName": null,
+    "_lightBlocks": [
+      {
+        "X": 169.18,
+        "Width": 8.659999999999988,
+        "Color": "Orange",
+        "BlockEffects": [
+          0
+        ],
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
+      },
+      {
+        "X": 181.74,
+        "Width": 4.080000000000003,
+        "Color": "Orange",
+        "BlockEffects": [
+          0
+        ],
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
+      },
+      {
+        "X": 192.4,
+        "Width": 2.660000000000006,
+        "Color": "Orange",
+        "BlockEffects": [
+          0
+        ],
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
+      },
+      {
+        "X": 208.92,
+        "Width": 11.400000000000015,
+        "Color": "Red",
+        "BlockEffects": [
+          0
+        ],
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
+      },
+      {
+        "X": 231.36,
+        "Width": 1.7399999999999711,
+        "Color": "Red",
+        "BlockEffects": [
+          0
+        ],
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
+      },
+      {
+        "X": 240.08,
+        "Width": 1.0999999999999848,
+        "Color": "Red",
+        "BlockEffects": [
+          0
+        ],
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
+      },
+      {
+        "X": 273.3,
+        "Width": 1.099999999999947,
+        "Color": "Orange",
+        "BlockEffects": [
+          0
+        ],
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
+      },
+      {
+        "X": 283.38,
+        "Width": 1.9800000000000182,
+        "Color": "Orange",
+        "BlockEffects": [
+          0
+        ],
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
+      },
+      {
+        "X": 292.62,
+        "Width": 1.5,
+        "Color": "Orange",
+        "BlockEffects": [
+          0
+        ],
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
+      },
+      {
+        "X": 325.7,
+        "Width": 1.759999999999991,
+        "Color": "Orange",
+        "BlockEffects": [
+          0
+        ],
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
+      },
+      {
+        "X": 335.78,
+        "Width": 1.3400000000000318,
+        "Color": "Orange",
+        "BlockEffects": [
+          0
+        ],
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
+      },
+      {
+        "X": 345.22,
+        "Width": 1.320000000000012,
+        "Color": "Orange",
+        "BlockEffects": [
+          0
+        ],
+        "StartLight": 0,
+        "EndLight": 100,
+        "LightIntensity": 255
+      }
+    ]
   }
 ]

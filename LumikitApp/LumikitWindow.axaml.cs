@@ -341,13 +341,13 @@ public async void UpdateCurrentTrack(bool startNewLightShow)
             _lightIntensityTextBox.Text = block.Intensity.ToString();
                 
             // Reset effect selection
-            this.FindControl<RadioButton>("Effect_None").IsChecked =
+            this.FindControl<CheckBox>("Effect_None").IsChecked =
                 block.BlockEffects.Contains(LightBlock.Effect.None);
-            this.FindControl<RadioButton>("Effect_FadeIn").IsChecked =
+            this.FindControl<CheckBox>("Effect_FadeIn").IsChecked =
                 block.BlockEffects.Contains(LightBlock.Effect.FadeIn);
-            this.FindControl<RadioButton>("Effect_FadeOut").IsChecked =
+            this.FindControl<CheckBox>("Effect_FadeOut").IsChecked =
                 block.BlockEffects.Contains(LightBlock.Effect.FadeOut);
-            this.FindControl<RadioButton>("Effect_FadeStrobe").IsChecked =
+            this.FindControl<CheckBox>("Effect_FadeStrobe").IsChecked =
                 block.BlockEffects.Contains(LightBlock.Effect.Strobe);
         
         }
@@ -675,26 +675,21 @@ public async void UpdateCurrentTrack(bool startNewLightShow)
 
                 foreach (var blockEffect in activeBlock.BlockEffects)
                 {
-
-
+                    
                     if (blockEffect == LightBlock.Effect.FadeIn)
                     {
-                        intensity = (int)(activeBlock.Intensity + relPos * (255 - activeBlock.Intensity));
-                        break;
+                        if(relPos <= 0.5)
+                            intensity = (int)(relPos*2 * (255));
                     }
-
                     if (blockEffect == LightBlock.Effect.FadeOut)
                     {
-                        intensity = (int)(255 - relPos * (255 - activeBlock.Intensity));
-                        break;
+                        if(relPos >= 0.5)
+                        intensity = (int)(255 - relPos * (255));
                     }
                     if (blockEffect == LightBlock.Effect.Strobe)
                     {
                         if (((int)slotIndex % 2) != 0)
                             intensity = 0;
-                        Console.WriteLine("strobe");
-
-                        break;
                     }
                 }
                 byte colorIndex = MapColorToByte(brush.Color);
@@ -754,10 +749,10 @@ public async void UpdateCurrentTrack(bool startNewLightShow)
                     _selectedBlock.Intensity = Math.Clamp(intensity, 0, 255);
 
                 // Effect radio buttons
-                var rbNone   = this.FindControl<RadioButton>("Effect_None");
-                var rbIn     = this.FindControl<RadioButton>("Effect_FadeIn");
-                var rbOut    = this.FindControl<RadioButton>("Effect_FadeOut");
-                var rbStrobe = this.FindControl<RadioButton>("Effect_FadeStrobe");
+                var rbNone   = this.FindControl<CheckBox>("Effect_None");
+                var rbIn     = this.FindControl<CheckBox>("Effect_FadeIn");
+                var rbOut    = this.FindControl<CheckBox>("Effect_FadeOut");
+                var rbStrobe = this.FindControl<CheckBox>("Effect_FadeStrobe");
                 _selectedBlock.BlockEffects = new List<LightBlock.Effect>();
                 if (rbIn?.IsChecked == true)
                     _selectedBlock.BlockEffects.Add(LightBlock.Effect.FadeIn);

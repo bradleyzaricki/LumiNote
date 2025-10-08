@@ -27,9 +27,11 @@ namespace LumikitApp
             {
                 StopTimer();
                 await _spotifyProvider.PausePlaybackAsync();
-                await Task.Delay(200);
+                
                 _progressMs = await _spotifyProvider.GetPlaybackProgressMsAsync();
+                await Task.Delay(1000);
                 ProgressUpdated?.Invoke(_progressMs);
+
             }
             catch (Exception ex)
             {
@@ -39,13 +41,18 @@ namespace LumikitApp
 
         public async Task ResumeAsync()
         {
+            var seconds = await _spotifyProvider.GetPlaybackProgressMsAsync() / 1000;
+            await _spotifyProvider.SeekToPlaybackTime(seconds*1000);
+
+            Console.WriteLine(seconds);
+            _progressMs = 0;
             try
             {
                 if (!await _spotifyProvider.IsPlayingAsync())
                 {
                     await _spotifyProvider.ResumePlaybackAsync();
                     _syncStopwatch.Restart();
-                    StartTimer(_progressMs);
+                    StartTimer(_progressMs + seconds*1000);
                 }
             }
             catch (Exception ex)
@@ -60,17 +67,7 @@ namespace LumikitApp
             {
                 StopTimer();
                 await _spotifyProvider.SkipTrack();
-
-                int progress = 0;
-                for (int i = 0; i < 50; i++)
-                {
-                    await Task.Delay(5);
-                    progress = await _spotifyProvider.GetPlaybackProgressMsAsync();
-                    if (progress > 0) break;
-                }
-
-                _syncStopwatch.Restart();
-                StartTimer(progress);
+                await RestartAsync();
             }
             catch (Exception ex)
             {
@@ -79,12 +76,11 @@ namespace LumikitApp
         }
 
         public async Task RestartAsync()
-        {      
-            _spotifyProvider.SeekToPlaybackTime(0);
-
+        {
             await PauseAsync();
             _spotifyProvider.SeekToPlaybackTime(0);
-
+            _progressMs = 0;
+            await Task.Delay(1000);
             await ResumeAsync();
 
         }

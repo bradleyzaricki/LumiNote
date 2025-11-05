@@ -10,7 +10,7 @@ using Avalonia.Controls;
 
 namespace LumikitApp
 {
-    public class SpotifyProvider : ISpotifyProvider
+    public class SpotifyProvider : IMusicProvider
     {
         private readonly string _clientId;
         private readonly string _redirectUri;
@@ -186,13 +186,16 @@ namespace LumikitApp
             }
         }
 
-        public async Task<FullTrack> GetCurrentlyPlayingTrackAsync()
+        public async Task<TrackPOCO> GetCurrentlyPlayingTrackAsync()
         {
             try
             {
                 var playback = await _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest());
                 var track = playback?.Item as FullTrack;
-                if (track != null) return track;
+                if (track != null)
+                {
+                    return new TrackPOCO(track.Id, track.Name, track.Album.Images[1].Url);
+                }
             }
             catch
             {

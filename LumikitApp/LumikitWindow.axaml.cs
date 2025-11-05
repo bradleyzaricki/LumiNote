@@ -18,7 +18,8 @@ namespace LumikitApp
 {
     public partial class LumikitWindow : Window
     {
-        private SpotifyProvider _spotifyProvider;
+        
+        private IMusicProvider musicProvider;
         private bool scrollLock = true;
         private double _slotWidth = 3;       // base zoom unit
         private double _minBlockWidth = 0.6; // allow 1/5th of base resolution
@@ -40,7 +41,8 @@ namespace LumikitApp
         {
             Colors.Red, Colors.Orange, Colors.Yellow, Colors.Green, Colors.Blue,
             Colors.Purple, Colors.Magenta, Colors.Aqua, Colors.Lime,
-            Colors.HotPink, Colors.DarkRed, Colors.LightGreen, Colors.CornflowerBlue
+            Colors.HotPink, Colors.DarkRed, Colors.LightGreen, Colors.CornflowerBlue,
+            Colors.White
         };
 
         //Avalonia UI elements
@@ -143,7 +145,7 @@ namespace LumikitApp
         private void OnKeyDown(object? sender, KeyEventArgs e)
         {
             // Start a live block when 1 is pressed
-            if (!_isLiveInputActive && (e.Key == Key.D1 ||  e.Key == Key.D2 ||   e.Key == Key.D3 || e.Key == Key.D4 || e.Key == Key.D5  || e.Key == Key.D6 || e.Key == Key.D7  || e.Key == Key.D8 || e.Key == Key.D9))
+            if (!_isLiveInputActive && (e.Key == Key.D1 ||  e.Key == Key.D2 ||   e.Key == Key.D3 || e.Key == Key.D4 || e.Key == Key.D5  || e.Key == Key.D6 || e.Key == Key.D7  || e.Key == Key.D8 || e.Key == Key.D9 || e.Key == Key.D0))
             {
                 _isLiveInputActive = true;
                 _liveStartMs = _playbackHandler?.CurrentProgressMs ?? 0; // requires playback handler to expose current ms
@@ -180,7 +182,9 @@ namespace LumikitApp
                     case Key.D9:
                         block.UpdateColor((Colors.Lime));
                         break;
-                    
+                    case Key.D0:
+                        block.UpdateColor((Colors.White));
+                        break;
                 }
                 block.StartLight = 0;
                 block.EndLight = 100;
@@ -188,7 +192,6 @@ namespace LumikitApp
                 block.Container.Width = _slotWidth;
                 Canvas.SetLeft(block.Container, caretX);
                 Canvas.SetTop(block.Container, 0);
-
                 _timelineCanvas.Children.Add(block.Container);
                 LightBlocks.Add(block);
 
@@ -214,7 +217,7 @@ namespace LumikitApp
         private void OnKeyUp(object? sender, KeyEventArgs e)
         {
             // Finish the live block when key is released
-            if (_isLiveInputActive && e.Key == Key.D1 || e.Key == Key.D2 ||   e.Key == Key.D3 || e.Key == Key.D4 || e.Key == Key.D5  || e.Key == Key.D6 || e.Key == Key.D7  || e.Key == Key.D8 || e.Key == Key.D9)
+            if (_isLiveInputActive && e.Key == Key.D1 || e.Key == Key.D2 ||   e.Key == Key.D3 || e.Key == Key.D4 || e.Key == Key.D5  || e.Key == Key.D6 || e.Key == Key.D7  || e.Key == Key.D8 || e.Key == Key.D9 || e.Key == Key.D0)
             {
                 _isLiveInputActive = false;
                 _liveBlock = null;
@@ -228,11 +231,10 @@ public void InitializeWindow(SpotifyProvider provider)
         var track = await provider.GetCurrentlyPlayingTrackAsync();
         var trackData = new TrackData
         {
-            _trackID = track.Id,
+            _trackID = track.trackID,
             _BPM = double.Parse(_bpmInput.Text),
             _lightBlocks = LightBlocks.Select(b => new LightBlockData
             {
-                // ✅ Save in "module units" (time slots) instead of pixels
                 X = Canvas.GetLeft(b.Container) / _slotWidth,
                 Width = b.Container.Width / _slotWidth,
                 Color = ((SolidColorBrush)b.Container.Background).Color.ToString(),
@@ -263,26 +265,23 @@ public void InitializeWindow(SpotifyProvider provider)
     };
     this.FindControl<Button>("RestartTrackButton").Click += async (_, _) => _playbackHandler.RestartAsync();
 
-    _spotifyProvider = provider;
+    musicProvider = provider;
 }
 
 public async void UpdateCurrentTrack(bool startNewLightShow)
 {
-    var track = await _spotifyProvider.GetCurrentlyPlayingTrackAsync();
+    var track = await musicProvider.GetCurrentlyPlayingTrackAsync();
 
-    this.FindControl<TextBlock>("NowPlayingText").Text = track.Name;
-    var albumImages = track.Album.Images;
-    if (albumImages != null && albumImages.Count > 0)
-    {
-        var imageUrl = albumImages[1].Url;
-        await SetAlbumCover(imageUrl);
-    }
+    this.FindControl<TextBlock>("NowPlayingText").Text = track.trackName;
+    var albumImage = track.trackCoverImageUrl; 
+    await SetAlbumCover(albumImage);
+    
 
     // Clear old blocks
     foreach (var block in LightBlocks) _timelineCanvas.Children.Remove(block.Container);
     LightBlocks.Clear();
 
-    _trackDataLocal = JsonDataHandler.GetTrack(track.Id);
+    _trackDataLocal = JsonDataHandler.GetTrack(track.trackID);
     if (_trackDataLocal != null)
     {
         _bpm = _trackDataLocal._BPM;
@@ -299,7 +298,6 @@ public async void UpdateCurrentTrack(bool startNewLightShow)
             block.BlockEffects = data.BlockEffects;
             block.Intensity = data.LightIntensity;
 
-            // ✅ Restore with zoom applied
             block.Container.Width = data.Width * _slotWidth;
             Canvas.SetLeft(block.Container, data.X * _slotWidth);
             Canvas.SetTop(block.Container, 0);
@@ -335,6 +333,7 @@ public async void UpdateCurrentTrack(bool startNewLightShow)
 
         private void LoadBlockIntoEditor(LightBlock block)
         {
+            UpdateEffectSettingVisibility();
             _selectedBlock = block;
             _startLightInputBox.Text = block.StartLight.ToString();
             _endLightTextbox.Text = block.EndLight.ToString();
@@ -753,6 +752,9 @@ public async void UpdateCurrentTrack(bool startNewLightShow)
                 var rbIn     = this.FindControl<CheckBox>("Effect_FadeIn");
                 var rbOut    = this.FindControl<CheckBox>("Effect_FadeOut");
                 var rbStrobe = this.FindControl<CheckBox>("Effect_FadeStrobe");
+                var rbTravel     = this.FindControl<CheckBox>("Effect_Travel");
+                var rbCombine    = this.FindControl<CheckBox>("Effect_Combine");
+                var rbBuild = this.FindControl<CheckBox>("Effect_Build");
                 _selectedBlock.BlockEffects = new List<LightBlock.Effect>();
                 if (rbIn?.IsChecked == true)
                     _selectedBlock.BlockEffects.Add(LightBlock.Effect.FadeIn);
@@ -781,10 +783,24 @@ public async void UpdateCurrentTrack(bool startNewLightShow)
             if (color == Colors.DarkRed) return 10;
             if (color == Colors.LightGreen) return 11;
             if (color == Colors.CornflowerBlue) return 12;
-
+            if (color == Colors.White) return 13;
             return 255; // Unknown
         }
+        private void UpdateEffectSettingVisibility()
+        {
+            var isOn = Effect_Travel?.IsChecked == true;
+            TravelInputsPanel.IsVisible = isOn;
+        }
+        private void Effect_Travel_Checked(object? sender, RoutedEventArgs e)
+        {
+            UpdateEffectSettingVisibility();
 
+        }
 
+        private void Effect_Travel_Unchecked(object? sender, RoutedEventArgs e)
+        {
+            UpdateEffectSettingVisibility();
+
+        }
     }
 }

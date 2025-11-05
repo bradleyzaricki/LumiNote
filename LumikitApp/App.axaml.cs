@@ -23,7 +23,7 @@ namespace LumikitApp
                 return new SpotifyProvider(null, clientId, redirectUri);
             });
             // Optionally, also register the interface if needed elsewhere
-            serviceCollection.AddSingleton<ISpotifyProvider>(sp => sp.GetRequiredService<SpotifyProvider>());
+            serviceCollection.AddSingleton<IMusicProvider>(sp => sp.GetRequiredService<SpotifyProvider>());
 
             Services = serviceCollection.BuildServiceProvider();
         }

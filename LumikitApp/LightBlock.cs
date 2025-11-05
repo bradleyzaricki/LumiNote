@@ -24,7 +24,11 @@ namespace LumikitApp
             None,
             FadeIn,
             FadeOut,
-            Strobe
+            Strobe,
+            Travel,
+            Combine,
+            Build,
+            Seperate,
         }
         private Point dragStartCanvas;
         private double originalLeft;

@@ -11,7 +11,6 @@ namespace LumikitApp
         Task RestartAsync();
         void StartTimer(int initialProgressMs);
         void StopTimer();
-
         int CurrentProgressMs { get; }
         event Action<int> ProgressUpdated;
     }

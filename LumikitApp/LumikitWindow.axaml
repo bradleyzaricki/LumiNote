@@ -1,7 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="LumikitApp.LumikitWindow"
-        Width="800" Height="450"
+        Width="1600" Height="900"
         Background="Black"
         Title="Lumikit">
 
@@ -70,10 +70,20 @@
 
                 <TextBlock Text="End Light (0-100)" Foreground="White"/>
                 <TextBox Name="EndLightInput"/>
-
+                
                 <TextBlock Text="Intensity (0-255)" Foreground="White"/>
                 <TextBox Name="IntensityInput"/>
+                
+                <StackPanel Name="TravelInputsPanel">
+                    <TextBlock Text="Travel Start (0-100)" Foreground="White"/>
+                    <TextBox Name="TravelStart"/>
+                    
+                    <TextBlock Text="Travel End (0-100)" Foreground="White"/>
+                    <TextBox Name="TravelEnd"/>
+                    </StackPanel>
 
+    
+                
                 <!-- Effect Options -->
                 <TextBlock Text="Effect" Foreground="White" Margin="0,10,0,0"/>
                 <StackPanel>
@@ -81,6 +91,17 @@
                     <CheckBox Name="Effect_FadeIn"  Content="Fade In" Foreground="White"/>
                     <CheckBox Name="Effect_FadeOut"  Content="Fade Out" Foreground="White"/>
                     <CheckBox Name="Effect_FadeStrobe" Content="Strobe" Foreground="White"/>
+                    <CheckBox Name="Effect_Travel"
+                              Content="Travel"
+                              Foreground="White"
+                              Checked="Effect_Travel_Checked"
+                              Unchecked="Effect_Travel_Unchecked"/>
+                    
+                    <CheckBox Name="Effect_Combine" Content="Combine" Foreground="White"/>
+                    <CheckBox Name="Effect_Build"  Content="Build" Foreground="White"/>
+                    <CheckBox Name="Effect_Seperate" Content="Seperate" Foreground="White"/>
+                    <CheckBox Name="Effect_AccentColor"  Content="Accent Color" Foreground="White"/>
+                    <CheckBox Name="Effect_FillerColor" Content="Filler Color" Foreground="White"/>
                 </StackPanel>
 
                 <Button Name="ApplyBlockChangesButton"

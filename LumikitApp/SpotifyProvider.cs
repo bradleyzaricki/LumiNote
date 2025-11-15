@@ -10,6 +10,9 @@ using Avalonia.Controls;
 
 namespace LumikitApp
 {
+    /// <summary>
+    /// This class will handle all spotify endpoints
+    /// </summary>
     public class SpotifyProvider : IMusicProvider
     {
         private readonly string _clientId;

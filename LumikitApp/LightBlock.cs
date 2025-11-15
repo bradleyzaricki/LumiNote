@@ -16,6 +16,8 @@ namespace LumikitApp
         public Border Container { get; }
         public int StartLight { get; set; }
         public int EndLight { get; set; }
+        public int DeltaStartLight { get; set; }
+        public int DeltaEndLight { get; set; }
         public int Intensity { get; set; }
         public Color BlockColor { get; set; }
         public List<Effect> BlockEffects { get; set; } = new List<Effect>(){Effect.None};
@@ -42,6 +44,9 @@ namespace LumikitApp
 
         public LightBlock(List<LightBlock> siblings, ScrollViewer scrollViewer, double slotWidth)
         {
+            StartLight = 0;
+            EndLight = 100;
+            Intensity = 255;
             _siblings = siblings;
             _scrollViewer = scrollViewer;
             _slotWidth = slotWidth;

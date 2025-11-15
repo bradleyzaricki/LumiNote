@@ -17,15 +17,13 @@ namespace LumikitApp
     {
         public static string filePath = "/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/TrackInfo.json";//"C:\\Users\\bzari\\source\\repos\\SpotifyInformationConsole\\LumikitApp\\TrackInfo.json";
         /// <summary>
-        /// Gets the formatted trackData class from json data
+        /// Gets the formatted trackData class from json data via trackID search
         /// </summary>
         /// <param name="trackID"></param>
         /// <returns></returns>
         public static TrackData GetTrack(string trackID)
         {
             var json = File.ReadAllText(filePath);
-            Debug.WriteLine(json);
-
             var tracks = JsonSerializer.Deserialize<List<TrackData>>(json);
             foreach(TrackData track in tracks)
             {
@@ -40,7 +38,7 @@ namespace LumikitApp
             return null;
         }
         /// <summary>
-        /// Saves track Name (todo), ID, BPM, and light settings (todo) to the local json file
+        /// Saves track Name, Id, Bpm, and Lighting Effects to local json file
         /// </summary>
         /// <param name="track"></param>
         public static void SaveTrack(TrackData track)

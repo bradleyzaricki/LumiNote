@@ -75,11 +75,11 @@
                 <TextBox Name="IntensityInput"/>
                 
                 <StackPanel Name="TravelInputsPanel">
-                    <TextBlock Text="Travel Start (0-100)" Foreground="White"/>
-                    <TextBox Name="TravelStart"/>
+                    <TextBlock Text="Ending Start Light (0-100)" Foreground="White"/>
+                    <TextBox Name="TravelStartLightInput"/>
                     
-                    <TextBlock Text="Travel End (0-100)" Foreground="White"/>
-                    <TextBox Name="TravelEnd"/>
+                    <TextBlock Text="Ending End Light (0-100)" Foreground="White"/>
+                    <TextBox Name="TravelEndLightInput"/>
                     </StackPanel>
 
     

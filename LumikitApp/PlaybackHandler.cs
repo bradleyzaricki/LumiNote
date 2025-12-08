@@ -7,7 +7,7 @@ namespace LumikitApp
 {
     public class PlaybackHandler : IPlaybackHandler
     {
-        private readonly SpotifyProvider _spotifyProvider;
+        private readonly IMusicProvider _musicProvider;
         private readonly Stopwatch _syncStopwatch = new();
         private bool _timerRunning;
         private int _progressMs;
@@ -16,9 +16,9 @@ namespace LumikitApp
 
         public event Action<int> ProgressUpdated;
 
-        public PlaybackHandler(SpotifyProvider provider)
+        public PlaybackHandler(IMusicProvider provider)
         {
-            _spotifyProvider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _musicProvider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
         public async Task PauseAsync()
@@ -26,9 +26,10 @@ namespace LumikitApp
             try
             {
                 StopTimer();
-                await _spotifyProvider.PausePlaybackAsync();
+                await _musicProvider.PausePlaybackAsync();
                 
-                _progressMs = await _spotifyProvider.GetPlaybackProgressMsAsync();
+                //adjust playback timer for any potential delay between services
+                _progressMs = await _musicProvider.GetPlaybackProgressMsAsync();
                 await Task.Delay(1000);
                 ProgressUpdated?.Invoke(_progressMs);
 
@@ -41,16 +42,14 @@ namespace LumikitApp
 
         public async Task ResumeAsync()
         {
-            var seconds = await _spotifyProvider.GetPlaybackProgressMsAsync() / 1000;
-            await _spotifyProvider.SeekToPlaybackTime(seconds*1000);
-
-            Console.WriteLine(seconds);
+            var seconds = await _musicProvider.GetPlaybackProgressMsAsync() / 1000;
+            await _musicProvider.SeekToPlaybackTime(seconds*1000);
             _progressMs = 0;
             try
             {
-                if (!await _spotifyProvider.IsPlayingAsync())
+                if (!await _musicProvider.IsPlayingAsync())
                 {
-                    await _spotifyProvider.ResumePlaybackAsync();
+                    await _musicProvider.ResumePlaybackAsync();
                     _syncStopwatch.Restart();
                     StartTimer(_progressMs + seconds*1000);
                 }
@@ -66,7 +65,7 @@ namespace LumikitApp
             try
             {
                 StopTimer();
-                await _spotifyProvider.SkipTrack();
+                await _musicProvider.SkipTrack();
                 await RestartAsync();
             }
             catch (Exception ex)
@@ -78,7 +77,7 @@ namespace LumikitApp
         public async Task RestartAsync()
         {
             await PauseAsync();
-            _spotifyProvider.SeekToPlaybackTime(0);
+            _musicProvider.SeekToPlaybackTime(0);
             _progressMs = 0;
             await Task.Delay(1000);
             await ResumeAsync();

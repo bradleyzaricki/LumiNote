@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "v6f0FNuN8Kk=",
+  "dgSpecHash": "zE+B3Fvz1GA=",
   "success": true,
   "projectFilePath": "/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/LumikitApp.csproj",
   "expectedPackageFiles": [
@@ -19,6 +19,7 @@
     "/Users/bradleyzaricki/.nuget/packages/avalonia.themes.simple/11.3.2/avalonia.themes.simple.11.3.2.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/avalonia.win32/11.3.2/avalonia.win32.11.3.2.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/avalonia.x11/11.3.2/avalonia.x11.11.3.2.nupkg.sha512",
+    "/Users/bradleyzaricki/.nuget/packages/embedio/3.5.2/embedio.3.5.2.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/harfbuzzsharp/8.3.1.1/harfbuzzsharp.8.3.1.1.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/harfbuzzsharp.nativeassets.linux/8.3.1.1/harfbuzzsharp.nativeassets.linux.8.3.1.1.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/harfbuzzsharp.nativeassets.macos/8.3.1.1/harfbuzzsharp.nativeassets.macos.8.3.1.1.nupkg.sha512",
@@ -51,9 +52,12 @@
     "/Users/bradleyzaricki/.nuget/packages/skiasharp.nativeassets.webassembly/2.88.9/skiasharp.nativeassets.webassembly.2.88.9.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/skiasharp.nativeassets.win32/2.88.9/skiasharp.nativeassets.win32.2.88.9.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/spotifyapi.web/7.2.1/spotifyapi.web.7.2.1.nupkg.sha512",
+    "/Users/bradleyzaricki/.nuget/packages/spotifyapi.web.auth/7.2.1/spotifyapi.web.auth.7.2.1.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/system.io.pipelines/8.0.0/system.io.pipelines.8.0.0.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/system.io.ports/9.0.9/system.io.ports.9.0.9.nupkg.sha512",
+    "/Users/bradleyzaricki/.nuget/packages/system.valuetuple/4.5.0/system.valuetuple.4.5.0.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/tmds.dbus.protocol/0.21.2/tmds.dbus.protocol.0.21.2.nupkg.sha512",
+    "/Users/bradleyzaricki/.nuget/packages/unosquare.swan.lite/3.1.0/unosquare.swan.lite.3.1.0.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/microsoft.netcore.app.ref/8.0.11/microsoft.netcore.app.ref.8.0.11.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.11/microsoft.aspnetcore.app.ref.8.0.11.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/microsoft.netcore.app.host.osx-arm64/8.0.11/microsoft.netcore.app.host.osx-arm64.8.0.11.nupkg.sha512"

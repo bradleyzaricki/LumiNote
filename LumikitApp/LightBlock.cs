@@ -38,6 +38,7 @@ namespace LumikitApp
         private bool isResizingLeft;
         private bool isResizingRight;
         private bool isMoving;
+        public bool isSelected;
         private List<LightBlock> _siblings;
         private ScrollViewer _scrollViewer;
         private double _slotWidth;
@@ -70,10 +71,21 @@ namespace LumikitApp
             Container.PointerMoved += OnPointerMoved;
             Container.PointerReleased += OnPointerReleased;
         }
-
+        /// <summary>
+        /// Update the output color of the lightblock as well as its visual aid
+        /// </summary>
+        /// <param name="color"></param>
         public void UpdateColor(Color color)
         {
             BlockColor = color;
+            Container.Background = new SolidColorBrush(color);
+        }
+        /// <summary>
+        /// Update ONLY the background color of the lightblock. Visual purposes only no actual functionality
+        /// </summary>
+        /// <param name="color"></param>
+        public void UpdateBackground(Color color)
+        {
             Container.Background = new SolidColorBrush(color);
         }
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
@@ -107,25 +119,13 @@ namespace LumikitApp
 
         private void OnPointerMoved(object? sender, PointerEventArgs e)
         {
+            
             var canvas = (Canvas?)Container.Parent;
-            if (canvas == null || !e.GetCurrentPoint(Container).Properties.IsLeftButtonPressed) return;
+            if (canvas == null || !isSelected) return;
 
             var current = e.GetPosition(canvas);
             double canvasWidth = canvas.Bounds.Width;
 
-            void ScrollIfNeeded(double edge)
-            {
-                double scrollOffset = _scrollViewer.Offset.X;
-                double viewportWidth = _scrollViewer.Viewport.Width;
-                if (edge > scrollOffset + viewportWidth - 30)
-                {
-                    _scrollViewer.Offset = new Vector(scrollOffset + 15, 0);
-                }
-                else if (edge < scrollOffset + 30)
-                {
-                    _scrollViewer.Offset = new Vector(Math.Max(scrollOffset - 15, 0), 0);
-                }
-            }
 
             if (isResizingLeft)
             {
@@ -154,18 +154,56 @@ namespace LumikitApp
             }
             else if (isMoving)
             {
-                double newLeft = originalLeft + (current.X - dragStartCanvas.X);
-                double snappedLeft = Math.Round(newLeft / _slotWidth) * _slotWidth;
-                if (snappedLeft >= 0 && snappedLeft + Container.Width <= canvasWidth && !Collides(snappedLeft, Container.Width))
+                foreach (var block in _siblings)
                 {
-                    Canvas.SetLeft(Container, snappedLeft);
-                    ScrollIfNeeded(snappedLeft + Container.Width);
+                    if (!block.isMoving)
+                    {
+                        block.originalLeft = Canvas.GetLeft(block.Container);
+                    }
+                    block.MoveBlock(current,dragStartCanvas);
+
                 }
             }
         }
+        private void ScrollIfNeeded(double edge)
+        {
+            double scrollOffset = _scrollViewer.Offset.X;
+            double viewportWidth = _scrollViewer.Viewport.Width;
+            if (edge > scrollOffset + viewportWidth - 30)
+            {
+                _scrollViewer.Offset = new Vector(scrollOffset + 15, 0);
+            }
+            else if (edge < scrollOffset + 30)
+            {
+                _scrollViewer.Offset = new Vector(Math.Max(scrollOffset - 15, 0), 0);
+            }
+        }
 
+        public void MoveBlock(Point current, Point dragStart)
+        {
+            
+            if (!this.isSelected)
+            {
+                return;
+            }
+            isMoving = true;
+            var canvas = (Canvas?)Container.Parent;
+            var canvasWidth = canvas.Bounds.Width;
+            double newLeft = originalLeft + (current.X - dragStart.X);
+            double snappedLeft = Math.Round(newLeft / _slotWidth) * _slotWidth;
+            if (snappedLeft >= 0 && snappedLeft + Container.Width <= canvasWidth &&
+                !Collides(snappedLeft, Container.Width))
+            {
+                Canvas.SetLeft(Container, snappedLeft);
+                //ScrollIfNeeded(snappedLeft + Container.Width);
+            }
+        }
         private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
+            foreach (var block in _siblings)
+            {
+                block.isMoving=false;
+            }
             isResizingLeft = false;
             isResizingRight = false;
             isMoving = false;
@@ -198,6 +236,7 @@ namespace LumikitApp
 
             };
         }
+        
 
     }
 }

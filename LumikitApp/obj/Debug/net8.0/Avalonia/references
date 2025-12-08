@@ -22,6 +22,7 @@
 /Users/bradleyzaricki/.nuget/packages/avalonia.win32/11.3.2/lib/net8.0/Avalonia.Win32.Automation.dll
 /Users/bradleyzaricki/.nuget/packages/avalonia.win32/11.3.2/lib/net8.0/Avalonia.Win32.dll
 /Users/bradleyzaricki/.nuget/packages/avalonia.x11/11.3.2/lib/net8.0/Avalonia.X11.dll
+/Users/bradleyzaricki/.nuget/packages/embedio/3.5.2/lib/netstandard2.0/EmbedIO.dll
 /Users/bradleyzaricki/.nuget/packages/harfbuzzsharp/8.3.1.1/lib/net8.0/HarfBuzzSharp.dll
 /Users/bradleyzaricki/.nuget/packages/microcom.runtime/0.11.0/lib/net5.0/MicroCom.Runtime.dll
 /Users/bradleyzaricki/.nuget/packages/microsoft.netcore.app.ref/8.0.11/ref/net8.0/Microsoft.CSharp.dll
@@ -35,7 +36,9 @@
 /Users/bradleyzaricki/.nuget/packages/microsoft.netcore.app.ref/8.0.11/ref/net8.0/netstandard.dll
 /Users/bradleyzaricki/.nuget/packages/newtonsoft.json/13.0.3/lib/net6.0/Newtonsoft.Json.dll
 /Users/bradleyzaricki/.nuget/packages/skiasharp/2.88.9/lib/net6.0/SkiaSharp.dll
+/Users/bradleyzaricki/.nuget/packages/spotifyapi.web.auth/7.2.1/lib/net8.0/SpotifyAPI.Web.Auth.dll
 /Users/bradleyzaricki/.nuget/packages/spotifyapi.web/7.2.1/lib/net8.0/SpotifyAPI.Web.dll
+/Users/bradleyzaricki/.nuget/packages/unosquare.swan.lite/3.1.0/lib/netstandard2.0/Swan.Lite.dll
 /Users/bradleyzaricki/.nuget/packages/microsoft.netcore.app.ref/8.0.11/ref/net8.0/System.AppContext.dll
 /Users/bradleyzaricki/.nuget/packages/microsoft.netcore.app.ref/8.0.11/ref/net8.0/System.Buffers.dll
 /Users/bradleyzaricki/.nuget/packages/microsoft.netcore.app.ref/8.0.11/ref/net8.0/System.Collections.Concurrent.dll

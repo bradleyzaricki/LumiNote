@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -18,12 +19,13 @@ namespace LumikitApp
             serviceCollection.AddSingleton<SpotifyProvider>(provider =>
             {
                  string clientId = "7a3be16d49114bcb8317330636aa2647"; // replace this
-                 string redirectUri = "http://localhost:5000/callback";
+                 string redirectUri = "http://127.0.0.1:5000/callback";
                 // Window will be set later
                 return new SpotifyProvider(null, clientId, redirectUri);
             });
+            Console.WriteLine("aaaaa");
             // Optionally, also register the interface if needed elsewhere
-            serviceCollection.AddSingleton<IMusicProvider>(sp => sp.GetRequiredService<SpotifyProvider>());
+           // serviceCollection.AddSingleton<IMusicProvider>(sp => sp.GetRequiredService<SpotifyProvider>());
 
             Services = serviceCollection.BuildServiceProvider();
         }

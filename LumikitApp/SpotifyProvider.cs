@@ -61,7 +61,7 @@ namespace LumikitApp
             });
 
             var http = new HttpListener();
-            http.Prefixes.Add("http://localhost:5000/callback/");
+            http.Prefixes.Add("http://127.0.0.1:5000/callback/");
             http.Start();
 
             Console.WriteLine("Waiting for Spotify login...");

@@ -13,7 +13,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.IO.Ports;
-
+using Avalonia.Input;
+using Avalonia.Controls;
+using Avalonia.VisualTree;
+using Avalonia.Platform;
 namespace LumikitApp
 {
     public partial class LumikitWindow : Window
@@ -21,23 +24,24 @@ namespace LumikitApp
         /// <summary>   </summary>
         /// <summary> The music provider to handle audio playback (ex. Spotify, Local Files...) </summary>
         private IMusicProvider musicProvider;
-        
+
         /// <summary> The serial output for lighting communications  </summary>
         private SerialPort _serialPort;
-        
+
+        private Point _lastPointerPos;
         //Variables for scaling playback length and visual size
         private const int _totalModules = 10000;
         private const double _msPerSlot = 50.0;
         private const double _modulesPerSecond = 1000.0 / _msPerSlot;
-        private double slotWidth = 3;       // base zoom unit
+        private double slotWidth = 3; // base zoom unit
         private double minBlockWidth = 0.6; // allow 1/5th of base resolution
         private bool scrollLock = true;
 
         /// <summary> User defined bpm variable to visualize bpm lines in playback. 0 == no value </summary>
         private double bpm = 0;
-        
+
         /// <summary> The current selected light block available for user editing</summary>
-        private LightBlock? _selectedBlock = null;
+        private List<LightBlock>? _selectedBlocks = new List<LightBlock>();
 
         //Possible color blocks for lightshow editing max 254 colors
         private readonly List<Color> BlockColors = new()
@@ -58,9 +62,6 @@ namespace LumikitApp
         private TextBox _endLightTextbox;
         private TextBox _startLightInputBox;
 
-        //POCO to hold both Luminote data and third party Music Provider Data
-        private TrackData _trackDataLocal;
-
         //Handles unique playback logic depending on the music provider
         private IPlaybackHandler _playbackHandler;
 
@@ -72,7 +73,7 @@ namespace LumikitApp
         public LumikitWindow()
         {
             InitializeComponent();
-            
+
             _timelineCanvas = this.FindControl<Canvas>("TimelineCanvas");
             _scrollViewer = this.FindControl<ScrollViewer>("TimelineScrollViewer");
             _bpmInput = this.FindControl<TextBox>("BpmInput");
@@ -80,11 +81,12 @@ namespace LumikitApp
             var zoomInBtn = this.FindControl<Button>("ZoomInButton");
             if (zoomInBtn != null)
                 zoomInBtn.Click += (_, _) => Zoom(1.25);
+            PointerMoved += OnPointerMoved;
 
             var zoomOutBtn = this.FindControl<Button>("ZoomOutButton");
             if (zoomOutBtn != null)
                 zoomOutBtn.Click += (_, _) => Zoom(0.8);
-            
+
             _bpmInput.LostFocus += (_, _) =>
             {
                 if (double.TryParse(_bpmInput.Text, out double _bpm) && _bpm > 0)
@@ -93,16 +95,16 @@ namespace LumikitApp
                     DrawBPMLines();
                 }
             };
-            
+
             this.KeyDown += (_, e) =>
             {
-                if (e.Key == Key.LeftShift)
+                if (e.Key == Key.CapsLock)
                 {
                     scrollLock = true;
                     e.Handled = true;
                 }
             };
-            
+
             // === Hook keyboard events for live mode ===
             this.KeyDown += OnKeyDown;
             this.KeyUp += OnKeyUp;
@@ -118,15 +120,16 @@ namespace LumikitApp
                 Console.WriteLine("Failed to open serial port, live serial output feature not available," +
                                   " please refer to Luminote's built in lighting for visual feedback");
             }
+
             _scrollViewer.PointerPressed += (_, _) => scrollLock = false;
             var applyBtn = this.FindControl<Button>("ApplyBlockChangesButton");
             if (applyBtn != null) applyBtn.Click += OnApplyBlockChangesClicked;
-            
+
 
             InitializeColorPalette();
             DrawTimelineSlots();
 
-            
+
         }
 
         /// <summary>
@@ -143,18 +146,19 @@ namespace LumikitApp
             ScaleTimelineChildren(oldWidth, slotWidth);
             _timelineCanvas.Width = _totalModules * slotWidth;
         }
-        
+
         /// Activate Travel Settings When Toggled
         private void Effect_Travel_Checked(object? sender, RoutedEventArgs e)
         {
             UpdateEffectSettingVisibility();
         }
+
         /// Deactivate Travel Settings When Toggled
         private void Effect_Travel_Unchecked(object? sender, RoutedEventArgs e)
         {
             UpdateEffectSettingVisibility();
         }
-        
+
         /// <summary>
         /// Live block editing to add lights like a piano roll
         /// </summary>
@@ -163,21 +167,24 @@ namespace LumikitApp
         private void OnKeyDown(object? sender, KeyEventArgs e)
         {
             // Start a live block when hotkey (num 0-9) is pressed
-            if (!_isLiveInputActive && (e.Key == Key.D1 ||  e.Key == Key.D2 ||   e.Key == Key.D3 || e.Key == Key.D4 || e.Key == Key.D5  || e.Key == Key.D6 || e.Key == Key.D7  || e.Key == Key.D8 || e.Key == Key.D9 || e.Key == Key.D0))
+            if (!_isLiveInputActive && (e.Key == Key.D1 || e.Key == Key.D2 || e.Key == Key.D3 || e.Key == Key.D4 ||
+                                        e.Key == Key.D5 || e.Key == Key.D6 || e.Key == Key.D7 || e.Key == Key.D8 ||
+                                        e.Key == Key.D9 || e.Key == Key.D0))
             {
                 _isLiveInputActive = true;
-                _liveStartMs = _playbackHandler?.CurrentProgressMs ?? 0; // requires playback handler to expose current ms
+                _liveStartMs =
+                    _playbackHandler?.CurrentProgressMs ?? 0; // requires playback handler to expose current ms
                 double caretX = (_liveStartMs / _msPerSlot) * slotWidth;
 
                 // Create a new block at the caret
-                var block = new LightBlock(LightBlocks, _scrollViewer, slotWidth); 
+                var block = new LightBlock(LightBlocks, _scrollViewer, slotWidth);
 //TODO: make these colors bindable                
                 switch (e.Key)
                 {
                     case Key.D1:
                         block.UpdateColor((Colors.Red));
                         break;
-                    case Key.D2: 
+                    case Key.D2:
                         block.UpdateColor((Colors.Orange));
                         break;
                     case Key.D3:
@@ -205,20 +212,20 @@ namespace LumikitApp
                         block.UpdateColor((Colors.White));
                         break;
                 }
+
                 block.Container.Width = slotWidth;
                 Canvas.SetLeft(block.Container, caretX);
                 Canvas.SetTop(block.Container, 0);
                 _timelineCanvas.Children.Add(block.Container);
                 LightBlocks.Add(block);
                 _liveBlock = block;
-                
+
                 //Assign light block keybinds (Lclick edit, Rclick delete)
                 block.Container.PointerPressed += (_, e) =>
                 {
                     if (e.GetCurrentPoint(block.Container).Properties.IsLeftButtonPressed)
                     {
-                        LoadBlockIntoEditor(block);
-                        e.Handled = true;
+                        AddNewLightBlockToTimeline(e, block);
                     }
 
                     if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
@@ -226,22 +233,76 @@ namespace LumikitApp
                         _timelineCanvas.Children.Remove(block.Container);
                         LightBlocks.Remove(block);
                         e.Handled = true;
+                        
                     }
                 };
             }
-        }
 
+            if (!_isLiveInputActive && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.V)
+            {
+                var selectedBlocksSnapshot = _selectedBlocks;
+                var pasteX = double.MaxValue;
+                foreach (var block in selectedBlocksSnapshot)
+                {
+                    if (Canvas.GetLeft(block.Container) < pasteX)
+                    {
+                        pasteX = Canvas.GetLeft(block.Container);
+                    }
+                }
+                foreach (LightBlock blockToCopy in selectedBlocksSnapshot)
+                {
+
+
+                    var addedBlock = new LightBlock(LightBlocks, _scrollViewer, slotWidth);
+                    addedBlock.UpdateColor(blockToCopy.BlockColor);
+                    addedBlock.StartLight = blockToCopy.StartLight;
+                    addedBlock.EndLight = blockToCopy.EndLight;
+                    addedBlock.BlockEffects = blockToCopy.BlockEffects;
+                    addedBlock.Intensity = blockToCopy.Intensity;
+                    addedBlock.DeltaStartLight = blockToCopy.DeltaStartLight;
+                    addedBlock.DeltaEndLight = blockToCopy.DeltaEndLight;
+                    addedBlock.Container.Width = blockToCopy.Container.Width;
+                    Canvas.SetLeft(addedBlock.Container, _lastPointerPos.X + (Canvas.GetLeft(blockToCopy.Container)-pasteX));
+                    Canvas.SetTop(addedBlock.Container, 0);
+                    
+                    _timelineCanvas.Children.Add(addedBlock.Container);
+                    LightBlocks.Add(addedBlock);
+                    addedBlock.Container.PointerPressed += (_, e) =>
+                    {
+                        if (e.GetCurrentPoint(addedBlock.Container).Properties.IsLeftButtonPressed)
+                        {
+                            AddNewLightBlockToTimeline(e, addedBlock);
+                        }
+
+                        if (e.GetCurrentPoint(addedBlock.Container).Properties.IsRightButtonPressed)
+                        {
+                            _timelineCanvas.Children.Remove(addedBlock.Container);
+                            LightBlocks.Remove(addedBlock);
+                            e.Handled = true;
+                        
+                        }
+                    };
+                }
+            }
+        }
+        
+        private void OnPointerMoved(object? sender, PointerEventArgs e)
+        {
+            _lastPointerPos = e.GetPosition(_timelineCanvas);
+        }
         private void OnKeyUp(object? sender, KeyEventArgs e)
         {
             // Finish the live block when key is released
-            if (_isLiveInputActive && e.Key == Key.D1 || e.Key == Key.D2 ||   e.Key == Key.D3 || e.Key == Key.D4 || e.Key == Key.D5  || e.Key == Key.D6 || e.Key == Key.D7  || e.Key == Key.D8 || e.Key == Key.D9 || e.Key == Key.D0)
+            if (_isLiveInputActive && e.Key == Key.D1 || e.Key == Key.D2 || e.Key == Key.D3 || e.Key == Key.D4 ||
+                e.Key == Key.D5 || e.Key == Key.D6 || e.Key == Key.D7 || e.Key == Key.D8 || e.Key == Key.D9 ||
+                e.Key == Key.D0)
             {
                 _isLiveInputActive = false;
                 _liveBlock = null;
             }
         }
 
-        public void InitializeWindow(SpotifyProvider provider)
+        public void InitializeWindow(IMusicProvider provider)
         {
             this.FindControl<Button>("SaveTrackDataButton").Click += async (_, _) =>
             {
@@ -254,7 +315,7 @@ namespace LumikitApp
                     {
                         X = Canvas.GetLeft(b.Container) / slotWidth,
                         Width = b.Container.Width / slotWidth,
-                        Color = ((SolidColorBrush)b.Container.Background).Color.ToString(),
+                        Color = (b.BlockColor).ToString(),
                         StartLight = b.StartLight,
                         EndLight = b.EndLight,
                         DeltaEndLight = b.DeltaEndLight,
@@ -292,22 +353,22 @@ namespace LumikitApp
             var track = await musicProvider.GetCurrentlyPlayingTrackAsync();
 
             this.FindControl<TextBlock>("NowPlayingText").Text = track.trackName;
-            var albumImage = track.trackCoverImageUrl; 
+            var albumImage = track.trackCoverImageUrl;
             await SetAlbumCover(albumImage);
-            
+
 
             // Clear old blocks
             foreach (var block in LightBlocks) _timelineCanvas.Children.Remove(block.Container);
             LightBlocks.Clear();
 
-            _trackDataLocal = JsonDataHandler.GetTrack(track.trackId);
-            if (_trackDataLocal != null) //track detected, filling in track data with track POCO
+            var trackDataLocal = JsonDataHandler.GetTrack(track.trackId);
+            if (trackDataLocal != null) //track detected, filling in track data with track POCO
             {
-                bpm = _trackDataLocal._BPM;
+                bpm = trackDataLocal._BPM;
                 _bpmInput.Text = bpm.ToString();
                 DrawTimelineSlots();
 
-                foreach (var data in _trackDataLocal._lightBlocks)
+                foreach (var data in trackDataLocal._lightBlocks)
                 {
                     if (!Color.TryParse(data.Color, out var color)) continue;
                     var block = new LightBlock(LightBlocks, _scrollViewer, slotWidth);
@@ -330,8 +391,7 @@ namespace LumikitApp
                     {
                         if (e.GetCurrentPoint(block.Container).Properties.IsLeftButtonPressed)
                         {
-                            LoadBlockIntoEditor(block);
-                            e.Handled = true;
+                            AddNewLightBlockToTimeline(e, block);
                         }
 
                         if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
@@ -352,32 +412,116 @@ namespace LumikitApp
             }
         }
 
+        private void AddNewLightBlockToTimeline(PointerPressedEventArgs e, LightBlock blockToAdd)
+        {
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+            {
+                var min = double.MaxValue;
+                var max = -1.00;
+                foreach (var selectedblock in _selectedBlocks)
+                {
+                    if (Canvas.GetLeft(selectedblock.Container) < min)
+                    {
+                        min = Canvas.GetLeft(selectedblock.Container);
+                        Console.WriteLine("MIN = " + min);
+                    }
+
+                    if (Canvas.GetLeft(selectedblock.Container) > max)
+                    {
+                        max = Canvas.GetLeft(selectedblock.Container);
+                    }
+                }
+
+                if (min == double.MaxValue) //No blocks selected previously 
+                {
+                    _selectedBlocks.Add(blockToAdd);
+                    blockToAdd.isSelected = true;
+                    LoadBlockIntoEditor(_selectedBlocks);
+                    return;
+
+                }
+
+                foreach (var lightblock in LightBlocks)
+                {
+                    if (_selectedBlocks.Contains(lightblock))
+                        continue;
+
+                    var blockLeft = Canvas.GetLeft(lightblock.Container);
+                    if ((blockLeft > min && blockLeft <= Canvas.GetLeft(blockToAdd.Container))
+                        || (blockLeft < max && blockLeft >= Canvas.GetLeft(blockToAdd.Container)))
+                    {
+                        //Add all selected blocks including block that was shift clicked
+                        _selectedBlocks.Add(lightblock);
+                        lightblock.isSelected = true;
+                        blockToAdd.isSelected = true;
+
+                        LoadBlockIntoEditor(_selectedBlocks);
+
+                    }
+                }
+
+            }
+            else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            {
+                _selectedBlocks.Add(blockToAdd);
+                blockToAdd.isSelected = true;
+
+                LoadBlockIntoEditor(_selectedBlocks);
+
+            }
+
+            else
+            {
+                foreach (var blockToRemove in _selectedBlocks)
+                {
+                    blockToRemove.UpdateBackground(blockToRemove.BlockColor);
+                    blockToRemove.isSelected = false;
+
+                }
+
+                _selectedBlocks.Clear();
+                _selectedBlocks.Add(blockToAdd);
+                blockToAdd.isSelected = true;
+                
+                LoadBlockIntoEditor(_selectedBlocks);
+
+            }
+
+            e.Handled = true;
+        }
+
+    
+
         /// <summary>
         /// Loads sidebar editor with pre-existing lightblock values
         /// </summary>
         /// <param name="block"></param>
-        private void LoadBlockIntoEditor(LightBlock block)
+        private void LoadBlockIntoEditor(List<LightBlock> selectedBlocks)
         {
+            UpdateSelectedColors();
             UpdateEffectSettingVisibility();
-            _selectedBlock = block;
-            StartLightInput.Text = block.StartLight.ToString();
-            EndLightInput.Text = block.EndLight.ToString();
-            IntensityInput.Text = block.Intensity.ToString();
-            TravelEndLightInput.Text = block.DeltaEndLight.ToString();
-            TravelStartLightInput.Text =  block.DeltaStartLight.ToString();
+            foreach (var block in selectedBlocks)
+            {
+                StartLightInput.Text = block.StartLight.ToString();
+                EndLightInput.Text = block.EndLight.ToString();
+                IntensityInput.Text = block.Intensity.ToString();
+                TravelEndLightInput.Text = block.DeltaEndLight.ToString();
+                TravelStartLightInput.Text =  block.DeltaStartLight.ToString();
                 
-            // Reset effect selection
-            this.FindControl<CheckBox>("Effect_None").IsChecked =
-                block.BlockEffects.Contains(LightBlock.Effect.None);
-            this.FindControl<CheckBox>("Effect_FadeIn").IsChecked =
-                block.BlockEffects.Contains(LightBlock.Effect.FadeIn);
-            this.FindControl<CheckBox>("Effect_FadeOut").IsChecked =
-                block.BlockEffects.Contains(LightBlock.Effect.FadeOut);
-            this.FindControl<CheckBox>("Effect_FadeStrobe").IsChecked =
-                block.BlockEffects.Contains(LightBlock.Effect.Strobe);
-            this.FindControl<CheckBox>("Effect_Travel").IsChecked =
-                block.BlockEffects.Contains(LightBlock.Effect.Travel);
-        
+                // Reset effect selection
+                this.FindControl<CheckBox>("Effect_None").IsChecked =
+                    block.BlockEffects.Contains(LightBlock.Effect.None);
+                this.FindControl<CheckBox>("Effect_FadeIn").IsChecked =
+                    block.BlockEffects.Contains(LightBlock.Effect.FadeIn);
+                this.FindControl<CheckBox>("Effect_FadeOut").IsChecked =
+                    block.BlockEffects.Contains(LightBlock.Effect.FadeOut);
+                this.FindControl<CheckBox>("Effect_FadeStrobe").IsChecked =
+                    block.BlockEffects.Contains(LightBlock.Effect.Strobe);
+                this.FindControl<CheckBox>("Effect_Travel").IsChecked =
+                    block.BlockEffects.Contains(LightBlock.Effect.Travel);
+
+            }
+
         }
 
         /// <summary>
@@ -663,14 +807,20 @@ namespace LumikitApp
             {
                 if (e.GetCurrentPoint(block.Container).Properties.IsLeftButtonPressed)
                 {
-                    LoadBlockIntoEditor(block);
-                    e.Handled = true;
+                    AddNewLightBlockToTimeline(e, block);
                 }
 
                 if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
                 {
-                    _timelineCanvas.Children.Remove(block.Container);
-                    LightBlocks.Remove(block);
+                    var selectedBlocksSnapshot = _selectedBlocks;
+                    foreach (var selectedBlock in selectedBlocksSnapshot)
+                    {
+                        selectedBlock.isSelected = false;
+                        _timelineCanvas.Children.Remove(selectedBlock.Container);
+                        LightBlocks.Remove(selectedBlock); 
+                        
+                    }
+
                     e.Handled = true;
                 }
             };
@@ -709,11 +859,14 @@ namespace LumikitApp
                 return caretX >= left && caretX <= left + width;
             });
 
-            if (activeBlock?.Container?.Background is not SolidColorBrush brush)
+            if (activeBlock == null)
             {
                 TopColorBar.Background = new SolidColorBrush(Colors.Transparent);
                 return;
             }
+
+            TopColorBar.Background = new SolidColorBrush(activeBlock.BlockColor);
+
 
             double width = activeBlock.Container.Width;
             if (width <= 0)
@@ -728,9 +881,8 @@ namespace LumikitApp
 
             int start = (int)Math.Clamp(startLight, 0, 255);
             int end = (int)Math.Clamp(endLight, 0, 255);
-
-            SendPacket(start, end, brush.Color, intensity);
-            UpdateColorBar(start, end, brush.Color, intensity);
+            SendPacket(start, end, activeBlock.BlockColor, intensity);
+            UpdateColorBar(start, end, activeBlock.BlockColor, intensity);
         }
 
         private void SendPacket(int startLight, int endLight, Color color, int intensity)
@@ -822,8 +974,9 @@ namespace LumikitApp
         private void OnApplyBlockChangesClicked(object? s, RoutedEventArgs e)
         {
         
-            if (_selectedBlock == null) return;
-
+            if (_selectedBlocks == null) return;
+            foreach (var _selectedBlock in _selectedBlocks)  
+            {
             // Start/End lights
             if (int.TryParse(this.FindControl<TextBox>("StartLightInput").Text, out int start))
                 _selectedBlock.StartLight = start;
@@ -863,7 +1016,7 @@ namespace LumikitApp
                 _selectedBlock.BlockEffects.Add(LightBlock.Effect.Combine);
             else
                 _selectedBlock.BlockEffects.Add(LightBlock.Effect.None); 
-        
+            }
     
         }
 
@@ -885,6 +1038,18 @@ namespace LumikitApp
             if (color == Colors.White) return 13;
             return 255; // Unknown
         }
+
+        public void UpdateSelectedColors()
+        {
+            foreach (var selectedBlock in _selectedBlocks)
+            {
+                var color = selectedBlock.BlockColor;
+                var newcolor = new Color(100, color.R, color.G, color.B);
+                selectedBlock.UpdateBackground(newcolor);
+            }
+
+        }
+
         private void UpdateEffectSettingVisibility()
         {
             var isOn = Effect_Travel?.IsChecked == true;

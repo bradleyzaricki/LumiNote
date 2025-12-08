@@ -173,3 +173,6 @@ C:/Users/bzari/source/repos/SpotifyInformationConsole/LumikitApp/bin/Debug/net8.
 /Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/bin/Debug/net8.0/runtimes/osx-x64/native/libSystem.IO.Ports.Native.dylib
 /Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/bin/Debug/net8.0/runtimes/unix/lib/net8.0/System.IO.Ports.dll
 /Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/bin/Debug/net8.0/runtimes/win/lib/net8.0/System.IO.Ports.dll
+/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/bin/Debug/net8.0/EmbedIO.dll
+/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/bin/Debug/net8.0/SpotifyAPI.Web.Auth.dll
+/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/bin/Debug/net8.0/Swan.Lite.dll

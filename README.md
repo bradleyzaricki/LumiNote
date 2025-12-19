@@ -6,7 +6,13 @@ a custom lightshow fully synchronized to the users track<br/>
 LumiNote Software has a built in lightshow editor to easily stitch together organized reactive lightshows to your favorite songs<br/>
 
 Here is an example of a simple lightshow made using Luminotes lightshow editor:<br/>
-https://github.com/user-attachments/assets/81bd91fd-5eb8-4992-8b31-bdfcae89c7d6
+<video src="https://github.com/user-attachments/assets/81bd91fd-5eb8-4992-8b31-bdfcae89c7d6"
+       controls
+       autoplay
+       loop
+       muted
+       width="800">
+</video>
 
 Current Luminote UI:<br/>
 <img width="2930" height="1688" alt="image" src="https://github.com/user-attachments/assets/01dea13c-714e-405b-ada7-3b5693fce3d2" />

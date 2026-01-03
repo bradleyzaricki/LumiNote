@@ -15,11 +15,12 @@ namespace LumikitApp
     /// </summary>
     public class SpotifyProvider : IMusicProvider
     {
+        public string providerName => "Spotify";
         private readonly string _clientId;
         private readonly string _redirectUri;
         private Window _mainWindow;
         private SpotifyClient _spotify;
-
+        
         /// <summary>
         /// Spotify API wrapper for Lumikit procedures
         /// </summary>
@@ -37,7 +38,7 @@ namespace LumikitApp
         /// Initialize a new spotify web API connection to be used 
         /// </summary>
         /// <returns></returns>
-        public async Task<SpotifyClient> InitializeClient()
+        public async Task InitializeClient()
         {
             var (verifier, challenge) = PKCEUtil.GenerateCodes();
 
@@ -83,7 +84,7 @@ namespace LumikitApp
             var config = SpotifyClientConfig.CreateDefault().WithToken(tokenResponse.AccessToken);
             _spotify = new SpotifyClient(config);
 
-            return _spotify;
+            return;
         }
 
         /// <summary>
@@ -197,7 +198,7 @@ namespace LumikitApp
                 var track = playback?.Item as FullTrack;
                 if (track != null)
                 {
-                    return new TrackPOCO(track.Id, track.Name, track.Album.Images[1].Url);
+                    return new TrackPOCO(track.Id, track.Name, track.Artists[0].Name, track.Album.Images[1].Url);
                 }
             }
             catch

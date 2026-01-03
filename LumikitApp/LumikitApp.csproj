@@ -15,9 +15,14 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.2" />
+    <AvaloniaResource Include="Icons/logo.png" />
+    <AvaloniaResource Include="Icons/file_icon.png" />
+    <AvaloniaResource Include="Icons/spotify_icon_black.png" />
+
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.3.2" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.2" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.2" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.2" />
@@ -26,15 +31,33 @@
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="ManagedBass" Version="4.0.2" />
+    <PackageReference Include="ManagedBass.Fx" Version="4.0.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
     <PackageReference Include="SpotifyAPI.Web" Version="7.2.1" />
     <PackageReference Include="SpotifyAPI.Web.Auth" Version="7.2.1" />
     <PackageReference Include="System.IO.Ports" Version="9.0.9" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Native/OSX/arm64/libbass.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
 
+    <None Include="Native/OSX/arm64/libbass.dylib">
+      <TargetPath>bass.dylib</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <Compile Update="LumikitWindow.axaml.cs">
       <DependentUpon>LumikitWindow.axaml</DependentUpon>
     </Compile>
+  </ItemGroup>
+  <PropertyGroup>
+    <RuntimeIdentifier>osx-arm64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Local Music\" />
   </ItemGroup>
 </Project>

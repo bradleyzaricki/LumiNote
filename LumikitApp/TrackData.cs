@@ -32,9 +32,13 @@ namespace LumikitApp
         
         public int EndLight { get; set; }
         
-        public int DeltaStartLight { get; set; }
+        public int SecondaryDualInput1 { get; set; }
         
-        public int DeltaEndLight { get; set; }
+        public int SecondaryDualInput2 { get; set; }
+        
+        public int SecondarySingleInput1 { get; set; }
+        
+        public int SecondarySingleInput2 { get; set; }
         
         public int LightIntensity { get; set; }
     }

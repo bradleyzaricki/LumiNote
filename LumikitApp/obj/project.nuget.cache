@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "zE+B3Fvz1GA=",
+  "dgSpecHash": "JTB9FV0DQ1I=",
   "success": true,
   "projectFilePath": "/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/LumikitApp.csproj",
   "expectedPackageFiles": [
@@ -25,6 +25,8 @@
     "/Users/bradleyzaricki/.nuget/packages/harfbuzzsharp.nativeassets.macos/8.3.1.1/harfbuzzsharp.nativeassets.macos.8.3.1.1.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/harfbuzzsharp.nativeassets.webassembly/8.3.1.1/harfbuzzsharp.nativeassets.webassembly.8.3.1.1.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/harfbuzzsharp.nativeassets.win32/8.3.1.1/harfbuzzsharp.nativeassets.win32.8.3.1.1.nupkg.sha512",
+    "/Users/bradleyzaricki/.nuget/packages/managedbass/4.0.2/managedbass.4.0.2.nupkg.sha512",
+    "/Users/bradleyzaricki/.nuget/packages/managedbass.fx/4.0.2/managedbass.fx.4.0.2.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/microcom.runtime/0.11.0/microcom.runtime.0.11.0.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/microsoft.extensions.dependencyinjection/9.0.8/microsoft.extensions.dependencyinjection.9.0.8.nupkg.sha512",
     "/Users/bradleyzaricki/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/9.0.8/microsoft.extensions.dependencyinjection.abstractions.9.0.8.nupkg.sha512",

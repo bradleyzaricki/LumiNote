@@ -464,6 +464,35 @@
           }
         }
       },
+      "ManagedBass/4.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/ManagedBass.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/ManagedBass.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "ManagedBass.Fx/4.0.2": {
+        "type": "package",
+        "dependencies": {
+          "ManagedBass": "4.0.2"
+        },
+        "compile": {
+          "lib/net8.0/ManagedBass.Fx.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/ManagedBass.Fx.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "MicroCom.Runtime/0.11.0": {
         "type": "package",
         "compile": {
@@ -1859,6 +1888,761 @@
           }
         }
       }
+    },
+    "net8.0/osx-arm64": {
+      "Avalonia/11.3.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia.BuildServices": "0.0.31",
+          "Avalonia.Remote.Protocol": "11.3.2",
+          "MicroCom.Runtime": "0.11.0"
+        },
+        "compile": {
+          "ref/net8.0/Avalonia.Base.dll": {
+            "related": ".xml"
+          },
+          "ref/net8.0/Avalonia.Controls.dll": {
+            "related": ".xml"
+          },
+          "ref/net8.0/Avalonia.DesignerSupport.dll": {
+            "related": ".xml"
+          },
+          "ref/net8.0/Avalonia.Dialogs.dll": {
+            "related": ".xml"
+          },
+          "ref/net8.0/Avalonia.Markup.Xaml.dll": {
+            "related": ".xml"
+          },
+          "ref/net8.0/Avalonia.Markup.dll": {
+            "related": ".Xaml.xml;.xml"
+          },
+          "ref/net8.0/Avalonia.Metal.dll": {
+            "related": ".xml"
+          },
+          "ref/net8.0/Avalonia.MicroCom.dll": {
+            "related": ".xml"
+          },
+          "ref/net8.0/Avalonia.OpenGL.dll": {
+            "related": ".xml"
+          },
+          "ref/net8.0/Avalonia.Vulkan.dll": {
+            "related": ".xml"
+          },
+          "ref/net8.0/Avalonia.dll": {
+            "related": ".Base.xml;.Controls.xml;.DesignerSupport.xml;.Dialogs.xml;.Markup.Xaml.xml;.Markup.xml;.Metal.xml;.MicroCom.xml;.OpenGL.xml;.Vulkan.xml;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Base.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0/Avalonia.Controls.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0/Avalonia.DesignerSupport.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0/Avalonia.Dialogs.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0/Avalonia.Markup.Xaml.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0/Avalonia.Markup.dll": {
+            "related": ".Xaml.xml;.xml"
+          },
+          "lib/net8.0/Avalonia.Metal.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0/Avalonia.MicroCom.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0/Avalonia.OpenGL.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0/Avalonia.Vulkan.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0/Avalonia.dll": {
+            "related": ".Base.xml;.Controls.xml;.DesignerSupport.xml;.Dialogs.xml;.Markup.Xaml.xml;.Markup.xml;.Metal.xml;.MicroCom.xml;.OpenGL.xml;.Vulkan.xml;.xml"
+          }
+        },
+        "build": {
+          "buildTransitive/Avalonia.props": {},
+          "buildTransitive/Avalonia.targets": {}
+        }
+      },
+      "Avalonia.Angle.Windows.Natives/2.1.25547.20250602": {
+        "type": "package"
+      },
+      "Avalonia.BuildServices/0.0.31": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Avalonia.BuildServices.targets": {}
+        }
+      },
+      "Avalonia.Controls.ColorPicker/11.3.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.3.2",
+          "Avalonia.Remote.Protocol": "11.3.2"
+        },
+        "compile": {
+          "lib/net8.0/Avalonia.Controls.ColorPicker.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Controls.ColorPicker.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Avalonia.Desktop/11.3.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.3.2",
+          "Avalonia.Native": "11.3.2",
+          "Avalonia.Skia": "11.3.2",
+          "Avalonia.Win32": "11.3.2",
+          "Avalonia.X11": "11.3.2"
+        },
+        "compile": {
+          "lib/net8.0/Avalonia.Desktop.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Desktop.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Avalonia.Diagnostics/11.3.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.3.2",
+          "Avalonia.Controls.ColorPicker": "11.3.2",
+          "Avalonia.Themes.Simple": "11.3.2"
+        },
+        "compile": {
+          "lib/net8.0/Avalonia.Diagnostics.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Diagnostics.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Avalonia.Fonts.Inter/11.3.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.3.2"
+        },
+        "compile": {
+          "lib/net8.0/Avalonia.Fonts.Inter.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Fonts.Inter.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Avalonia.FreeDesktop/11.3.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.3.2",
+          "Tmds.DBus.Protocol": "0.21.2"
+        },
+        "compile": {
+          "lib/net8.0/Avalonia.FreeDesktop.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.FreeDesktop.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Avalonia.Native/11.3.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.3.2"
+        },
+        "compile": {
+          "lib/net8.0/Avalonia.Native.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Native.dll": {
+            "related": ".xml"
+          }
+        },
+        "native": {
+          "runtimes/osx/native/libAvaloniaNative.dylib": {}
+        }
+      },
+      "Avalonia.Remote.Protocol/11.3.2": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Avalonia.Remote.Protocol.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Remote.Protocol.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Avalonia.Skia/11.3.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.3.2",
+          "HarfBuzzSharp": "8.3.1.1",
+          "HarfBuzzSharp.NativeAssets.Linux": "8.3.1.1",
+          "HarfBuzzSharp.NativeAssets.WebAssembly": "8.3.1.1",
+          "SkiaSharp": "2.88.9",
+          "SkiaSharp.NativeAssets.Linux": "2.88.9",
+          "SkiaSharp.NativeAssets.WebAssembly": "2.88.9"
+        },
+        "compile": {
+          "lib/net8.0/Avalonia.Skia.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Skia.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Avalonia.Themes.Fluent/11.3.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.3.2"
+        },
+        "compile": {
+          "lib/net8.0/Avalonia.Themes.Fluent.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Themes.Fluent.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Avalonia.Themes.Simple/11.3.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.3.2"
+        },
+        "compile": {
+          "lib/net8.0/Avalonia.Themes.Simple.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Themes.Simple.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Avalonia.Win32/11.3.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.3.2",
+          "Avalonia.Angle.Windows.Natives": "2.1.25547.20250602"
+        },
+        "compile": {
+          "lib/net8.0/Avalonia.Win32.Automation.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0/Avalonia.Win32.dll": {
+            "related": ".Automation.xml;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Win32.Automation.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0/Avalonia.Win32.dll": {
+            "related": ".Automation.xml;.xml"
+          }
+        }
+      },
+      "Avalonia.X11/11.3.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.3.2",
+          "Avalonia.FreeDesktop": "11.3.2",
+          "Avalonia.Skia": "11.3.2"
+        },
+        "compile": {
+          "lib/net8.0/Avalonia.X11.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.X11.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "EmbedIO/3.5.2": {
+        "type": "package",
+        "dependencies": {
+          "Unosquare.Swan.Lite": "3.1.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/EmbedIO.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/EmbedIO.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "HarfBuzzSharp/8.3.1.1": {
+        "type": "package",
+        "dependencies": {
+          "HarfBuzzSharp.NativeAssets.Win32": "8.3.1.1",
+          "HarfBuzzSharp.NativeAssets.macOS": "8.3.1.1"
+        },
+        "compile": {
+          "lib/net8.0/HarfBuzzSharp.dll": {
+            "related": ".pdb"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/HarfBuzzSharp.dll": {
+            "related": ".pdb"
+          }
+        }
+      },
+      "HarfBuzzSharp.NativeAssets.Linux/8.3.1.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/_._": {}
+        },
+        "runtime": {
+          "lib/net8.0/_._": {}
+        }
+      },
+      "HarfBuzzSharp.NativeAssets.macOS/8.3.1.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/_._": {}
+        },
+        "runtime": {
+          "lib/net8.0/_._": {}
+        },
+        "native": {
+          "runtimes/osx/native/libHarfBuzzSharp.dylib": {}
+        }
+      },
+      "HarfBuzzSharp.NativeAssets.WebAssembly/8.3.1.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/_._": {}
+        },
+        "runtime": {
+          "lib/net8.0/_._": {}
+        },
+        "build": {
+          "buildTransitive/netstandard1.0/HarfBuzzSharp.NativeAssets.WebAssembly.props": {},
+          "buildTransitive/netstandard1.0/HarfBuzzSharp.NativeAssets.WebAssembly.targets": {}
+        }
+      },
+      "HarfBuzzSharp.NativeAssets.Win32/8.3.1.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/_._": {}
+        },
+        "runtime": {
+          "lib/net8.0/_._": {}
+        }
+      },
+      "ManagedBass/4.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/ManagedBass.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/ManagedBass.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "ManagedBass.Fx/4.0.2": {
+        "type": "package",
+        "dependencies": {
+          "ManagedBass": "4.0.2"
+        },
+        "compile": {
+          "lib/net8.0/ManagedBass.Fx.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/ManagedBass.Fx.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "MicroCom.Runtime/0.11.0": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/MicroCom.Runtime.dll": {}
+        },
+        "runtime": {
+          "lib/net5.0/MicroCom.Runtime.dll": {}
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection/9.0.8": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.8"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.8": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Newtonsoft.Json/13.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "runtime.android-arm.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.android-arm64.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.android-x64.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.android-x86.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.linux-arm.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.linux-arm64.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.linux-bionic-arm64.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.linux-bionic-x64.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.linux-musl-arm.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.linux-musl-arm64.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.linux-musl-x64.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.linux-x64.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.maccatalyst-arm64.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.maccatalyst-x64.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "dependencies": {
+          "runtime.android-arm.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.android-arm64.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.android-x64.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.android-x86.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.linux-arm.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.linux-arm64.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.linux-bionic-arm64.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.linux-bionic-x64.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.linux-musl-arm.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.linux-musl-arm64.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.linux-musl-x64.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.linux-x64.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.maccatalyst-arm64.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.maccatalyst-x64.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.osx-arm64.runtime.native.System.IO.Ports": "9.0.9",
+          "runtime.osx-x64.runtime.native.System.IO.Ports": "9.0.9"
+        }
+      },
+      "runtime.osx-arm64.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/libSystem.IO.Ports.Native.dylib": {}
+        }
+      },
+      "runtime.osx-x64.runtime.native.System.IO.Ports/9.0.9": {
+        "type": "package",
+        "native": {
+          "runtimes/osx-arm64/native/_._": {}
+        }
+      },
+      "SkiaSharp/2.88.9": {
+        "type": "package",
+        "dependencies": {
+          "SkiaSharp.NativeAssets.Win32": "2.88.9",
+          "SkiaSharp.NativeAssets.macOS": "2.88.9"
+        },
+        "compile": {
+          "lib/net6.0/SkiaSharp.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/SkiaSharp.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "SkiaSharp.NativeAssets.Linux/2.88.9": {
+        "type": "package",
+        "dependencies": {
+          "SkiaSharp": "2.88.9"
+        },
+        "compile": {
+          "lib/net6.0/_._": {}
+        },
+        "runtime": {
+          "lib/net6.0/_._": {}
+        }
+      },
+      "SkiaSharp.NativeAssets.macOS/2.88.9": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/_._": {}
+        },
+        "runtime": {
+          "lib/net6.0/_._": {}
+        },
+        "native": {
+          "runtimes/osx/native/libSkiaSharp.dylib": {}
+        }
+      },
+      "SkiaSharp.NativeAssets.WebAssembly/2.88.9": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard1.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard1.0/_._": {}
+        },
+        "build": {
+          "buildTransitive/netstandard1.0/SkiaSharp.NativeAssets.WebAssembly.props": {},
+          "buildTransitive/netstandard1.0/SkiaSharp.NativeAssets.WebAssembly.targets": {}
+        }
+      },
+      "SkiaSharp.NativeAssets.Win32/2.88.9": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/_._": {}
+        },
+        "runtime": {
+          "lib/net6.0/_._": {}
+        }
+      },
+      "SpotifyAPI.Web/7.2.1": {
+        "type": "package",
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "compile": {
+          "lib/net8.0/SpotifyAPI.Web.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/SpotifyAPI.Web.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "SpotifyAPI.Web.Auth/7.2.1": {
+        "type": "package",
+        "dependencies": {
+          "EmbedIO": "3.5.2",
+          "SpotifyAPI.Web": "7.2.1"
+        },
+        "compile": {
+          "lib/net8.0/SpotifyAPI.Web.Auth.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/SpotifyAPI.Web.Auth.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "System.IO.Pipelines/8.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/System.IO.Pipelines.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.IO.Pipelines.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net6.0/_._": {}
+        }
+      },
+      "System.IO.Ports/9.0.9": {
+        "type": "package",
+        "dependencies": {
+          "runtime.native.System.IO.Ports": "9.0.9"
+        },
+        "compile": {
+          "lib/net8.0/System.IO.Ports.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "runtimes/unix/lib/net8.0/System.IO.Ports.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "System.ValueTuple/4.5.0": {
+        "type": "package",
+        "compile": {
+          "ref/netcoreapp2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netcoreapp2.0/_._": {}
+        }
+      },
+      "Tmds.DBus.Protocol/0.21.2": {
+        "type": "package",
+        "dependencies": {
+          "System.IO.Pipelines": "8.0.0"
+        },
+        "compile": {
+          "lib/net8.0/Tmds.DBus.Protocol.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/Tmds.DBus.Protocol.dll": {}
+        }
+      },
+      "Unosquare.Swan.Lite/3.1.0": {
+        "type": "package",
+        "dependencies": {
+          "System.ValueTuple": "4.5.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Swan.Lite.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Swan.Lite.dll": {
+            "related": ".xml"
+          }
+        }
+      }
     }
   },
   "libraries": {
@@ -2458,6 +3242,44 @@
         "runtimes/win-arm64/native/libHarfBuzzSharp.dll",
         "runtimes/win-x64/native/libHarfBuzzSharp.dll",
         "runtimes/win-x86/native/libHarfBuzzSharp.dll"
+      ]
+    },
+    "ManagedBass/4.0.2": {
+      "sha512": "EzVnBGxqjSzRgLuo94Muauvk1SPwD3LOOHp+4c33iC1EBez+mDW71+gJL35E9V5U5Sb/WNeJxnzHtUNOeOfqdw==",
+      "type": "package",
+      "path": "managedbass/4.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "icon.png",
+        "lib/net45/ManagedBass.dll",
+        "lib/net45/ManagedBass.xml",
+        "lib/net8.0/ManagedBass.dll",
+        "lib/net8.0/ManagedBass.xml",
+        "lib/netstandard2.0/ManagedBass.dll",
+        "lib/netstandard2.0/ManagedBass.xml",
+        "managedbass.4.0.2.nupkg.sha512",
+        "managedbass.nuspec"
+      ]
+    },
+    "ManagedBass.Fx/4.0.2": {
+      "sha512": "kG7pGxrICvytN3yXuM+z5CJqiEbGyGFndVyBax556rSW+vDyyZ8+UCShA8ampaqdoWoIj7K/seAOoe/r0Uen/w==",
+      "type": "package",
+      "path": "managedbass.fx/4.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "icon.png",
+        "lib/net45/ManagedBass.Fx.dll",
+        "lib/net45/ManagedBass.Fx.xml",
+        "lib/net8.0/ManagedBass.Fx.dll",
+        "lib/net8.0/ManagedBass.Fx.xml",
+        "lib/netstandard2.0/ManagedBass.Fx.dll",
+        "lib/netstandard2.0/ManagedBass.Fx.xml",
+        "managedbass.fx.4.0.2.nupkg.sha512",
+        "managedbass.fx.nuspec"
       ]
     },
     "MicroCom.Runtime/0.11.0": {
@@ -3457,11 +4279,13 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
-      "Avalonia >= 11.3.2",
+      "Avalonia.Controls.ColorPicker >= 11.3.2",
       "Avalonia.Desktop >= 11.3.2",
       "Avalonia.Diagnostics >= 11.3.2",
       "Avalonia.Fonts.Inter >= 11.3.2",
       "Avalonia.Themes.Fluent >= 11.3.2",
+      "ManagedBass >= 4.0.2",
+      "ManagedBass.Fx >= 4.0.2",
       "Microsoft.Extensions.DependencyInjection >= 9.0.8",
       "SpotifyAPI.Web >= 7.2.1",
       "SpotifyAPI.Web.Auth >= 7.2.1",
@@ -3511,7 +4335,7 @@
       "net8.0": {
         "targetAlias": "net8.0",
         "dependencies": {
-          "Avalonia": {
+          "Avalonia.Controls.ColorPicker": {
             "target": "Package",
             "version": "[11.3.2, )"
           },
@@ -3530,6 +4354,14 @@
           "Avalonia.Themes.Fluent": {
             "target": "Package",
             "version": "[11.3.2, )"
+          },
+          "ManagedBass": {
+            "target": "Package",
+            "version": "[4.0.2, )"
+          },
+          "ManagedBass.Fx": {
+            "target": "Package",
+            "version": "[4.0.2, )"
           },
           "Microsoft.Extensions.DependencyInjection": {
             "target": "Package",
@@ -3579,6 +4411,11 @@
           }
         },
         "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.101/PortableRuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "osx-arm64": {
+        "#import": []
       }
     }
   }

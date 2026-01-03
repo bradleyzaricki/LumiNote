@@ -1,0 +1,54 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LumikitApp.ProviderPickerWindow"
+        Width="420"
+        Height="220"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        Title="Choose playback"
+        Background="#2E2E2E">
+
+    <StackPanel Margin="16" Spacing="16">
+        <TextBlock FontSize="18"
+                   Text="Choose your playback source"
+                   Foreground="White"
+                   HorizontalAlignment="Center"/>
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Spacing="24">
+
+            <Border CornerRadius="16"
+                    Background="#3A3A3A"
+                    Padding="16">
+                <Button Click="Spotify_Click"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        FocusAdorner="{x:Null}"
+                        Padding="0">
+                    <Image Source="avares://LumikitApp/Icons/spotify_icon_black.png"
+                           Width="96"
+                           Height="96"
+                           Stretch="Uniform"/>
+                </Button>
+            </Border>
+
+            <Border CornerRadius="16"
+                    Background="#3A3A3A"
+                    Padding="16">
+                <Button Click="Local_Click"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        FocusAdorner="{x:Null}"
+                        Padding="0">
+                    <Image Source="avares://LumikitApp/Icons/file_icon.png"
+                           Width="96"
+                           Height="96"
+                           Stretch="Uniform"/>
+                </Button>
+            </Border>
+
+        </StackPanel>
+    </StackPanel>
+
+</Window>

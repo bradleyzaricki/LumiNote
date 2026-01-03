@@ -1,7 +1,7 @@
 using System;
-using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,47 +9,58 @@ namespace LumikitApp
 {
     public partial class App : Application
     {
-        public static IServiceProvider Services { get; private set; }
+        public static IServiceProvider Services { get; private set; } = null!;
 
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
+        }
 
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<SpotifyProvider>(provider =>
-            {
-                 string clientId = "7a3be16d49114bcb8317330636aa2647"; // replace this
-                 string redirectUri = "http://127.0.0.1:5000/callback";
-                // Window will be set later
-                return new SpotifyProvider(null, clientId, redirectUri);
-            });
-            Console.WriteLine("aaaaa");
-            // Optionally, also register the interface if needed elsewhere
-           // serviceCollection.AddSingleton<IMusicProvider>(sp => sp.GetRequiredService<SpotifyProvider>());
+        private static IServiceProvider BuildServices(bool useSpotify)
+        {
+            var services = new ServiceCollection();
 
-            Services = serviceCollection.BuildServiceProvider();
+            string clientId = "7a3be16d49114bcb8317330636aa2647";
+            string redirectUri = "http://127.0.0.1:5000/callback";
+
+            services.AddSingleton<SpotifyProvider>(_ => new SpotifyProvider(null, clientId, redirectUri));
+            services.AddSingleton<MusicFileProvider>(_ => new MusicFileProvider(null));
+
+            services.AddSingleton<IMusicProvider>(sp =>
+                useSpotify
+                    ? sp.GetRequiredService<SpotifyProvider>()
+                    : sp.GetRequiredService<MusicFileProvider>());
+
+            return services.BuildServiceProvider();
         }
 
         public override async void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                var spotifyProvider = Services.GetRequiredService<SpotifyProvider>();
                 var mainWindow = new LumikitWindow();
-
-                // Set the main window reference in the provider (add a method for this)
-                spotifyProvider.SetMainWindow(mainWindow);
-
-                // Await login before using the provider
-                var spot = await spotifyProvider.InitializeClient();
-
-                mainWindow.InitializeWindow(spotifyProvider);
-
-                mainWindow.Show();
                 desktop.MainWindow = mainWindow;
+                mainWindow.Show();
+
+
+
+                var picker = new ProviderPickerWindow();
+                await picker.ShowDialog(mainWindow);
+
+
+                Services = BuildServices(picker.UseSpotify);
+
+                var musicProvider = Services.GetRequiredService<IMusicProvider>();
+                musicProvider.SetMainWindow(mainWindow);
+
+                await musicProvider.InitializeClient();
+
+                mainWindow.InitializeWindow(musicProvider);
+                mainWindow.Activate();
             }
 
             base.OnFrameworkInitializationCompleted();
         }
+
     }
 }

@@ -44,7 +44,7 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
-            "Avalonia": {
+            "Avalonia.Controls.ColorPicker": {
               "target": "Package",
               "version": "[11.3.2, )"
             },
@@ -63,6 +63,14 @@
             "Avalonia.Themes.Fluent": {
               "target": "Package",
               "version": "[11.3.2, )"
+            },
+            "ManagedBass": {
+              "target": "Package",
+              "version": "[4.0.2, )"
+            },
+            "ManagedBass.Fx": {
+              "target": "Package",
+              "version": "[4.0.2, )"
             },
             "Microsoft.Extensions.DependencyInjection": {
               "target": "Package",
@@ -112,6 +120,11 @@
             }
           },
           "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.101/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "osx-arm64": {
+          "#import": []
         }
       }
     }

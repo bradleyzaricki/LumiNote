@@ -176,3 +176,6 @@ C:/Users/bzari/source/repos/SpotifyInformationConsole/LumikitApp/bin/Debug/net8.
 /Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/bin/Debug/net8.0/EmbedIO.dll
 /Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/bin/Debug/net8.0/SpotifyAPI.Web.Auth.dll
 /Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/bin/Debug/net8.0/Swan.Lite.dll
+/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/bin/Debug/net8.0/LibVLCSharp.dll
+/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/bin/Debug/net8.0/LibVLCSharp.Avalonia.dll
+/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/bin/Debug/net8.0/libvlc.dylib

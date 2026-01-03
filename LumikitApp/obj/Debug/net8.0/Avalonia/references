@@ -24,6 +24,8 @@
 /Users/bradleyzaricki/.nuget/packages/avalonia.x11/11.3.2/lib/net8.0/Avalonia.X11.dll
 /Users/bradleyzaricki/.nuget/packages/embedio/3.5.2/lib/netstandard2.0/EmbedIO.dll
 /Users/bradleyzaricki/.nuget/packages/harfbuzzsharp/8.3.1.1/lib/net8.0/HarfBuzzSharp.dll
+/Users/bradleyzaricki/.nuget/packages/libvlcsharp.avalonia/3.9.5/lib/netstandard2.0/LibVLCSharp.Avalonia.dll
+/Users/bradleyzaricki/.nuget/packages/libvlcsharp/3.9.5/lib/net8.0/LibVLCSharp.dll
 /Users/bradleyzaricki/.nuget/packages/microcom.runtime/0.11.0/lib/net5.0/MicroCom.Runtime.dll
 /Users/bradleyzaricki/.nuget/packages/microsoft.netcore.app.ref/8.0.11/ref/net8.0/Microsoft.CSharp.dll
 /Users/bradleyzaricki/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/9.0.8/lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll

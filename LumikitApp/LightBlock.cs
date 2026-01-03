@@ -16,8 +16,11 @@ namespace LumikitApp
         public Border Container { get; }
         public int StartLight { get; set; }
         public int EndLight { get; set; }
-        public int DeltaStartLight { get; set; }
-        public int DeltaEndLight { get; set; }
+        public int SecondaryStartLight { get; set; }
+        public int SecondaryEndLight { get; set; }
+        public int AdditionalIndividualInput1 {get; set;}
+        public int AdditionalIndividualInput2 {get; set;}
+
         public int Intensity { get; set; }
         public Color BlockColor { get; set; }
         public List<Effect> BlockEffects { get; set; } = new List<Effect>(){Effect.None};
@@ -29,8 +32,8 @@ namespace LumikitApp
             Strobe,
             Travel,
             Combine,
-            Build,
             Seperate,
+            Repeat
         }
         private Point dragStartCanvas;
         private double originalLeft;
@@ -43,10 +46,29 @@ namespace LumikitApp
         private ScrollViewer _scrollViewer;
         private double _slotWidth;
 
+
+        //Constructor to create a new block + add in all the variables to copy
+        public LightBlock(LightBlock blockToMimic)
+            : this(blockToMimic._siblings, blockToMimic._scrollViewer, blockToMimic._slotWidth)
+        {
+            StartLight = blockToMimic.StartLight;
+            EndLight = blockToMimic.EndLight;
+            Intensity = blockToMimic.Intensity;
+            BlockColor = blockToMimic.BlockColor;
+            BlockEffects = new List<Effect>(blockToMimic.BlockEffects);
+            SecondaryStartLight = blockToMimic.SecondaryStartLight;
+            SecondaryEndLight = blockToMimic.SecondaryEndLight;
+            AdditionalIndividualInput1 = blockToMimic.AdditionalIndividualInput1;
+            AdditionalIndividualInput2 = blockToMimic.AdditionalIndividualInput2;
+
+            Container.Width = blockToMimic.Container.Width;
+        }
+        
+        //Base constructor to add a lightblock into a scrollviewer
         public LightBlock(List<LightBlock> siblings, ScrollViewer scrollViewer, double slotWidth)
         {
             StartLight = 0;
-            EndLight = 100;
+            EndLight = 1000;
             Intensity = 255;
             _siblings = siblings;
             _scrollViewer = scrollViewer;

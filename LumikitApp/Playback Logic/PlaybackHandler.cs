@@ -30,7 +30,7 @@ namespace LumikitApp
                 
                 //adjust playback timer for any potential delay between services
                 _progressMs = await _musicProvider.GetPlaybackProgressMsAsync();
-                await Task.Delay(1000);
+                await Task.Delay(100);
                 ProgressUpdated?.Invoke(_progressMs);
 
             }
@@ -79,7 +79,7 @@ namespace LumikitApp
             await PauseAsync();
             _musicProvider.SeekToPlaybackTime(0);
             _progressMs = 0;
-            await Task.Delay(1000);
+            await Task.Delay(500);
             await ResumeAsync();
 
         }

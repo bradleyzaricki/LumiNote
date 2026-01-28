@@ -5,11 +5,12 @@ namespace LumikitApp;
 
 public class LightEffectsComputer
 {
-    public static Color[] ComputeBlockEffects(LightBlock block, double relPos)
+    public static Color[] ComputeBlockEffects(LightBlock block, double relPos, double brightnessScale)
 {
     int lightcount = 1000;
     Color[] stripColorsIndividual = new Color[lightcount];
-    byte entireIntensity = Convert.ToByte(block.Intensity);
+    int safeBlockIntensity = (int)(block.Intensity * brightnessScale);
+    byte entireIntensity = Convert.ToByte(safeBlockIntensity);
 
     bool hasTravel = block.BlockEffects != null &&
                      block.BlockEffects.Contains(LightBlock.Effect.Travel);
@@ -20,8 +21,6 @@ public class LightEffectsComputer
     bool hasFadeIn = block.BlockEffects != null && (block.BlockEffects.Contains(LightBlock.Effect.FadeIn));
     bool hasRepeat = block.BlockEffects != null && (block.BlockEffects.Contains(LightBlock.Effect.Repeat));
 
-    entireIntensity = (byte)block.Intensity;
-
     if (hasStrobe)
     {
         if (int.IsEvenInteger((int)(relPos * block.Container.Width / 4)))
@@ -31,13 +30,13 @@ public class LightEffectsComputer
     if (hasFadeOut)
     {
         if (relPos >= 0.5)
-            entireIntensity = (byte)(block.Intensity * ((1.0 - relPos) / 0.5));
+            entireIntensity = (byte)(safeBlockIntensity * ((1.0 - relPos) / 0.5));
     }
 
     if (hasFadeIn)
     {
         if (relPos <= 0.5)
-            entireIntensity = (byte)(block.Intensity * (relPos / 0.5));
+            entireIntensity = (byte)(safeBlockIntensity * (relPos / 0.5));
     }
 
     if (!hasTravel && !hasCombineOrSeperate)

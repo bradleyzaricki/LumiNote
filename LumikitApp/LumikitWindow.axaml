@@ -10,10 +10,56 @@
                 <ColorPicker x:Name="SwatchFlyoutPicker"
                              Width="260"
                              Height="220"
-                             ColorSpectrumShape="Box"
+                             ColorSpectrumShape="Ring"
+                             IsColorSpectrumSliderVisible="False"
                              IsAlphaEnabled="False"/>
             </Border>
         </Flyout>
+        <Flyout x:Key="HardwareSettingsFlyout" Placement="Bottom">
+            <Border Background="#222" Padding="12" CornerRadius="8">
+                <StackPanel Width="280" Spacing="10">
+
+                    <TextBlock Text="Hardware Settings" FontSize="16" FontWeight="Bold" Foreground="White"/>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Number Leds" Foreground="#DDD"/>
+                        <TextBox Watermark="ex. 300 LEDS" Name="ActiveLightsTextBox"></TextBox>
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Input Current" Foreground="#DDD"/>
+
+                            <Slider
+                                Name="HardwareCurrentSlider"
+                                Minimum="0"
+                                Maximum="40"
+                                TickFrequency="1"
+                                IsSnapToTickEnabled="True"/>
+
+                            <TextBlock
+                                Text="{Binding #HardwareCurrentSlider.Value, StringFormat={}{0:0} A}"
+                                HorizontalAlignment="Left"
+                                Foreground="#AAA"/>
+                        </StackPanel>
+
+                    </StackPanel>
+                    <StackPanel Spacing="6" >
+                        <TextBlock Text="USB / Serial Device"/>
+
+                        <ComboBox Name="PortComboBox"/>
+
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button Content="Refresh" Click="RefreshPorts"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Save Changes" Foreground="#DDD"/>
+                        <Button Content="Save" Width="80" Click="SaveHardwareSettings"></Button>
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
+        </Flyout>
+
     </Window.Resources>
     <Grid ColumnDefinitions="*, 300" RowDefinitions="Auto,Auto,*" Margin="10">
 
@@ -30,8 +76,9 @@
             <TextBlock Text="BPM:" Foreground="White" VerticalAlignment="Center" Margin="20,0,0,0"/>
             <TextBox Name="BpmInput" Width="60" Text="120" />
             <Button Name="SaveTrackDataButton" Content="Save" Width="80"/>
-            <Button Name="ConnectSerialButton" Content="Connect To Luminote Strip" Width="250" Background="BlueViolet"/>
-            <Button Name="CalibrateSpeakerLatencyButton" Content="Calibrate Speakers" Width="150" Background="BlueViolet"/>
+            <Button Name="SerialSettingsButton" Content="LumiNote Hardware Settings" Width="250" Background="BlueViolet" />
+            <Button Name="HardwareSettings" Content="Hardware Settings" Width="150" Background="BlueViolet" Click="HardwareSettingsOnClick"      
+                    Flyout="{StaticResource HardwareSettingsFlyout}" />
 
         </StackPanel>
 
@@ -62,7 +109,7 @@
 
                     <!-- BPM Overlay Layer -->
                     <Canvas Name="BpmCanvas" Height="80"
-                            IsHitTestVisible="False"/> <!-- overlay, mouse ignores it -->
+                            IsHitTestVisible="False"/> 
                 </Grid>
             </ScrollViewer>
 
@@ -71,14 +118,11 @@
                        Orientation="Horizontal"
                        Margin="0,10,0,0"
                        Height="40"/>
-
-
-
         </StackPanel>
 
         <!-- Block Editor -->
-        <Border Grid.Column="1" Grid.Row="0" Grid.RowSpan="3"
-                Name = "BlockEditor"
+        <ScrollViewer Grid.Column="1" Grid.Row="0" Grid.RowSpan="3">
+        <Border Name = "BlockEditor"
                 Background="#222"
                 Padding="10"
                 CornerRadius="6"
@@ -88,6 +132,26 @@
                            Foreground="White"
                            FontWeight="Bold"
                            Margin="0,0,0,6"/>
+
+                
+                <TextBlock Text="Block Color:" Foreground="White"/>
+                <Border
+                    Width="200"
+                    Height="40"
+                    CornerRadius="8"
+                    BorderBrush="Black"
+                    BorderThickness="6"
+                    ClipToBounds="True"
+                    HorizontalAlignment="Left">
+                    
+                    <Border
+                        CornerRadius="8"
+                        Background="BlueViolet">
+                        <Canvas Name="ColorDropBox"/>
+                    </Border>
+                </Border>
+
+            
 
                 <TextBlock Text="Start Light (0-1000)" Foreground="White"/>
                 <TextBox Name="StartLightInput"/>
@@ -153,6 +217,6 @@
                         Margin="0,10,0,0"/>
             </StackPanel>
         </Border>
-
+        </ScrollViewer>
     </Grid>
 </Window>

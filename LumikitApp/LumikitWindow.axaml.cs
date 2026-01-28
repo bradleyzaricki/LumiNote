@@ -20,10 +20,12 @@ namespace LumikitApp
 {
     public partial class LumikitWindow : Window
     {
-        private static Color spotifyGreen = new Color(255, 30, 215, 96);
-        private const int LedCount = 150;
-        private const int ColorUpdateIntervalMs = 25;
+        private static Color _spotifyGreen = new Color(255, 30, 215, 96);
         
+        private int ActiveLedCount = 0;
+        private int ColorUpdateIntervalMs = 50;
+        private int HardwareCurrent = 0;
+        private double BrightnessScale = 1;
         /// <summary> The music provider to handle audio playback (ex. Spotify, Local Files...) </summary>
         private IMusicProvider _musicProvider;
         private int _lastColorUpdateMs = 0;
@@ -55,6 +57,7 @@ namespace LumikitApp
 
         //Avalonia UI elements
         private Canvas _timelineCanvas;
+        private Canvas _blockColorDropBox;
         private ScrollViewer _scrollViewer;
         private List<LightBlock> LightBlocks = new();
         private TextBlock _playheadCaret;
@@ -76,9 +79,12 @@ namespace LumikitApp
         {
             InitializeComponent();
             _timelineCanvas = this.FindControl<Canvas>("TimelineCanvas");
+            _blockColorDropBox = this.FindControl<Canvas>("ColorDropBox");
             _scrollViewer = this.FindControl<ScrollViewer>("TimelineScrollViewer");
             _bpmInput = this.FindControl<TextBox>("BpmInput");
             
+            var serialSettingsButton = this.FindControl<Button>("SerialSettingsButton");
+
             var zoomInBtn = this.FindControl<Button>("ZoomInButton");
             if (zoomInBtn != null)
                 zoomInBtn.Click += (_, _) => Zoom(1.25);
@@ -113,12 +119,7 @@ namespace LumikitApp
             this.KeyDown += OnKeyDown;
             this.KeyUp += OnKeyUp;
             _scrollViewer.AddHandler(PointerWheelChangedEvent, OnPointerWheelChanged, RoutingStrategies.Tunnel);
-
-//todo: dynamic serialport         
-
-            SerialHandler = new SerialHandler(150,
-                new SerialPort("/dev/cu.usbserial-0001", 921600, Parity.None, 8, StopBits.One));
-
+            
             var applyBtn = this.FindControl<Button>("ApplyBlockChangesButton");
             if (applyBtn != null) applyBtn.Click += OnApplyBlockChangesClicked;
             
@@ -289,8 +290,6 @@ namespace LumikitApp
 
                 foreach (LightBlock blockToCopy in selectedBlocksSnapshot)
                 {
-
-
                     var addedBlock = new LightBlock(blockToCopy);
                     addedBlock.UpdateColor(blockToCopy.BlockColor);
 
@@ -564,7 +563,7 @@ namespace LumikitApp
                 AdditionalDualInput1TextBox.Text = block.SecondaryStartLight.ToString();
                 AdditionalSingleInput1TextBox.Text = block.AdditionalIndividualInput1.ToString();
                 AdditionalSingleInput2TextBox.Text = block.AdditionalIndividualInput2.ToString();
-
+                _blockColorDropBox.Background = new SolidColorBrush(block.BlockColor);
                 // Reset effect selection
 
                 this.FindControl<CheckBox>("Effect_FadeIn").IsChecked =
@@ -612,92 +611,96 @@ namespace LumikitApp
         /// Create color pallet and dragndrop functionality via avalonia swatches
         /// </summary>
         private void InitializeColorPalette()
-{
-    var palette = this.FindControl<WrapPanel>("ColorPalette");
-    palette.Children.Clear();
-
-    var picker = this.FindControl<ColorPicker>("SwatchFlyoutPicker");
-    picker.PropertyChanged -= SwatchFlyoutPickerOnPropertyChanged;
-    picker.PropertyChanged += SwatchFlyoutPickerOnPropertyChanged;
-
-    for (int i = 0; i < BlockColors.Count; i++)
-    {
-        int idx = i;
-        var color = BlockColors[idx];
-
-        var baseSwatch = new Border
         {
-            Width = 30,
-            Height = 30,
-            Background = new SolidColorBrush(color),
-            CornerRadius = new CornerRadius(4),
-            Margin = new Thickness(2),
-            Cursor = new Avalonia.Input.Cursor(StandardCursorType.Hand),
-            Tag = idx
-        };
+            var palette = this.FindControl<WrapPanel>("ColorPalette");
+            palette.Children.Clear();
 
-        void OpenPicker(Control anchor)
-        {
-            _activeSwatch = baseSwatch;
+            var picker = this.FindControl<ColorPicker>("SwatchFlyoutPicker");
+            picker.PropertyChanged -= SwatchFlyoutPickerOnPropertyChanged;
+            picker.PropertyChanged += SwatchFlyoutPickerOnPropertyChanged;
 
-            var flyout = (Flyout)Resources["SwatchPickerFlyout"]!;
-            if (baseSwatch.Background is SolidColorBrush b)
-                picker.Color = b.Color;
-
-            flyout.ShowAt(anchor);
-        }
-
-        Control finalSwatch = baseSwatch;
-
-        if (idx < 10)
-        {
-            var label = new TextBlock
+            var hardwareSettingsButton = this.FindControl<Button>("HardwareSettingsButton");
+            for (int i = 0; i < BlockColors.Count; i++)
             {
-                Text = (idx + 1).ToString().Substring((idx+1).ToString().Length-1,1),
-                Foreground = Brushes.Black,
-                FontSize = 14,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
-            };
+                int idx = i;
+                var color = BlockColors[idx];
 
-            var grid = new Grid();
-            grid.Children.Add(baseSwatch);
-            grid.Children.Add(label);
+                var baseSwatch = new Border
+                {
+                    Width = 30,
+                    Height = 30,
+                    Background = new SolidColorBrush(color),
+                    CornerRadius = new CornerRadius(4),
+                    Margin = new Thickness(2),
+                    Cursor = new Avalonia.Input.Cursor(StandardCursorType.Hand),
+                    Tag = idx
+                };
 
-            finalSwatch = new Border
-            {
-                Child = grid,
-                CornerRadius = new CornerRadius(4),
-                Margin = new Thickness(2),
-                Cursor = new Avalonia.Input.Cursor(StandardCursorType.Hand),
-                Tag = idx
-            };
-        }
+                void OpenPicker(Control anchor)
+                {
+                    _activeSwatch = baseSwatch;
 
-        finalSwatch.PointerPressed += async (_, e) =>
-        {
-            if (e.GetCurrentPoint(finalSwatch).Properties.IsRightButtonPressed)
-            {
-                e.Handled = true;
-                OpenPicker(finalSwatch);
-                return;
+                    var flyout = (Flyout)Resources["SwatchPickerFlyout"]!;
+                    if (baseSwatch.Background is SolidColorBrush b)
+                        picker.Color = b.Color;
+
+                    flyout.ShowAt(anchor);
+                }
+
+                Control finalSwatch = baseSwatch;
+
+                if (idx < 10)
+                {
+                    var label = new TextBlock
+                    {
+                        Text = (idx + 1).ToString().Substring((idx+1).ToString().Length-1,1),
+                        Foreground = Brushes.Black,
+                        FontSize = 14,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+
+                    var grid = new Grid();
+                    grid.Children.Add(baseSwatch);
+                    grid.Children.Add(label);
+
+                    finalSwatch = new Border
+                    {
+                        Child = grid,
+                        CornerRadius = new CornerRadius(4),
+                        Margin = new Thickness(2),
+                        Cursor = new Avalonia.Input.Cursor(StandardCursorType.Hand),
+                        Tag = idx
+                    };
+                }
+
+                finalSwatch.PointerPressed += async (_, e) =>
+                {
+                    if (e.GetCurrentPoint(finalSwatch).Properties.IsRightButtonPressed)
+                    {
+                        e.Handled = true;
+                        OpenPicker(finalSwatch);
+                        return;
+                    }
+
+                    if (e.GetCurrentPoint(finalSwatch).Properties.IsLeftButtonPressed)
+                    {
+                        var data = new DataObject();
+                        data.Set("block-color", BlockColors[idx].ToString());
+                        await DragDrop.DoDragDrop(e, data, DragDropEffects.Copy);
+                    }
+                };
+
+                    palette.Children.Add(finalSwatch);
+                }
+
+                DragDrop.SetAllowDrop(_timelineCanvas, true);
+                DragDrop.SetAllowDrop(_blockColorDropBox, true);
+                _timelineCanvas.AddHandler(DragDrop.DropEvent, OnCanvasDrop, RoutingStrategies.Bubble);
+                _blockColorDropBox.AddHandler(DragDrop.DropEvent, OnColorCanvasDrop, RoutingStrategies.Bubble);
             }
 
-            if (e.GetCurrentPoint(finalSwatch).Properties.IsLeftButtonPressed)
-            {
-                var data = new DataObject();
-                data.Set("block-color", BlockColors[idx].ToString());
-                await DragDrop.DoDragDrop(e, data, DragDropEffects.Copy);
-            }
-        };
-
-            palette.Children.Add(finalSwatch);
-        }
-
-        DragDrop.SetAllowDrop(_timelineCanvas, true);
-        _timelineCanvas.AddHandler(DragDrop.DropEvent, OnCanvasDrop, RoutingStrategies.Bubble);
-    }
-
+        
         private void SwatchFlyoutPickerOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property != ColorPicker.ColorProperty) return;
@@ -863,6 +866,20 @@ namespace LumikitApp
             }
         }
 
+
+        private void OnColorCanvasDrop(object? sender, DragEventArgs e)
+        {
+            if (!e.Data.Contains("block-color")) return;
+            var colorString = e.Data.Get("block-color")?.ToString();
+            if (colorString == null || !Color.TryParse(colorString, out var color)) return;
+            foreach (var block in _selectedBlocks)
+            {
+                block.UpdateColor(color);
+                _blockColorDropBox.Background = new SolidColorBrush(color);
+                _blockColorDropBox.ClipToBounds = true;
+            }
+        }
+
         /// <summary>
         ///  drag n drop lightblock drop logic
         /// </summary>
@@ -976,9 +993,11 @@ namespace LumikitApp
 
             if (activeBlock == null)
             {
-                
+                if (SerialHandler != null)
+                {
                     SerialHandler.SendFrame(Array.Empty<Color>());
 
+                }
                 
                 TopColorBar.Background = new SolidColorBrush(Colors.Transparent);
                 BottomColorBar.Background = new SolidColorBrush(Colors.Transparent);
@@ -997,20 +1016,21 @@ namespace LumikitApp
             double relPos = Math.Clamp((caretX - left) / width, 0, 1);
 
 
-            var stripColors = LightEffectsComputer.ComputeBlockEffects(activeBlock, relPos);
+            var stripColors = LightEffectsComputer.ComputeBlockEffects(activeBlock, relPos, BrightnessScale);
 
             UpdateColorBar(stripColors);
 
-      
-            try
+            if (SerialHandler != null)
             {
-               SerialHandler.SendFrame(stripColors);
+                try
+                {
+                    SerialHandler.SendFrame(stripColors);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-        
         }
 
         
@@ -1204,7 +1224,34 @@ namespace LumikitApp
                 AdditionalDualInput2TextBox.Text = "";
             }
         }
+        public void RefreshPorts(object sender, RoutedEventArgs e)
+        {
+            var ports = SerialPort.GetPortNames().OrderBy(p => p).ToArray();
 
+            var previous = PortComboBox.SelectedItem as string;
+
+            PortComboBox.Items.Clear();
+            foreach (var p in ports)
+                PortComboBox.Items.Add(p);
+
+            if (previous != null && ports.Contains(previous))
+                PortComboBox.SelectedItem = previous;
+            else if (ports.Length > 0)
+                PortComboBox.SelectedIndex = 0;
+        
+        }
+        private void SaveHardwareSettings(object? sender, RoutedEventArgs e)
+        {
+            if (SerialHandler != null)
+            {
+                SerialHandler.ClosePort();
+            }
+            ActiveLedCount = Int32.Parse(ActiveLightsTextBox.Text);
+            HardwareCurrent = (int)(HardwareCurrentSlider.Value);
+            BrightnessScale = HardwareCurrent / (ActiveLedCount * 0.06);
+            SerialHandler = new SerialHandler(ActiveLedCount,
+                new SerialPort(PortComboBox.SelectedItem as string, 460800, Parity.None, 8, StopBits.One));
+        }
         /// <summary>
         /// Changes app theme depending on current music provider source (Spotify green vs Luminote purple)
         /// </summary>
@@ -1220,13 +1267,18 @@ namespace LumikitApp
 
             if (_musicProvider.providerName == "Spotify")
             {
-                ResumeTrackButton.Background = new SolidColorBrush(spotifyGreen, 1);
-                PauseTrackButton.Background = new SolidColorBrush(spotifyGreen, 1);
-                RestartTrackButton.Background = new SolidColorBrush(spotifyGreen, 1);
-                NextTrackButton.Background = new SolidColorBrush(spotifyGreen, 1);
+                ResumeTrackButton.Background = new SolidColorBrush(_spotifyGreen, 1);
+                PauseTrackButton.Background = new SolidColorBrush(_spotifyGreen, 1);
+                RestartTrackButton.Background = new SolidColorBrush(_spotifyGreen, 1);
+                NextTrackButton.Background = new SolidColorBrush(_spotifyGreen, 1);
             }
             
         }
-        
+
+
+        private void HardwareSettingsOnClick(object? sender, RoutedEventArgs e)
+        {
+            RefreshPorts(null, null);
+        }
     }
 }

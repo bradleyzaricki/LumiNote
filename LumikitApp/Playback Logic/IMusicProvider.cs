@@ -14,6 +14,8 @@ using Avalonia.Controls;
 /// </summary>
 public interface IMusicProvider
 {
+    TrackPOCO currentTrack {get; set;}
+    string currentlyPlayingPath {get; set;}
     string providerName { get; }
     Task<bool> IsPlayingAsync();
     Task ResumePlaybackAsync();

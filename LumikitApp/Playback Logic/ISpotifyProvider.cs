@@ -5,6 +5,7 @@ namespace LumikitApp
 {
     public interface ISpotifyProvider
     {
+
         Task<SpotifyClient> InitializeClient();
         Task<bool> IsPlayingAsync();
         Task ResumePlaybackAsync();

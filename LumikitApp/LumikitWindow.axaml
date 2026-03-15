@@ -1,10 +1,27 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:LumikitApp.Models"
         x:Class="LumikitApp.LumikitWindow"
         Width="1600" Height="900"
         Background="Black"
         Title="LumiNote Software V1">
     <Window.Resources>
+        <Flyout x:Key="OpenAudioFlyout" Placement="Bottom">
+            <Border Background="#222" Padding="12" CornerRadius="8">
+                <StackPanel Width="320" Spacing="10">
+                    <TextBlock Text="Open Audio File" FontSize="16" FontWeight="Bold" Foreground="White" />
+                    <TextBlock Text="Choose an mp3/wav/flac file." Foreground="#AAA"/>
+
+                    <Button Content="Browse…" Click="BrowseAudioFile_Click"/>
+
+                    <TextBlock Name="SelectedAudioPathText"
+                               Text="No file selected"
+                               Foreground="#888"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </Flyout>
+
         <Flyout x:Key="SwatchPickerFlyout" Placement="Bottom">
             <Border Background="#222" Padding="10" CornerRadius="8">
                 <ColorPicker x:Name="SwatchFlyoutPicker"
@@ -15,6 +32,7 @@
                              IsAlphaEnabled="False"/>
             </Border>
         </Flyout>
+
         <Flyout x:Key="HardwareSettingsFlyout" Placement="Bottom">
             <Border Background="#222" Padding="12" CornerRadius="8">
                 <StackPanel Width="280" Spacing="10">
@@ -24,24 +42,23 @@
                     <StackPanel Spacing="6">
                         <TextBlock Text="Number Leds" Foreground="#DDD"/>
                         <TextBox Watermark="ex. 300 LEDS" Name="ActiveLightsTextBox"></TextBox>
+
                         <StackPanel Spacing="6">
                             <TextBlock Text="Input Current" Foreground="#DDD"/>
 
-                            <Slider
-                                Name="HardwareCurrentSlider"
-                                Minimum="0"
-                                Maximum="40"
-                                TickFrequency="1"
-                                IsSnapToTickEnabled="True"/>
+                            <Slider Name="HardwareCurrentSlider"
+                                    Minimum="0"
+                                    Maximum="40"
+                                    TickFrequency="1"
+                                    IsSnapToTickEnabled="True"/>
 
-                            <TextBlock
-                                Text="{Binding #HardwareCurrentSlider.Value, StringFormat={}{0:0} A}"
-                                HorizontalAlignment="Left"
-                                Foreground="#AAA"/>
+                            <TextBlock Text="{Binding #HardwareCurrentSlider.Value, StringFormat={}{0:0} A}"
+                                       HorizontalAlignment="Left"
+                                       Foreground="#AAA"/>
                         </StackPanel>
-
                     </StackPanel>
-                    <StackPanel Spacing="6" >
+
+                    <StackPanel Spacing="6">
                         <TextBlock Text="USB / Serial Device"/>
 
                         <ComboBox Name="PortComboBox"/>
@@ -59,29 +76,34 @@
                 </StackPanel>
             </Border>
         </Flyout>
-
     </Window.Resources>
+
     <Grid ColumnDefinitions="*, 300" RowDefinitions="Auto,Auto,*" Margin="10">
 
-        <!--playback, track info, timeline -->
         <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Horizontal" Spacing="10">
             <Button Name="PauseTrackButton" Content="Pause" Width="80"/>
             <Button Name="ResumeTrackButton" Content="Resume" Width="80"/>
             <Button Name="NextTrackButton" Content="Next" Width="80"/>
-            <Button Name="RestartTrackButton" Content="Restart" Width="80"/> <!-- NEW -->
+            <Button Name="RestartTrackButton" Content="Restart" Width="80"/>
             <Button Name="ZoomInButton" Content="+" Width="40"/>
             <Button Name="ZoomOutButton" Content="-" Width="40"/>
 
             <TextBlock Name="StopwatchLabel" Foreground="White" VerticalAlignment="Center" Margin="20,0,0,0"/>
             <TextBlock Text="BPM:" Foreground="White" VerticalAlignment="Center" Margin="20,0,0,0"/>
-            <TextBox Name="BpmInput" Width="60" Text="120" />
-            <Button Name="SaveTrackDataButton" Content="Save" Width="80"/>
-            <Button Name="SerialSettingsButton" Content="LumiNote Hardware Settings" Width="250" Background="BlueViolet" />
-            <Button Name="HardwareSettings" Content="Hardware Settings" Width="150" Background="BlueViolet" Click="HardwareSettingsOnClick"      
-                    Flyout="{StaticResource HardwareSettingsFlyout}" />
+            <TextBox Name="BpmInput" Width="60" Text="120"/>
+            <Button Name="SaveTrackDataButton" Content="Save New" Width="100"/>
+            <Button Name="OpenAudioFileButton"
+                    Content="New Lightmap"
+                    Width="250"
+                    Click="OpenAudioFileButton_OnClick"/>
 
+            <Button Name="HardwareSettings"
+                    Content="Hardware Settings"
+                    Width="150"
+                    Background="BlueViolet"
+                    Click="HardwareSettingsOnClick"
+                    Flyout="{StaticResource HardwareSettingsFlyout}"/>
         </StackPanel>
-
 
         <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,0">
             <Image Name="AlbumArt" Width="60" Height="60"/>
@@ -95,128 +117,326 @@
             </StackPanel>
         </StackPanel>
 
-        
-        <!-- Timeline + Palette -->
         <StackPanel Grid.Column="0" Grid.Row="2">
+
             <Border Name="TopColorBar" Height="5" Background="Gray"/>
             <ScrollViewer Name="TimelineScrollViewer"
                           HorizontalScrollBarVisibility="Visible"
                           VerticalScrollBarVisibility="Disabled"
                           Height="130">
                 <Grid>
-                    <!-- Block Layer -->
                     <Canvas Name="TimelineCanvas" Height="80"/>
-
-                    <!-- BPM Overlay Layer -->
-                    <Canvas Name="BpmCanvas" Height="80"
-                            IsHitTestVisible="False"/> 
+                    <Canvas Name="BpmCanvas" Height="80" IsHitTestVisible="False"/>
                 </Grid>
             </ScrollViewer>
-
             <Border Name="BottomColorBar" Height="5" Background="Gray"/>
+
             <WrapPanel Name="ColorPalette"
                        Orientation="Horizontal"
                        Margin="0,10,0,0"
                        Height="40"/>
+
+            <Border Height="1" Background="#333" Margin="0,20,0,10"/>
+
+            <TextBlock Text="Database &amp; Playback"
+                       Foreground="White"
+                       FontWeight="Bold"
+                       FontSize="16"
+                       Margin="0,0,0,10"/>
+
+            <TabControl Height="440">
+
+        <!-- Downloaded Local Tracks -->
+            <TabItem Header="Local Tracks">
+                <Grid Margin="0,10,0,0" RowDefinitions="Auto,*">
+
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBox x:Name="LocalTrackSearchBox"
+                                 Width="320"
+                                 Watermark="Search tracks by name or ID..."
+                                 HorizontalAlignment="Left"
+                                 TextChanged="LocalTrackSearchBox_TextChanged"/>
+
+                        <Button Content="Refresh"
+                                Width="100"
+                                HorizontalAlignment="Left"
+                                Click="RefreshLocalTracks_Click"/>
+                    </StackPanel>
+
+                    <Border Grid.Row="1"
+                            Background="#1b1b1b"
+                            CornerRadius="6"
+                            Padding="10">
+
+                        <ListBox x:Name="LocalTracksListBox">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                </Style>
+                            </ListBox.Styles>
+
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:TrackItemUI">
+                                    <Border Background="#262626"
+                                            CornerRadius="10"
+                                            Padding="12"
+                                            Margin="6"
+                                            Height="64">
+                                        <Grid ColumnDefinitions="*,Auto,Auto, Auto"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Stretch">
+
+                                            <StackPanel Spacing="2" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding TrackName}"
+                                                           Foreground="White"
+                                                           FontSize="15"
+                                                           FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Subtitle}"
+                                                           Foreground="#9a9a9a"
+                                                           FontSize="12"/>
+                                            </StackPanel>
+                                            <Button Content="+"
+                                                    Grid.Column="2"
+                                                    Width="40"
+                                                    Height="32"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Right"
+                                                    Click="LocalTrack_Upload_Click"/>
+                                            <Button Content="▶"
+                                                    Grid.Column="1"
+                                                    Width="40"
+                                                    Height="32"
+                                                    Margin="12,0,8,0"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Right"
+                                                    Click="LocalTrack_Play_Click"/>
+
+                                            <Button Content="🗑"
+                                                    Grid.Column="3"
+                                                    Width="40"
+                                                    Height="32"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Right"
+                                                    Click="LocalTrack_Delete_Click"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                    </Border>
+
+                </Grid>
+            </TabItem>
+
+
+            <!-- QUEUE -->
+            <TabItem Header="Queue">
+                <Border Background="#1b1b1b"
+                        CornerRadius="6"
+                        Padding="10"
+                        Margin="0,10,0,0">
+                    <ListBox x:Name="QueueTracksListBox">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:TrackItemUI">
+                                <Grid ColumnDefinitions="*,Auto" Margin="6">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBox x:Name="QueueTrackSearchBox"
+                                 Width="320"
+                                 Watermark="Search tracks by name or ID..."
+                                 HorizontalAlignment="Left"
+                                 TextChanged="LocalTrackSearchBox_TextChanged"/>
+
+                        <Button Content="Refresh"
+                                Width="100"
+                                HorizontalAlignment="Left"/>
+                    </StackPanel>
+
+       
+
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+            </TabItem>
+        
+            <!-- DB TRACKS -->
+            <TabItem Header="Download Tracks">
+                <Grid Margin="0,10,0,0" RowDefinitions="Auto,*" ColumnSpacing="10">
+
+                    <!-- Search + Refresh ABOVE LIST, LEFT ALIGNED -->
+                    <StackPanel Orientation="Horizontal" Spacing="10" Grid.Row="0">
+                        <TextBox Width="320"
+                                 Watermark="Search tracks..."
+                                 HorizontalAlignment="Left"/>
+                        <Button Content="Refresh"
+                                Width="100"
+                                HorizontalAlignment="Left"                                
+                                Click="RefreshDatabaseTracks_Click"/>
+                    </StackPanel>
+
+                    <!-- Scrollable List -->
+                    <Border Grid.Row="1"
+                            Background="#1b1b1b"
+                            CornerRadius="6"
+                            Padding="10">
+                        <ListBox x:Name="DatabaseTracksListBox">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                </Style>
+                            </ListBox.Styles>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:TrackItemUI">
+                                    <Border Background="#262626"
+                                            CornerRadius="10"
+                                            Padding="12"
+                                            Margin="6"
+                                            Height="64">
+                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                            <StackPanel Spacing="2" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding TrackName}" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Subtitle}" Foreground="#9a9a9a" FontSize="12"/>
+                                            </StackPanel>
+                                            <Button Content="+" Grid.Column="1"
+                                                    Width="40"
+                                                    Height="32"
+                                                    Margin="12,0,8,0"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Right"
+                                                    Click="DatabaseTrack_Download_Click"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+
+                </Grid>
+            </TabItem>
+            </TabControl>
         </StackPanel>
 
-        <!-- Block Editor -->
         <ScrollViewer Grid.Column="1" Grid.Row="0" Grid.RowSpan="3">
-        <Border Name = "BlockEditor"
-                Background="#222"
-                Padding="10"
-                CornerRadius="6"
-                Margin="10,0,0,0">
-            <StackPanel Spacing="6">
-                <TextBlock Text="Block Editor"
-                           Foreground="White"
-                           FontWeight="Bold"
-                           Margin="0,0,0,6"/>
+            <Border Name="BlockEditor"
+                    Background="#222"
+                    Padding="10"
+                    CornerRadius="6"
+                    Margin="10,0,0,0">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Block Editor"
+                               Foreground="White"
+                               FontWeight="Bold"
+                               Margin="0,0,0,6"/>
 
-                
-                <TextBlock Text="Block Color:" Foreground="White"/>
-                <Border
-                    Width="200"
-                    Height="40"
-                    CornerRadius="8"
-                    BorderBrush="Black"
-                    BorderThickness="6"
-                    ClipToBounds="True"
-                    HorizontalAlignment="Left">
-                    
-                    <Border
-                        CornerRadius="8"
-                        Background="BlueViolet">
-                        <Canvas Name="ColorDropBox"/>
+                    <TextBlock Text="Block Color:" Foreground="White"/>
+                    <Border Width="200"
+                            Height="40"
+                            CornerRadius="8"
+                            BorderBrush="Black"
+                            BorderThickness="6"
+                            ClipToBounds="True"
+                            HorizontalAlignment="Left">
+                        <Border CornerRadius="8" Background="BlueViolet">
+                            <Canvas Name="ColorDropBox"/>
+                        </Border>
                     </Border>
-                </Border>
 
-            
+                    <Border Height="1" Background="#333" Margin="0,10,0,10"/>
 
-                <TextBlock Text="Start Light (0-1000)" Foreground="White"/>
-                <TextBox Name="StartLightInput"/>
+                    <TextBlock Text="Start Light (0-1000)" Foreground="White"/>
+                    <TextBox Name="StartLightInput"/>
 
-                <TextBlock Text="End Light (0-1000)" Foreground="White"/>
-                <TextBox Name="EndLightInput"/>
-                
-                <TextBlock Text="Intensity (0-255)" Foreground="White"/>
-                <TextBox Name="IntensityInput"/>
-                
-                <StackPanel Name="AdditionalDualInputsPanel">
-                    <TextBlock Name = "AdditionalDualInput1Label" Text="SECONDARYDUALINPUT1" Foreground="White"/>
-                    <TextBox Name="AdditionalDualInput1TextBox"/>
-                    
-                    <TextBlock Name = "AdditionalDualInput2Label" Text="SECONDARYDUALINPUT2" Foreground="White"/>
-                    <TextBox  Name="AdditionalDualInput2TextBox"/>
+                    <TextBlock Text="End Light (0-1000)" Foreground="White"/>
+                    <TextBox Name="EndLightInput"/>
+
+                    <TextBlock Text="Intensity (0-255)" Foreground="White"/>
+                    <TextBox Name="IntensityInput"/>
+
+                    <StackPanel Name="AdditionalDualInputsPanel">
+                        <TextBlock Name="AdditionalDualInput1Label" Text="SECONDARYDUALINPUT1" Foreground="White"/>
+                        <TextBox Name="AdditionalDualInput1TextBox"/>
+
+                        <TextBlock Name="AdditionalDualInput2Label" Text="SECONDARYDUALINPUT2" Foreground="White"/>
+                        <TextBox Name="AdditionalDualInput2TextBox"/>
                     </StackPanel>
 
-                <StackPanel Name="AdditionalSingleInputPanel1">
-                <TextBlock Name = "AdditionalSingleInputLabel1" Text="SECONDARYSINGLEINPUT" Foreground="White"/>
-                <TextBox Name="AdditionalSingleInput1TextBox"/>
+                    <StackPanel Name="AdditionalSingleInputPanel1">
+                        <TextBlock Name="AdditionalSingleInputLabel1" Text="SECONDARYSINGLEINPUT" Foreground="White"/>
+                        <TextBox Name="AdditionalSingleInput1TextBox"/>
                     </StackPanel>
-                <StackPanel Name="AdditionalSingleInputPanel2">
-                    <TextBlock Name = "AdditionalSingleInputLabel2" Text="" Foreground="White"/>
-                    <TextBox Name="AdditionalSingleInput2TextBox"/>
-                </StackPanel>
-                
-                <!-- Effect Options -->
-                <TextBlock Text="Effect" Foreground="White" Margin="0,10,0,0"/>
-                <StackPanel>
-                    <CheckBox Name="Effect_FadeIn"  Content="Fade In" Foreground="White"/>
-                    <CheckBox Name="Effect_FadeOut"  Content="Fade Out" Foreground="White"/>
-                    <CheckBox Name="Effect_FadeStrobe" Content="Strobe" Foreground="White" />
-                    <CheckBox Name="Effect_Travel"
-                              Content="Travel"
-                              Foreground="White"
-                              Checked="Effect_Travel_Checked"
-                              Unchecked="Effect_Travel_Unchecked"/>
-                    
-                    <CheckBox Name="Effect_Combine"
-                              Content="Combine" 
-                              Foreground="White"
-                              
-                              Checked="Effect_Combine_OnChecked"
-                              Unchecked="Effect_Combine_OnUnchecked"/>
-                    <CheckBox Name="Effect_Seperate"
-                              Content="Seperate"
-                              Foreground="White"
-                              Checked="Effect_Seperate_OnChecked"
-                              Unchecked="Effect_Seperate_OnUnchecked"/>
-                    <CheckBox Name="Effect_Repeat"
-                              Content="Repeat"
-                              Foreground="White"
-                              Checked="Effect_Repeat_OnChecked"
-                              Unchecked="Effect_Repeat_OnUnchecked"/>
-                              
-                    <CheckBox Name="Effect_AccentColor"  Content="Accent Color" Foreground="White"/>
-                    <CheckBox Name="Effect_FillerColor" Content="Filler Color" Foreground="White"/>
-                </StackPanel>
 
-                <Button Name="ApplyBlockChangesButton"
-                        Content="Apply"
-                        Margin="0,10,0,0"/>
-            </StackPanel>
-        </Border>
+                    <StackPanel Name="AdditionalSingleInputPanel2">
+                        <TextBlock Name="AdditionalSingleInputLabel2" Text="" Foreground="White"/>
+                        <TextBox Name="AdditionalSingleInput2TextBox"/>
+                    </StackPanel>
+
+                    <TextBlock Name="SecondColorHeader" Text="Second Color:" Foreground="White" IsVisible="True"/>
+                    <Border Name="SecondColorFrame"
+                            Width="200"
+                            Height="40"
+                            CornerRadius="8"
+                            BorderBrush="Black"
+                            BorderThickness="6"
+                            ClipToBounds="True"
+                            HorizontalAlignment="Left"
+                            IsVisible="True">
+                        <Border CornerRadius="8" Background="Transparent">
+                            <Canvas Name="SecondColorDropBox"/>
+                        </Border>
+                    </Border>
+
+                    <TextBlock Text="Effect" Foreground="White" Margin="0,10,0,0"/>
+                    <StackPanel>
+                        <CheckBox Name="Effect_FadeIn" Content="Fade In" Foreground="White"/>
+                        <CheckBox Name="Effect_FadeOut" Content="Fade Out" Foreground="White"/>
+                        <CheckBox Name="Effect_FadeStrobe" Content="Strobe" Foreground="White"/>
+                        <CheckBox Name="Effect_Travel"
+                                  Content="Travel"
+                                  Foreground="White"
+                                  Checked="Effect_Travel_Checked"
+                                  Unchecked="Effect_OnChanged"/>
+                        <CheckBox Name="Effect_Combine"
+                                  Content="Combine"
+                                  Foreground="White"
+                                  Checked="Effect_Combine_OnChecked"
+                                  Unchecked="Effect_OnChanged"/>
+                        <CheckBox Name="Effect_Seperate"
+                                  Content="Seperate"
+                                  Foreground="White"
+                                  Checked="Effect_Seperate_OnChecked"
+                                  Unchecked="Effect_OnChanged"/>
+                        <CheckBox Name="Effect_Repeat"
+                                  Content="Repeat"
+                                  Foreground="White"
+                                  Checked="Effect_OnChanged"
+                                  Unchecked="Effect_OnChanged"/>
+                        <CheckBox Name="Effect_ChangeColor"
+                                  Content="Color Change"
+                                  Foreground="White"
+                                  Checked="Effect_OnChanged"
+                                  Unchecked="Effect_OnChanged"/>
+
+                        <CheckBox Name="Effect_Twinkle"
+                                  Content="Twinkle"
+                                  Foreground="White"
+                                  Checked="Effect_OnChanged"
+                                  Unchecked="Effect_OnChanged"/>
+                    </StackPanel>
+
+                    <Button Name="ApplyBlockChangesButton"
+                            Content="Apply"
+                            Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
         </ScrollViewer>
+
     </Grid>
 </Window>

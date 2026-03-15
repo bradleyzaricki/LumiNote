@@ -20,7 +20,8 @@ namespace LumikitApp
         public int SecondaryEndLight { get; set; }
         public int AdditionalIndividualInput1 {get; set;}
         public int AdditionalIndividualInput2 {get; set;}
-
+        
+        public Color SecondBlockColor {get; set;}
         public int Intensity { get; set; }
         public Color BlockColor { get; set; }
         public List<Effect> BlockEffects { get; set; } = new List<Effect>(){Effect.None};
@@ -33,7 +34,10 @@ namespace LumikitApp
             Travel,
             Combine,
             Seperate,
-            Repeat
+            Repeat,
+            ChangeColor,
+            Twinkle
+
         }
         private Point dragStartCanvas;
         private double originalLeft;

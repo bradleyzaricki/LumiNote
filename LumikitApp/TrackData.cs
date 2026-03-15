@@ -1,21 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Color = Avalonia.Media.Color;
 
 namespace LumikitApp
 {
     
-    internal class TrackData
+    public class TrackData
     {
+        public Guid trackGUID { get; set; } = Guid.NewGuid();
+
+        public Image? albumCover {get; set;}
+        public string? filePath {get; set;}
+        public string author { get; set; }
         public double _BPM { get; set; }
         [NotNull]
-        public string _trackID { get; set; }
         public string _trackName { get; set; }
         public List<LightBlockData> _lightBlocks { get; set; } = new();
-
         public TrackData() { }
 
 
@@ -26,6 +32,7 @@ namespace LumikitApp
         public double Width { get; set; }//Width of block on timeline
         public string Color { get; set; }//Saved color
         
+        public string SecondColor { get; set; } 
         public List<LightBlock.Effect> BlockEffects { get; set; }
         
         public int StartLight { get; set; }

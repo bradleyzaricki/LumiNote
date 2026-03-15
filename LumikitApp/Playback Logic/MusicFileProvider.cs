@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using System.Threading.Tasks;
 using ManagedBass;
 
 namespace LumikitApp
@@ -15,11 +11,12 @@ namespace LumikitApp
     public class MusicFileProvider : IMusicProvider
     {
         public string providerName => "LocalFiles";
+        public TrackPOCO currentTrack { get; set; }
         private int _stream;
         private bool _init;
         private Window _mainWindow;
-        public event Action<int> ProgressUpdated;
 
+        public string currentlyPlayingPath {get; set;}
         /// <summary>
         /// Spotify API wrapper for Lumikit procedures
         /// </summary>
@@ -61,14 +58,10 @@ namespace LumikitApp
         /// <summary>
         /// Pause current playback as soon as possible to avoid latency
         /// </summary>
-
-
-
-            public async Task<TrackPOCO> GetCurrentlyPlayingTrackAsync()
-            {           
-
-                return new TrackPOCO("0", "CanUBe", null,null);
-            }
+        public async Task<TrackPOCO> GetCurrentlyPlayingTrackAsync()
+        {
+            return currentTrack;
+        }
 
         /// <summary>
         /// GET integer value of playback progress in ms 
@@ -92,16 +85,15 @@ namespace LumikitApp
             Bass.ChannelSetPosition(_stream, bytes);
             return Task.CompletedTask;
         }
-
-
+        
         /// <summary>
         /// Skip the current track and 
         /// </summary>
-        public async Task SkipTrack()
+        public async Task SkipTrack(TrackPOCO track, string filePath)
         {
             await InitializeClient();
-
-            var path = "/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/Local Music/Can U Be -Ye.mp3";
+            currentTrack = track;
+            var path = filePath;//"/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/Local Music/Can U Be -Ye.mp3";
 
             if (_stream != 0)
             {
@@ -115,7 +107,24 @@ namespace LumikitApp
 
             System.Console.WriteLine("Playing");
         }
+        
+        public async Task SkipTrack()
+        {
+            await InitializeClient();
 
+            if (_stream != 0)
+            {
+                Bass.ChannelStop(_stream);
+                Bass.StreamFree(_stream);
+                _stream = 0;
+            }
+
+            _stream = Bass.CreateStream(currentlyPlayingPath, Flags: BassFlags.Default);
+            Bass.ChannelPlay(_stream);
+
+            System.Console.WriteLine("Playing");
+        }
+        
         public Task InitializeClient()
         {
             if (_init) return Task.CompletedTask;

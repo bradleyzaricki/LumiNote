@@ -1,68 +1,133 @@
-﻿using Avalonia.Controls.Primitives;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Diagnostics;
-using SpotifyAPI.Web;
+using System.Text.RegularExpressions;
+using System.Security.Cryptography;
+using LumikitApp.Models;
+
 namespace LumikitApp
 {
     internal class JsonDataHandler
     {
-        public static string filePath = "/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/TrackInfo.json";//"C:\\Users\\bzari\\source\\repos\\SpotifyInformationConsole\\LumikitApp\\TrackInfo.json";
-        /// <summary>
-        /// Gets the formatted trackData class from json data via trackID search
-        /// </summary>
-        /// <param name="trackID"></param>
-        /// <returns></returns>
+        private static readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true };
+
+        private static string TrackInfoDir => DirectoryPaths.TrackInfoDir;
+
+
+        public static string TrackFilePath(string trackId) =>
+            Path.Combine(TrackInfoDir, SafeFileName(trackId) + ".json");
+
         public static TrackData GetTrack(string trackID)
         {
-            var json = File.ReadAllText(filePath);
-            var tracks = JsonSerializer.Deserialize<List<TrackData>>(json);
-            foreach(TrackData track in tracks)
+            if (string.IsNullOrWhiteSpace(trackID)) return null;
+
+            var path = TrackFilePath(trackID);
+            Console.WriteLine(path + "LOOKING");
+
+            if (!File.Exists(path)) return null;
+            Console.WriteLine(path + "FOUND");
+            var json = File.ReadAllText(path);
+            return JsonSerializer.Deserialize<TrackData>(json);
+        }
+
+        public static List<TrackData> GetAllTracks()
+        {
+            if (!Directory.Exists(TrackInfoDir)) return new List<TrackData>();
+
+            var files = Directory.EnumerateFiles(TrackInfoDir, "*.json", SearchOption.TopDirectoryOnly);
+            var list = new List<TrackData>();
+
+            foreach (var file in files)
             {
-                if(track._trackID != null)
+                try
                 {
-                    if(track._trackID == trackID)
-                    {
-                        return track;
-                    }
+                    var json = File.ReadAllText(file);
+                    var track = JsonSerializer.Deserialize<TrackData>(json);
+                    if (track != null) list.Add(track);
+                }
+                catch
+                {
                 }
             }
-            return null;
+
+            return list;
         }
-        /// <summary>
-        /// Saves track Name, Id, Bpm, and Lighting Effects to local json file
-        /// </summary>
-        /// <param name="track"></param>
+
         public static void SaveTrack(TrackData track)
         {
-            List<TrackData> tracks = new();
+            if (track == null) return;
 
+            Directory.CreateDirectory(TrackInfoDir);
 
-            // If file exists and is not empty, read existing tracks
-            if (File.Exists(filePath) && new FileInfo(filePath).Length > 0)
-            {
-                string existingJson = File.ReadAllText(filePath);
-                tracks = JsonSerializer.Deserialize<List<TrackData>>(existingJson) ?? new List<TrackData>();
-            }
-            tracks.RemoveAll(t => t._trackID == track._trackID);
-            
+            var path = TrackFilePath(track.trackGUID.ToString());
+            var json = JsonSerializer.Serialize(track, JsonOpts);
 
-            // Add the new track
-            tracks.Add(track);
-
-            // Write back the updated list
-            string updatedJson = JsonSerializer.Serialize(tracks, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filePath, updatedJson);
+            File.WriteAllText(path, json);
         }
 
-    }
+        public static void DeleteTrack(string trackID)
+        {
+            if (string.IsNullOrWhiteSpace(trackID)) return;
 
+            var path = TrackFilePath(trackID);
+            if (File.Exists(path)) File.Delete(path);
+        }
+
+        public static string ImportAudioToAppStorage(string sourcePath)
+        {
+            var appRoot = DirectoryPaths.AudioDir;
+
+
+            Directory.CreateDirectory(appRoot);
+
+            var hash = ComputeFileHash(sourcePath);
+            var ext = Path.GetExtension(sourcePath);
+
+            var destPath = Path.Combine(appRoot, hash + ext);
+
+            if (!File.Exists(destPath))
+            {
+                File.Copy(sourcePath, destPath);
+            }
+
+            return destPath;
+        }
+
+        private static string ComputeFileHash(string path)
+        {
+            using var sha = SHA256.Create();
+            using var stream = File.OpenRead(path);
+            var hash = sha.ComputeHash(stream);
+            return Convert.ToHexString(hash);
+        }
+
+        private static string SafeFileName(string name)
+        {
+            name = name.Trim();
+            if (name.Length == 0) return "unnamed";
+            var invalid = Path.GetInvalidFileNameChars();
+            var cleaned = new string(name.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
+            cleaned = Regex.Replace(cleaned, @"\s+", " ").Trim();
+            if (cleaned.Length > 120) cleaned = cleaned.Substring(0, 120);
+            return cleaned;
+        }
+        public static List<TrackItemUI> GetAllTrackItems()
+        {
+            var tracks = GetAllTracks();
+
+            return tracks
+                .Where(t => t != null)
+                .Select(t => new TrackItemUI
+                {
+                    TrackId = t.trackGUID.ToString(),
+                    TrackName = t._trackName ?? "",
+                    Subtitle = t.author ?? ""
+                })
+                .ToList();
+        }
+
+
+    }
 }

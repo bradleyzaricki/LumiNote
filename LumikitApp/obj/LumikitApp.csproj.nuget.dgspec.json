@@ -64,6 +64,10 @@
               "target": "Package",
               "version": "[11.3.2, )"
             },
+            "DotNetEnv": {
+              "target": "Package",
+              "version": "[3.1.1, )"
+            },
             "ManagedBass": {
               "target": "Package",
               "version": "[4.0.2, )"

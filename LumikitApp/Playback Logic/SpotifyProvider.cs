@@ -21,6 +21,10 @@ namespace LumikitApp
         private Window _mainWindow;
         private SpotifyClient _spotify;
         
+        //not for spotify
+        public TrackPOCO currentTrack { get; set; }
+        public string currentlyPlayingPath {get; set;}
+
         /// <summary>
         /// Spotify API wrapper for Lumikit procedures
         /// </summary>
@@ -190,16 +194,30 @@ namespace LumikitApp
             }
         }
 
+        /// <summary>
+        ///  
+        /// </summary>
+        /// <returns>Returns the track as a C# object,</returns>
         public async Task<TrackPOCO> GetCurrentlyPlayingTrackAsync()
         {
             try
             {
                 var playback = await _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest());
                 var track = playback?.Item as FullTrack;
-                if (track != null)
+                if (track.Id == currentlyPlayingPath)
                 {
-                    return new TrackPOCO(track.Id, track.Name, track.Artists[0].Name, track.Album.Images[1].Url);
+                    
+                    currentTrack = new TrackPOCO(Guid.Empty, track.Name, track.Artists[0].Name,track.Album.Images[1].Url);
+                    return currentTrack;
+
                 }
+                else
+                {
+     
+                    Console.Write("ERROR");
+
+                }
+
             }
             catch
             {
@@ -207,6 +225,13 @@ namespace LumikitApp
             }
             return null;
 
+        }
+
+        public string GetCurrentlyPlayingTrackIdAsync()
+        {
+            var playback =  _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest()).Result;
+            var track = playback.Item as FullTrack;
+            return track.Id;
         }
 
         /// <summary>
@@ -262,8 +287,16 @@ namespace LumikitApp
             var playback = await _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest());
             var oldId = (playback?.Item as FullTrack)?.Id;
 
-            await _spotify.Player.SkipNext();
-            await WaitForTrackChange(oldId);
+            var request = new PlayerResumePlaybackRequest
+            {
+                Uris = new List<string>
+                {
+                    $"spotify:track:{currentlyPlayingPath}"
+                }
+            };
+            Console.WriteLine("Switching to " + currentlyPlayingPath);
+            await _spotify.Player.ResumePlayback(request);
+            //await WaitForTrackChange(oldId);
         }
 
         private async Task WaitForTrackChange(string oldTrackId)

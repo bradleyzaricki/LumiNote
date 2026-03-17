@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,6 +20,7 @@ namespace LumikitApp
         public double _BPM { get; set; }
         [NotNull]
         public string _trackName { get; set; }
+        public string provider {get; set;}
         public List<LightBlockData> _lightBlocks { get; set; } = new();
         public TrackData() { }
 

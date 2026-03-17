@@ -93,7 +93,7 @@ namespace LumikitApp
         {
             await InitializeClient();
             currentTrack = track;
-            var path = filePath;//"/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/Local Music/Can U Be -Ye.mp3";
+            var path = filePath;
 
             if (_stream != 0)
             {

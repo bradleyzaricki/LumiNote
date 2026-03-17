@@ -30,25 +30,13 @@
             private double BrightnessScale = 1;
             /// <summary> The music provider to handle audio playback (ex. Spotify, Local Files...) </summary>
             private IMusicProvider _musicProvider;
-            private int _lastColorUpdateMs = 0;
             
             /// <summary> The serial output for lighting communications  </summary>
             private SerialHandler SerialHandler;
             private Point _lastPointerPos;
             
-            //Variables for scaling playback length and visual size
-            private const int _totalModules = 10000;
-            private const double _msPerSlot = 50.0;
-            private const double _modulesPerSecond = 1000.0 / _msPerSlot;
-            private double _slotWidth = 3; // base zoom unit
-            private double _minBlockWidth = 0.6; // allow 1/5th of base resolution
-            private bool _scrollLock = true;
+            private TimelineController _timeline;
 
-            /// <summary> User defined bpm variable to visualize bpm lines in playback. 0 == no value </summary>
-            private double Bpm = 0;
-
-            /// <summary> The current selected light block available for user editing</summary>
-            private List<LightBlock>? _selectedBlocks = new List<LightBlock>();
 
             //Possible color blocks for lightshow editing, can be redefined by the user
             private readonly List<Color> BlockColors = new()
@@ -61,40 +49,32 @@
                 = new ObservableCollection<TrackItemUI>();
             
             //This is used for local file mode 
-            private string currentMusicFilePath;
             private string currentGUID = Guid.Empty.ToString();
             private List<TrackItemUI> _allLocalTrackItems = new();
             private List<TrackItemUI> _allDatabaseTrackItems = new();
 
             //Avalonia UI elements
-            private Canvas _timelineCanvas;
             private Canvas _blockColorDropBox;
             private Canvas _secondColorDropBox;
-            private ScrollViewer _scrollViewer;
-            private List<LightBlock> LightBlocks = new();
-            private TextBlock _playheadCaret;
+
             private TextBox _bpmInput;
-            private TextBox _lightIntensityTextBox;
-            private TextBox _endLightTextbox;
-            private TextBox _startLightInputBox;
 
             //Handles unique playback logic depending on the music provider
             private IPlaybackHandler _playbackHandler;
             private List<String> _trackQueue = new List<string>();
 
             //Live "Piano Roll" Block Painting Variables
-            private bool _isLiveInputActive = false;
-            private LightBlock? _liveBlock = null;
-            private int _liveStartMs = 0;
             Border? _activeSwatch;
 
             public LumikitWindow()
             {
                 InitializeComponent();
-                _timelineCanvas = this.FindControl<Canvas>("TimelineCanvas");
+                _timeline = new TimelineController(
+                    this.FindControl<Canvas>("TimelineCanvas"),
+                    this.FindControl<ScrollViewer>("TimelineScrollViewer")
+                );
                 _blockColorDropBox = this.FindControl<Canvas>("ColorDropBox");
                 _secondColorDropBox = this.FindControl<Canvas>("SecondColorDropBox");
-                _scrollViewer = this.FindControl<ScrollViewer>("TimelineScrollViewer");
                 _bpmInput = this.FindControl<TextBox>("BpmInput");
                 
                 LocalTracksListBox.ItemsSource = _tracks;
@@ -103,22 +83,22 @@
 
                 var zoomInBtn = this.FindControl<Button>("ZoomInButton");
                 if (zoomInBtn != null)
-                    zoomInBtn.Click += (_, _) => Zoom(1.25);
+                    zoomInBtn.Click += (_, _) => _timeline.Zoom(1.25);
                 var zoomOutBtn = this.FindControl<Button>("ZoomOutButton");
                 if (zoomOutBtn != null)
-                    zoomOutBtn.Click += (_, _) => Zoom(0.8);
+                    zoomOutBtn.Click += (_, _) => _timeline.Zoom(0.8);
                 
                 PointerMoved += OnPointerMoved;
                 
                 //Unlock playback viewer when interacted with
-                _scrollViewer.PointerPressed += (_, _) => _scrollLock = false;
+                _timeline._scrollViewer.PointerPressed += (_, _) => _timeline.ChangeScrollLock(false);
                 
                 _bpmInput.LostFocus += (_, _) =>
                 {
                     if (double.TryParse(_bpmInput.Text, out double _bpm) && _bpm > 0)
                     {
-                        Bpm = _bpm;
-                        DrawBPMLines();
+                        _timeline.Bpm = _bpm;
+                        _timeline.DrawBPMLines();
                     }
                 };
 
@@ -127,37 +107,23 @@
                     if (e.Key == Key.RightShift)
                     {
                         //Relock the scroll viewer
-                        _scrollLock = true;
+                        _timeline.ChangeScrollLock(true);
                         e.Handled = true;
                     }
                 };
 
                 this.KeyDown += OnKeyDown;
                 this.KeyUp += OnKeyUp;
-                _scrollViewer.AddHandler(PointerWheelChangedEvent, OnPointerWheelChanged, RoutingStrategies.Tunnel);
+                _timeline._scrollViewer.AddHandler(PointerWheelChangedEvent, OnPointerWheelChanged, RoutingStrategies.Tunnel);
                 
                 var applyBtn = this.FindControl<Button>("ApplyBlockChangesButton");
                 if (applyBtn != null) applyBtn.Click += OnApplyBlockChangesClicked;
                 
                 InitializeColorPalette();
-                DrawTimelineSlots();
+                _timeline.DrawTimelineSlots();
 
             }
-
-            /// <summary>
-            /// Logic for + and - zoom buttons
-            /// </summary>
-            /// <param name="factor"></param>
-            private void Zoom(double factor)
-            {
-                double oldWidth = _slotWidth;
-                double newWidth = Math.Clamp(_slotWidth * factor, _minBlockWidth, 30.0);
-                if (Math.Abs(newWidth - _slotWidth) < 0.0001) return;
-
-                _slotWidth = newWidth;
-                ScaleTimelineChildren(oldWidth, _slotWidth);
-                _timelineCanvas.Width = _totalModules * _slotWidth;
-            }
+            
 
             /// Activate and Adjust Settings when travel is checked
             private void Effect_Travel_Checked(object? sender, RoutedEventArgs e)
@@ -198,14 +164,14 @@
             private void OnKeyDown(object? sender, KeyEventArgs e)
             {
                 // Start a live block when hotkey (num 0-9) is pressed
-                if (!_isLiveInputActive && e.Key >= Key.D0 && e.Key <= Key.D9)
+                if (!_timeline._isLiveInputActive && e.Key >= Key.D0 && e.Key <= Key.D9)
                 {
-                    _isLiveInputActive = true;
-                    _liveStartMs = _playbackHandler?.CurrentProgressMs ?? 0; 
-                    double caretX = (_liveStartMs / _msPerSlot) * _slotWidth;
+                    _timeline._isLiveInputActive = true;
+                    _timeline._liveStartMs = _playbackHandler?.CurrentProgressMs ?? 0; 
+                    double caretX = (_timeline._liveStartMs / TimelineController.MsPerSlot) * _timeline._slotWidth;
 
                     // Create a new block at the caret
-                    var block = new LightBlock(LightBlocks, _scrollViewer, _slotWidth);
+                    var block = new LightBlock(_timeline.LightBlocks, _timeline._scrollViewer, _timeline._slotWidth);
                     switch (e.Key)
                     {
                         case Key.D1:
@@ -240,13 +206,13 @@
                             break;
                     }
 
-                    block.Container.Width = _slotWidth;
-                    var snappedX =  Math.Round(caretX / _slotWidth) * _slotWidth;
+                    block.Container.Width = _timeline._slotWidth;
+                    var snappedX =  Math.Round(caretX / _timeline._slotWidth) * _timeline._slotWidth;
                     Canvas.SetLeft(block.Container, snappedX);
                     Canvas.SetTop(block.Container, 0);
-                    _timelineCanvas.Children.Add(block.Container);
-                    LightBlocks.Add(block);
-                    _liveBlock = block;
+                    _timeline._timelineCanvas.Children.Add(block.Container);
+                    _timeline.LightBlocks.Add(block);
+                    _timeline._liveBlock = block;
 
                     //Assign light block keybinds (Lclick edit, Rclick delete)
                     block.Container.PointerPressed += (_, e) =>
@@ -258,12 +224,12 @@
 
                         if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
                         {
-                            var selectedBlocksSnapshot = _selectedBlocks;
+                            var selectedBlocksSnapshot = _timeline._selectedBlocks;
                             foreach (var selectedBlock in selectedBlocksSnapshot)
                             {
                                 selectedBlock.isSelected = false;
-                                _timelineCanvas.Children.Remove(selectedBlock.Container);
-                                LightBlocks.Remove(selectedBlock);
+                                _timeline._timelineCanvas.Children.Remove(selectedBlock.Container);
+                                _timeline.LightBlocks.Remove(selectedBlock);
 
                             }
 
@@ -272,9 +238,9 @@
                 }
 
                 //Copy light blocks
-                if (!_isLiveInputActive && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.V)
+                if (!_timeline._isLiveInputActive && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.V)
                 {
-                    var selectedBlocksSnapshot = _selectedBlocks;
+                    var selectedBlocksSnapshot = _timeline._selectedBlocks;
                     var pasteX = double.MaxValue;
                     foreach (var block in selectedBlocksSnapshot)
                     {
@@ -293,8 +259,8 @@
                             _lastPointerPos.X + (Canvas.GetLeft(blockToCopy.Container) - pasteX));
                         Canvas.SetTop(addedBlock.Container, 0);
 
-                        _timelineCanvas.Children.Add(addedBlock.Container);
-                        LightBlocks.Add(addedBlock);
+                        _timeline._timelineCanvas.Children.Add(addedBlock.Container);
+                        _timeline.LightBlocks.Add(addedBlock);
                         addedBlock.Container.PointerPressed += (_, e) =>
                         {
                             if (e.GetCurrentPoint(addedBlock.Container).Properties.IsLeftButtonPressed)
@@ -304,12 +270,12 @@
 
                             if (e.GetCurrentPoint(addedBlock.Container).Properties.IsRightButtonPressed)
                             {
-                                var selectedBlocksSnapshot = _selectedBlocks;
+                                var selectedBlocksSnapshot = _timeline._selectedBlocks;
                                 foreach (var selectedBlock in selectedBlocksSnapshot)
                                 {
                                     selectedBlock.isSelected = false;
-                                    _timelineCanvas.Children.Remove(selectedBlock.Container);
-                                    LightBlocks.Remove(selectedBlock);
+                                    _timeline._timelineCanvas.Children.Remove(selectedBlock.Container);
+                                    _timeline.LightBlocks.Remove(selectedBlock);
 
                                 }
                             }
@@ -320,18 +286,18 @@
 
             private void OnPointerMoved(object? sender, PointerEventArgs e)
             {
-                _lastPointerPos = e.GetPosition(_timelineCanvas);
+                _lastPointerPos = e.GetPosition(_timeline._timelineCanvas);
             }
 
             private void OnKeyUp(object? sender, KeyEventArgs e)
             {
                 // Finish the live block when key is released
-                if (_isLiveInputActive && e.Key == Key.D1 || e.Key == Key.D2 || e.Key == Key.D3 || e.Key == Key.D4 ||
+                if (_timeline._isLiveInputActive && e.Key == Key.D1 || e.Key == Key.D2 || e.Key == Key.D3 || e.Key == Key.D4 ||
                     e.Key == Key.D5 || e.Key == Key.D6 || e.Key == Key.D7 || e.Key == Key.D8 || e.Key == Key.D9 ||
                     e.Key == Key.D0)
                 {
-                    _isLiveInputActive = false;
-                    _liveBlock = null;
+                    _timeline._isLiveInputActive = false;
+                    _timeline._liveBlock = null;
                 }
             }
 
@@ -362,11 +328,12 @@
                             _trackName = title,
                             author = authors,
                             trackGUID = Guid.Parse(currentGUID),
+                            provider = _musicProvider.providerName,
                             _BPM = double.Parse(_bpmInput.Text),
-                            _lightBlocks = LightBlocks.Select(b => new LightBlockData
+                            _lightBlocks = _timeline.LightBlocks.Select(b => new LightBlockData
                             {
-                                X = Canvas.GetLeft(b.Container) / _slotWidth,
-                                Width = b.Container.Width / _slotWidth,
+                                X = Canvas.GetLeft(b.Container) / _timeline._slotWidth,
+                                Width = b.Container.Width / _timeline._slotWidth,
                                 Color = (b.BlockColor).ToString(),
                                 SecondColor = (b.SecondBlockColor).ToString(),
                                 StartLight = b.StartLight,
@@ -405,7 +372,7 @@
                 this.FindControl<Button>("RestartTrackButton").Click += async (_, _) => _playbackHandler.RestartAsync();
 
                 _musicProvider = provider;
-                ChangeAppTheme();
+                ChangeAppTheme(); //Changes app colors to match provider (required by spotify TOS)
                 _allLocalTrackItems = JsonDataHandler.GetAllTrackItems();
                 LocalTracksListBox.ItemsSource = _allLocalTrackItems;
 
@@ -424,20 +391,19 @@
 
 
                 // Clear old blocks
-                foreach (var block in LightBlocks) _timelineCanvas.Children.Remove(block.Container);
-                LightBlocks.Clear();
-
+                _timeline.ClearBlocks();
+                
                 var trackDataLocal = JsonDataHandler.GetTrack(trackGUID.ToString());// await DatabaseAccess.LoadTrackAsync(_musicProvider.providerName, track.trackId);
                 if (trackDataLocal != null) //track detected, filling in track data with track POCO
                 {
-                    Bpm = trackDataLocal._BPM;
-                    _bpmInput.Text = Bpm.ToString();
-                    DrawTimelineSlots();
+                    _timeline.Bpm = trackDataLocal._BPM;
+                    _bpmInput.Text = _timeline.Bpm.ToString();
+                    _timeline.DrawTimelineSlots();
 
                     foreach (var data in trackDataLocal._lightBlocks)
                     {
                         if (!Color.TryParse(data.Color, out var color)) continue;
-                        var block = new LightBlock(LightBlocks, _scrollViewer, _slotWidth);
+                        var block = new LightBlock(_timeline.LightBlocks, _timeline._scrollViewer, _timeline._slotWidth);
                         block.UpdateColor(color);
                         block.SecondBlockColor = (Color.TryParse(data.SecondColor, out var color2) ? color2 : new Color());
                         block.StartLight = data.StartLight;
@@ -448,12 +414,12 @@
                         block.SecondaryEndLight = data.SecondaryDualInput2;
                         block.AdditionalIndividualInput1 = data.SecondarySingleInput1;
                         block.AdditionalIndividualInput2 = data.SecondarySingleInput2;
-                        block.Container.Width = data.Width * _slotWidth;
-                        Canvas.SetLeft(block.Container, data.X * _slotWidth);
+                        block.Container.Width = data.Width * _timeline._slotWidth;
+                        Canvas.SetLeft(block.Container, data.X * _timeline._slotWidth);
                         Canvas.SetTop(block.Container, 0);
 
-                        _timelineCanvas.Children.Add(block.Container);
-                        LightBlocks.Add(block);
+                        _timeline._timelineCanvas.Children.Add(block.Container);
+                        _timeline.LightBlocks.Add(block);
 
                         //Assign light block keybinds (Lclick edit, Rclick delete)
                         block.Container.PointerPressed += (_, e) =>
@@ -465,12 +431,12 @@
 
                             if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
                             {
-                                var selectedBlocksSnapshot = _selectedBlocks;
+                                var selectedBlocksSnapshot = _timeline._selectedBlocks;
                                 foreach (var selectedBlock in selectedBlocksSnapshot)
                                 {
                                     selectedBlock.isSelected = false;
-                                    _timelineCanvas.Children.Remove(selectedBlock.Container);
-                                    LightBlocks.Remove(selectedBlock);
+                                    _timeline._timelineCanvas.Children.Remove(selectedBlock.Container);
+                                    _timeline.LightBlocks.Remove(selectedBlock);
 
                                 }
                             }
@@ -480,9 +446,9 @@
                 else
                 {
                     //track not detected
-                    Bpm = 0;
+                    _timeline.Bpm = 0;
                     _bpmInput.Text = "0";
-                    DrawTimelineSlots();
+                    _timeline.DrawTimelineSlots();
                 }
             }
 
@@ -492,7 +458,7 @@
                 {
                     var min = double.MaxValue;
                     var max = -1.00;
-                    foreach (var selectedblock in _selectedBlocks)
+                    foreach (var selectedblock in _timeline._selectedBlocks)
                     {
                         if (Canvas.GetLeft(selectedblock.Container) < min)
                         {
@@ -508,16 +474,16 @@
 
                     if (min == double.MaxValue) //No blocks selected previously 
                     {
-                        _selectedBlocks.Add(blockToAdd);
+                        _timeline._selectedBlocks.Add(blockToAdd);
                         blockToAdd.isSelected = true;
-                        LoadBlockIntoEditor(_selectedBlocks);
+                        LoadBlockIntoEditor(_timeline._selectedBlocks);
                         return;
 
                     }
 
-                    foreach (var lightblock in LightBlocks)
+                    foreach (var lightblock in _timeline.LightBlocks)
                     {
-                        if (_selectedBlocks.Contains(lightblock))
+                        if (_timeline._selectedBlocks.Contains(lightblock))
                             continue;
 
                         var blockLeft = Canvas.GetLeft(lightblock.Container);
@@ -525,11 +491,11 @@
                             || (blockLeft < max && blockLeft >= Canvas.GetLeft(blockToAdd.Container)))
                         {
                             //Add all selected blocks including block that was shift clicked
-                            _selectedBlocks.Add(lightblock);
+                            _timeline._selectedBlocks.Add(lightblock);
                             lightblock.isSelected = true;
                             blockToAdd.isSelected = true;
 
-                            LoadBlockIntoEditor(_selectedBlocks);
+                            LoadBlockIntoEditor(_timeline._selectedBlocks);
 
                         }
                     }
@@ -537,27 +503,27 @@
                 }
                 else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
                 {
-                    _selectedBlocks.Add(blockToAdd);
+                    _timeline._selectedBlocks.Add(blockToAdd);
                     blockToAdd.isSelected = true;
 
-                    LoadBlockIntoEditor(_selectedBlocks);
+                    LoadBlockIntoEditor(_timeline._selectedBlocks);
 
                 }
 
                 else
                 {
-                    foreach (var blockToRemove in _selectedBlocks)
+                    foreach (var blockToRemove in _timeline._selectedBlocks)
                     {
                         blockToRemove.UpdateBackground(blockToRemove.BlockColor);
                         blockToRemove.isSelected = false;
 
                     }
 
-                    _selectedBlocks.Clear();
-                    _selectedBlocks.Add(blockToAdd);
+                    _timeline._selectedBlocks.Clear();
+                    _timeline._selectedBlocks.Add(blockToAdd);
                     blockToAdd.isSelected = true;
 
-                    LoadBlockIntoEditor(_selectedBlocks);
+                    LoadBlockIntoEditor(_timeline._selectedBlocks);
 
                 }
 
@@ -722,10 +688,10 @@
                         palette.Children.Add(finalSwatch);
                     }
 
-                    DragDrop.SetAllowDrop(_timelineCanvas, true);
+                    DragDrop.SetAllowDrop(_timeline._timelineCanvas, true);
                     DragDrop.SetAllowDrop(_blockColorDropBox, true);
                     DragDrop.SetAllowDrop(_secondColorDropBox,true);
-                    _timelineCanvas.AddHandler(DragDrop.DropEvent, OnCanvasDrop, RoutingStrategies.Bubble);
+                    _timeline._timelineCanvas.AddHandler(DragDrop.DropEvent, OnCanvasDrop, RoutingStrategies.Bubble);
                     _blockColorDropBox.AddHandler(DragDrop.DropEvent, OnColorCanvasDrop, RoutingStrategies.Bubble);
                     _secondColorDropBox.AddHandler(DragDrop.DropEvent, OnColorCanvasDrop, RoutingStrategies.Bubble);
                 }
@@ -745,155 +711,17 @@
                 BlockColors[idx] = newColor;
             }
 
-
             private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
             {
                 if ((e.KeyModifiers & KeyModifiers.Control) != 0)
                 {
+                    _timeline.ZoomAtPointer(e.Delta.Y, e.GetPosition(_timeline._scrollViewer).X);
                     e.Handled = true;
-
-                    double old = _slotWidth;
-                    double mouseX = e.GetPosition(_scrollViewer).X;
-                    double worldX = _scrollViewer.Offset.X + mouseX;
-                    double focusModule = worldX / old;
-
-                    double step = e.Delta.Y > 0 ? 1.1 : 1.0 / 1.1;
-                    double next = Math.Clamp(_slotWidth * step, 1.0, 30.0);
-                    if (Math.Abs(next - _slotWidth) < 0.0001) return;
-
-                    _slotWidth = next;
-                    ScaleTimelineChildren(old, _slotWidth);
-
-                    double newWorldX = focusModule * _slotWidth;
-                    double newOffsetX = Math.Max(0, newWorldX - mouseX);
-                    _scrollViewer.Offset = new Vector(newOffsetX, _scrollViewer.Offset.Y);
                     return;
                 }
 
-                double delta = e.Delta.Y * -40;
-                var currentOffset = _scrollViewer.Offset;
-                double newX = Math.Max(0, currentOffset.X + delta);
-                _scrollViewer.Offset = new Vector(newX, currentOffset.Y);
-                _scrollLock = false;
+                _timeline.ScrollBy(e.Delta.Y * -40);
                 e.Handled = true;
-            }
-
-            private void ScaleTimelineChildren(double oldSlotWidth, double newSlotWidth)
-            {
-                double factor = newSlotWidth / oldSlotWidth;
-
-                foreach (var child in _timelineCanvas.Children)
-                {
-                    if (ReferenceEquals(child, _playheadCaret)) continue;
-
-                    double left = Canvas.GetLeft((Control)child);
-                    if (!double.IsNaN(left))
-                        Canvas.SetLeft((Control)child, left * factor);
-
-                    if (child is Border b && !double.IsNaN(b.Width) && b.Width > 0)
-                        b.Width *= factor;
-
-                    if (child is TextBlock tb && tb.Text == "^")
-                    {
-                        double caretLeft = Canvas.GetLeft(tb);
-                        Canvas.SetLeft(tb, caretLeft);
-                    }
-                }
-
-                _timelineCanvas.Width = _totalModules * newSlotWidth;
-            }
-
-            /// <summary>
-            /// Draw timeline slots based on global scaling data
-            /// </summary>
-            private void DrawTimelineSlots()
-            {
-                _timelineCanvas.Children.Clear();
-
-                for (int i = 0; i < _totalModules; i++)
-                {
-                    var slot = new Border
-                    {
-                        Width = _slotWidth,
-                        Height = 60,
-                        Background = Brushes.Transparent,
-                        BorderBrush = Brushes.Gray,
-                        BorderThickness = new Thickness(0.5)
-                    };
-                    Canvas.SetLeft(slot, i * _slotWidth);
-                    Canvas.SetTop(slot, 0);
-                    _timelineCanvas.Children.Add(slot);
-
-                    if (i % 40 == 0)
-                    {
-                        double seconds = (i / _modulesPerSecond);
-                        var label = new TextBlock
-                        {
-                            Text = $"{seconds:0.0}s",
-                            Foreground = Brushes.White,
-                            FontSize = 10
-                        };
-                        Canvas.SetLeft(label, i * _slotWidth - 5);
-                        Canvas.SetTop(label, -15);
-                        _timelineCanvas.Children.Add(label);
-
-                        var caret = new TextBlock
-                        {
-                            Text = "^",
-                            Foreground = Brushes.White,
-                            FontSize = 10
-                        };
-                        Canvas.SetLeft(caret, i * _slotWidth - 2);
-                        Canvas.SetTop(caret, 60);
-                        _timelineCanvas.Children.Add(caret);
-                    }
-                }
-
-                DrawBPMLines();
-                _timelineCanvas.Width = _totalModules * _slotWidth;
-
-                _playheadCaret = new TextBlock
-                {
-                    Text = "▲",
-                    Foreground = Brushes.Red,
-                    FontSize = 14
-                };
-                Canvas.SetLeft(_playheadCaret, 0);
-                Canvas.SetTop(_playheadCaret, 72);
-                _timelineCanvas.Children.Add(_playheadCaret);
-            }
-
-            /// <summary>
-            /// Draw BPM lines based on global bpm data
-            /// </summary>
-            private void DrawBPMLines()
-            {
-                double secondsPerBeat = Bpm > 0 ? 60.0 / Bpm : 0;
-                double modulesPerBeat = secondsPerBeat * _modulesPerSecond;
-
-                if (Bpm > 0 && modulesPerBeat > 0)
-                {
-                    var bpmindicatorNumber = 0;
-                    for (double i = 0; i < _totalModules; i += modulesPerBeat)
-                    {
-                        var color = Brushes.Brown;
-                        if (bpmindicatorNumber % 4 == 0)
-                            color = Brushes.Red;
-
-                        var line = new Border
-                        {
-                            Width = 1,
-                            Height = 60, // shorter tick mark
-                            Background = color
-                        };
-
-                        Canvas.SetLeft(line, i * _slotWidth);
-                        Canvas.SetTop(line, -20); // push above block zone
-                        _timelineCanvas.Children.Add(line);
-
-                        bpmindicatorNumber++;
-                    }
-                }
             }
 
 
@@ -906,7 +734,7 @@
 
                 if (ReferenceEquals(sender, _blockColorDropBox))
                 {
-                    foreach (var block in _selectedBlocks)
+                    foreach (var block in _timeline._selectedBlocks)
                     {
                         block.UpdateColor(color);
                         _blockColorDropBox.Background = new SolidColorBrush(color);
@@ -918,7 +746,7 @@
 
                 if (ReferenceEquals(sender, _secondColorDropBox))
                 {
-                    foreach (var block in _selectedBlocks)
+                    foreach (var block in _timeline._selectedBlocks)
                     {
                         block.SecondBlockColor = color;
                         _secondColorDropBox.Background = new SolidColorBrush(color);
@@ -942,16 +770,16 @@
                 if (colorString == null || !Color.TryParse(colorString, out var color)) return;
 
                 //Drop selected R G B color value to the playback track
-                var pos = e.GetPosition(_timelineCanvas);
-                double snappedX = Math.Round(pos.X / _slotWidth) * _slotWidth;
-                snappedX = Math.Max(0, Math.Min(snappedX, _timelineCanvas.Width - _slotWidth));
-                double maxWidth = Math.Min(_slotWidth * 50, _timelineCanvas.Width - snappedX);
+                var pos = e.GetPosition(_timeline._timelineCanvas);
+                double snappedX = Math.Round(pos.X / _timeline._slotWidth) * _timeline._slotWidth;
+                snappedX = Math.Max(0, Math.Min(snappedX, _timeline._timelineCanvas.Width - _timeline._slotWidth));
+                double maxWidth = Math.Min(_timeline._slotWidth * 50, _timeline._timelineCanvas.Width - snappedX);
                 double finalWidth = maxWidth;
 
-                while (finalWidth >= _slotWidth)
+                while (finalWidth >= _timeline._slotWidth)
                 {
                     bool collision = false;
-                    foreach (var existing in LightBlocks)
+                    foreach (var existing in _timeline.LightBlocks)
                     {
                         double left = Canvas.GetLeft(existing.Container);
                         double width = existing.Container.Width;
@@ -963,17 +791,17 @@
                     }
 
                     if (!collision) break;
-                    finalWidth -= _slotWidth;
+                    finalWidth -= _timeline._slotWidth;
                 }
 
-                if (finalWidth < _slotWidth) return;
+                if (finalWidth < _timeline._slotWidth) return;
 
-                var block = new LightBlock(LightBlocks, _scrollViewer, _slotWidth);
+                var block = new LightBlock(_timeline.LightBlocks, _timeline._scrollViewer, _timeline._slotWidth);
                 block.Container.Width = finalWidth;
                 Canvas.SetLeft(block.Container, snappedX);
                 Canvas.SetTop(block.Container, 0);
-                _timelineCanvas.Children.Add(block.Container);
-                LightBlocks.Add(block);
+                _timeline._timelineCanvas.Children.Add(block.Container);
+                _timeline.LightBlocks.Add(block);
                 block.UpdateColor(color);
                 block.Intensity = 255;
                 block.EndLight = 1000;
@@ -988,12 +816,12 @@
 
                     if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
                     {
-                        var selectedBlocksSnapshot = _selectedBlocks;
+                        var selectedBlocksSnapshot = _timeline._selectedBlocks;
                         foreach (var selectedBlock in selectedBlocksSnapshot)
                         {
                             selectedBlock.isSelected = false;
-                            _timelineCanvas.Children.Remove(selectedBlock.Container);
-                            LightBlocks.Remove(selectedBlock);
+                            _timeline._timelineCanvas.Children.Remove(selectedBlock.Container);
+                            _timeline.LightBlocks.Remove(selectedBlock);
 
                         }
 
@@ -1009,32 +837,32 @@
             /// <param name="ms"></param>
             private void UpdateCaretAndScroll(int ms)
             {
-                if (ms < _lastColorUpdateMs)
-                    _lastColorUpdateMs = ms;
+                if (ms < _timeline._lastColorUpdateMs)
+                    _timeline._lastColorUpdateMs = ms;
 
-                if (ms - _lastColorUpdateMs < ColorUpdateIntervalMs)
+                if (ms - _timeline._lastColorUpdateMs < ColorUpdateIntervalMs)
                     return;
 
-                _lastColorUpdateMs = ms;
-                double slotIndex = ms / _msPerSlot;
-                double caretX = slotIndex * _slotWidth;
-                Canvas.SetLeft(_playheadCaret, caretX - 4);
+                _timeline._lastColorUpdateMs = ms;
+                double slotIndex = ms / TimelineController.MsPerSlot;
+                double caretX = slotIndex * _timeline._slotWidth;
+                Canvas.SetLeft(_timeline._playheadCaret, caretX - 4);
 
-                if (_scrollLock)
+                if (_timeline.ScrollLocked)
                 {
-                    double viewportWidth = _scrollViewer.Viewport.Width;
+                    double viewportWidth = _timeline._scrollViewer.Viewport.Width;
                     double scrollTo = Math.Max(0, caretX - viewportWidth / 6);
-                    _scrollViewer.Offset = new Vector(scrollTo, _scrollViewer.Offset.Y);
+                    _timeline._scrollViewer.Offset = new Vector(scrollTo, _timeline._scrollViewer.Offset.Y);
                 }
 
-                if (_isLiveInputActive && _liveBlock != null)
+                if (_timeline._isLiveInputActive && _timeline._liveBlock != null)
                 {
-                    double startX = Canvas.GetLeft(_liveBlock.Container);
-                    var snappedWidth = Math.Round(((caretX - startX) / _slotWidth ) +1 )* _slotWidth;
-                    _liveBlock.Container.Width = Math.Max(_slotWidth, snappedWidth);
+                    double startX = Canvas.GetLeft(_timeline._liveBlock.Container);
+                    var snappedWidth = Math.Round(((caretX - startX) / _timeline._slotWidth ) +1 )* _timeline._slotWidth;
+                    _timeline._liveBlock.Container.Width = Math.Max(_timeline._slotWidth, snappedWidth);
                 }
 
-                var activeBlock = LightBlocks.FirstOrDefault(b =>
+                var activeBlock = _timeline.LightBlocks.FirstOrDefault(b =>
                 {
                     double left = Canvas.GetLeft(b.Container);
                     double width = b.Container.Width;
@@ -1054,9 +882,9 @@
                     return;
                 }
 
-                TopColorBar.Background = new SolidColorBrush(activeBlock.BlockColor);
-                BottomColorBar.Background = new SolidColorBrush(activeBlock.BlockColor);
-
+                var blockColor = activeBlock.BlockColor;
+                TopColorBar.Background = new SolidColorBrush(blockColor);
+                BottomColorBar.Background = new SolidColorBrush(blockColor);
 
                 double width = activeBlock.Container.Width;
                 if (width <= 0)
@@ -1093,9 +921,9 @@
                 var colors = stripColors ?? Array.Empty<Color>();
                 int n = colors.Length;
 
-                double fullWidth = _scrollViewer.Viewport.Width;
+                double fullWidth = _timeline._scrollViewer.Viewport.Width;
                 if (fullWidth <= 0)
-                    fullWidth = _scrollViewer.Bounds.Width;
+                    fullWidth = _timeline._scrollViewer.Bounds.Width;
 
                 TopColorBar.HorizontalAlignment = HorizontalAlignment.Left;
                 TopColorBar.Margin = new Thickness(0);
@@ -1140,9 +968,9 @@
             private void OnApplyBlockChangesClicked(object? s, RoutedEventArgs e)
             {
                 
-                if (_selectedBlocks == null) return;
+                if (_timeline._selectedBlocks == null) return;
                 //Apply settings made in block editor to every selected block
-                foreach (var selectedBlock in _selectedBlocks)  
+                foreach (var selectedBlock in _timeline._selectedBlocks)  
                 {
                     // Start/End lights
                     if (int.TryParse(this.FindControl<TextBox>("StartLightInput").Text, out int start))
@@ -1207,7 +1035,7 @@
             /// </summary>
             public void UpdateSelectedColorsBackground()
             {
-                foreach (var selectedBlock in _selectedBlocks)
+                foreach (var selectedBlock in _timeline._selectedBlocks)
                 {
                     var color = selectedBlock.BlockColor;
                     var newcolor = new Color((byte)(color.A * 0.5), color.R, color.G, color.B);
@@ -1346,38 +1174,11 @@
                 RefreshPorts(null, null);
             }
 
-            public class TrackSummary
-            {
-                public string TrackId { get; set; }
-                public string Provider { get; set; }
-                public double? Bpm { get; set; }
-                public string TrackName { get; set; }
-
-                public override string ToString()
-                {
-                    var bpmText = Bpm.HasValue ? $"BPM {Bpm.Value}" : "BPM ?";
-                    return $"{TrackName ?? "Untitled"}  •  {Provider}  •  {bpmText}";
-                }
-            }
-
-            private void AddTrack()
-            {
-                _tracks.Add(new TrackItemUI()
-                {
-                    TrackName = "Skyline Pulse",
-                    Subtitle = "Spotify • BPM 128"
-                });
-            }
-            
-            private void RemoveSelectedTrack()
-            {
-                if (LocalTracksListBox.SelectedItem is TrackItemUI selected)
-                {
-                    _tracks.Remove(selected);
-                }
-            }
-
-
+            /// <summary>
+            /// Select new lightmap track file from local files
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
             private async void BrowseAudioFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
             {
                 if (_musicProvider is MusicFileProvider musicFileProvider)
@@ -1407,6 +1208,11 @@
                 }
           
             }
+            
+            /// <summary>
+            /// Update playback with locally selected audio file
+            /// </summary>
+            /// <param name="path"></param>
             private void OnAudioFileSelected(string path)
             {
             
@@ -1416,6 +1222,12 @@
                 UpdateCurrentTrack(true, trackGUID: Guid.Empty); // refresh on next track
                 
             }
+            
+            /// <summary>
+            /// Refresh the list of local track files
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
             private void RefreshLocalTracks_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
             {
                 _allLocalTrackItems = JsonDataHandler.GetAllTrackItems();
@@ -1436,7 +1248,7 @@
             }
             
             /// <summary>
-            /// Play selected track from selection
+            /// Play selected track from local selection
             /// </summary>
             /// <param name="sender"></param>
             /// <param name="e"></param>
@@ -1462,8 +1274,9 @@
             {
                 if (sender is not Avalonia.Controls.Control c) return;
                 if (c.DataContext is not TrackItemUI item) return;
-                DatabaseAccess.SaveTrackAsync("Spotify", item.TrackId.ToString(), JsonDataHandler.GetTrack(item.TrackId.ToString())); 
-                
+                DatabaseAccess.SaveTrackAsync(item.TrackId.ToString(), JsonDataHandler.GetTrack(item.TrackId.ToString()));
+                Console.WriteLine(JsonDataHandler.GetTrack(item.TrackId.ToString()).provider);
+
             }
 
 
@@ -1519,7 +1332,7 @@
             /// <param name="e"></param>
             private async void RefreshDatabaseTracks_Click(object? sender, RoutedEventArgs e)
             {
-                _allDatabaseTrackItems = await DatabaseAccess.ListTracksAsync();
+                _allDatabaseTrackItems = await DatabaseAccess.ListTracksAsync(_musicProvider.providerName, false);
                 DatabaseTracksListBox.ItemsSource = _allDatabaseTrackItems;
                 Console.WriteLine(_allDatabaseTrackItems.Count);
                 Console.WriteLine("searching " + "|" + _allDatabaseTrackItems.First().TrackId + "|");
@@ -1536,7 +1349,12 @@
                 if (c.DataContext is not TrackItemUI item) return;
                 if (JsonDataHandler.GetTrack(item.TrackId.ToString()) == null)
                 {
-                    TrackData tdToAdd = await DatabaseAccess.LoadTrackAsync("Spotify",item.TrackId.ToString());
+                    TrackData tdToAdd = await DatabaseAccess.LoadTrackAsync(item.TrackId.ToString());
+                    var fileEnd = Path.GetExtension(tdToAdd.filePath).ToLowerInvariant();
+                    if (fileEnd == ".wav" || fileEnd == ".mp3")
+                    {
+                        tdToAdd.filePath = Path.Combine(DirectoryPaths.AudioDir,tdToAdd.filePath);
+                    }
                     JsonDataHandler.SaveTrack(tdToAdd);
                 }
 

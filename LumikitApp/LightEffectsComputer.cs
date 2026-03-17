@@ -28,8 +28,8 @@ public class LightEffectsComputer
 
         if (hasStrobe)
         {
-            if (int.IsEvenInteger((int)(relPos * block.Container.Width / 4)))
-                return null;
+            if (int.IsEvenInteger((int)(relPos * 20)))
+                return null;              
         }
 
         if (hasFadeOut)

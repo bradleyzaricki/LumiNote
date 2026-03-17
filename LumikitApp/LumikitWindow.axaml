@@ -117,10 +117,12 @@
             </StackPanel>
         </StackPanel>
 
-        <StackPanel Grid.Column="0" Grid.Row="2">
+        <Grid Grid.Column="0" Grid.Row="2" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*">
 
-            <Border Name="TopColorBar" Height="5" Background="Gray"/>
-            <ScrollViewer Name="TimelineScrollViewer"
+            <Border Grid.Row="0" Name="TopColorBar" Height="5" Background="Gray"/>
+
+            <ScrollViewer Grid.Row="1"
+                          Name="TimelineScrollViewer"
                           HorizontalScrollBarVisibility="Visible"
                           VerticalScrollBarVisibility="Disabled"
                           Height="130">
@@ -129,22 +131,25 @@
                     <Canvas Name="BpmCanvas" Height="80" IsHitTestVisible="False"/>
                 </Grid>
             </ScrollViewer>
-            <Border Name="BottomColorBar" Height="5" Background="Gray"/>
 
-            <WrapPanel Name="ColorPalette"
+            <Border Grid.Row="2" Name="BottomColorBar" Height="5" Background="Gray"/>
+
+            <WrapPanel Grid.Row="3"
+                       Name="ColorPalette"
                        Orientation="Horizontal"
                        Margin="0,10,0,0"
                        Height="40"/>
 
-            <Border Height="1" Background="#333" Margin="0,20,0,10"/>
+            <Border Grid.Row="4" Height="1" Background="#333" Margin="0,20,0,10"/>
 
-            <TextBlock Text="Database &amp; Playback"
+            <TextBlock Grid.Row="5"
+                       Text="Database and Playback"
                        Foreground="White"
                        FontWeight="Bold"
                        FontSize="16"
                        Margin="0,0,0,10"/>
 
-            <TabControl Height="440">
+            <TabControl Grid.Row="6">
 
         <!-- Downloaded Local Tracks -->
             <TabItem Header="Local Tracks">
@@ -322,7 +327,7 @@
                 </Grid>
             </TabItem>
             </TabControl>
-        </StackPanel>
+        </Grid>
 
         <ScrollViewer Grid.Column="1" Grid.Row="0" Grid.RowSpan="3">
             <Border Name="BlockEditor"

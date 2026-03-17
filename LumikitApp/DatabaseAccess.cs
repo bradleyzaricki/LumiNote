@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.IO;
 using LumikitApp.Models;
 
 namespace LumikitApp;
@@ -31,10 +32,14 @@ public static class DatabaseAccess
     /// <param name="track"></param>
     /// <exception cref="Exception"></exception>
 
-    public static async Task SaveTrackAsync(string provider, string trackId, TrackData track)
+    public static async Task SaveTrackAsync(string trackId, TrackData track)
     {
-        var url = new Uri($"{BaseUrl}/tracks/{Uri.EscapeDataString(provider)}/{Uri.EscapeDataString(trackId)}");
-
+        var fileEnd = Path.GetExtension(track.filePath).ToLowerInvariant();
+        if (fileEnd == ".wav" || fileEnd == ".mp3")
+        {
+            track.filePath = Path.GetFileName(track.filePath);
+        }
+        var url = new Uri($"{BaseUrl}/tracks/{Uri.EscapeDataString(trackId)}");
         var json = JsonSerializer.Serialize(track, JsonOptions);
 
         using var req = new HttpRequestMessage(HttpMethod.Put, url);
@@ -53,10 +58,9 @@ public static class DatabaseAccess
     /// <param name="trackId"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public static async Task<TrackData?> LoadTrackAsync(string provider, string trackId)
+    public static async Task<TrackData?> LoadTrackAsync(string trackId)
     {
-        var url = new Uri($"{BaseUrl}/tracks/{Uri.EscapeDataString(provider)}/{Uri.EscapeDataString(trackId)}");
-
+        var url = new Uri($"{BaseUrl}/tracks/{Uri.EscapeDataString(trackId)}");
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         req.Headers.Add("x-api-key", ApiKey);
 
@@ -91,11 +95,11 @@ public static class DatabaseAccess
     /// <param name="provider">optional parameter to filter for tracks by provider</param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public static async Task<List<TrackItemUI>> ListTracksAsync(string? provider = null)
+    public static async Task<List<TrackItemUI>> ListTracksAsync(string? provider = null, bool addUnusableTracks = false)
     {
         var url = provider == null
             ? new Uri($"{BaseUrl}/tracks")
-            : new Uri($"{BaseUrl}/tracks?provider={Uri.EscapeDataString(provider)}");
+            : new Uri($"{BaseUrl}/tracks?provider={provider}");
 
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         req.Headers.Add("x-api-key", ApiKey);
@@ -112,21 +116,42 @@ public static class DatabaseAccess
             throw new Exception($"Unexpected JSON:\n{body}");
 
         var list = new List<TrackItemUI>();
-
+        var listEnd = new List<TrackItemUI>();
+        
         foreach (var item in items.EnumerateArray())
         {
             var trackId = item.GetProperty("track_id").GetString() ?? "";
             var trackName = item.GetProperty("track_name").GetString() ?? "(untitled)";
             var p = item.GetProperty("provider").GetString() ?? "";
             var bpm = item.GetProperty("bpm").GetInt32();
-
-            list.Add(new TrackItemUI
+            TrackItemUI trackItem = new TrackItemUI
             {
                 TrackId = trackId,
                 TrackName = trackName,
-                Subtitle = $"{p} • {bpm} BPM"
-            });
+                Subtitle = $"{p} • {bpm} BPM",
+                Provider = p
+                
+            };              
+            if (provider != null)
+            {
+                if (p == provider)
+                {
+                    list.Add(trackItem);
+                }
+                else if (addUnusableTracks)
+                {
+                    listEnd.Add(trackItem);
+                }
+            }
+            else
+            {
+                if (p == provider)
+                {
+                list.Add(trackItem);
+                }
+            }
         }
+        list.AddRange(listEnd);
 
         return list;
     }

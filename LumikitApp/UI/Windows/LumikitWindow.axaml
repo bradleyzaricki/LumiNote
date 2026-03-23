@@ -115,6 +115,15 @@
                 <TextBlock Text="artist:" Foreground="White" FontSize="8" Margin="0,4,0,0"/>
                 <TextBlock Name="NowPlayingArtistText" Foreground="White" FontSize="16"/>
             </StackPanel>
+
+            <Image Name="SpotifyAttributionLogo"
+                   Source="avares://LumikitApp/Icons/spot_white_logo_full.png"
+                   Width="120"
+                   
+                   Margin="30,0,10,10"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Top"
+                   IsVisible="True"/>
         </StackPanel>
 
         <Grid Grid.Column="0" Grid.Row="2" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*">
@@ -127,8 +136,9 @@
                           VerticalScrollBarVisibility="Disabled"
                           Height="130">
                 <Grid>
-                    <Canvas Name="TimelineCanvas" Height="80"/>
-                    <Canvas Name="BpmCanvas" Height="80" IsHitTestVisible="False"/>
+                    <Canvas Name="TimelineCanvas" Height="80" Margin="0,20,0,0"/>
+                    <Canvas Name="BpmCanvas" Height="80" Margin="0,20,0,0" IsHitTestVisible="False"/>
+                    <Canvas Name="SeekBarCanvas" Height="20" VerticalAlignment="Top" Background="#337F77DD"/>
                 </Grid>
             </ScrollViewer>
 
@@ -281,7 +291,7 @@
                         <Button Content="Refresh"
                                 Width="100"
                                 HorizontalAlignment="Left"                                
-                                Click="RefreshDatabaseTracks_Click"/>
+                                Click="DatabaseTrack_Refresh_Click"/>
                     </StackPanel>
 
                     <!-- Scrollable List -->

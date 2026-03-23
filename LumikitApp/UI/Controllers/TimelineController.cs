@@ -1,9 +1,11 @@
 namespace LumikitApp;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 public class TimelineController
 {
     //Variables for scaling playback length and visual size
@@ -14,7 +16,7 @@ public class TimelineController
     private double _minBlockWidth = 0.6; // allow 1/5th of base resolution
     public bool ScrollLocked { get; private set; }
 
-    /// <summary> User defined bpm variable to visualize bpm lines in playback. 0 == no value </summary>
+    ///User defined bpm variable to visualize bpm lines in playback. 0 == no value
     public double Bpm = 0;
     
     public Canvas _timelineCanvas;
@@ -28,10 +30,7 @@ public class TimelineController
     
     public List<LightBlock> LightBlocks = new();
     public ScrollViewer _scrollViewer;
-    public TextBlock _playheadCaret;
-    public event Action<Color[]?>? ActiveBlockChanged;
-    public event Action<List<LightBlock>>? BlockSelectionChanged;
-    public event Action? BlocksDeselected;
+    private TextBlock _playheadCaret;
     
     public TimelineController(Canvas canvas, ScrollViewer scrollViewer)
     {
@@ -49,6 +48,7 @@ public class TimelineController
         LightBlocks.Clear();
         _selectedBlocks.Clear();
     }
+
     public void DrawTimelineSlots()
     {
         _timelineCanvas.Children.Clear();
@@ -138,6 +138,7 @@ public class TimelineController
             }
         }
     }
+
     public void ScaleTimelineChildren(double oldSlotWidth, double newSlotWidth)
     {
         double factor = newSlotWidth / oldSlotWidth;
@@ -177,6 +178,7 @@ public class TimelineController
         ScaleTimelineChildren(oldWidth, _slotWidth);
         _timelineCanvas.Width = TimelineController._totalModules * _slotWidth;            
     }
+
     public void ZoomAtPointer(double deltaY, double mouseX)
     {
         double old = _slotWidth;
@@ -200,6 +202,7 @@ public class TimelineController
         _scrollViewer.Offset = new Vector(newX, _scrollViewer.Offset.Y);
         ScrollLocked = false;
     }
+
     /// <summary>
     /// Change Scroll Lock Status
     /// </summary>
@@ -209,5 +212,171 @@ public class TimelineController
         ScrollLocked = locked;
     }
 
+    /// <summary>
+    /// Update visualization of light playback. Imitates the microcontroller for visualization and development purposes.
+    /// Returns computed strip colors for the active block, or null if no block is active.
+    /// </summary>
+    /// <param name="ms"></param>
+    /// <param name="colorUpdateIntervalMs"></param>
+    /// <param name="brightnessScale"></param>
+    public Color[]? Tick(int ms, int colorUpdateIntervalMs, double brightnessScale)
+    {
+        if (ms < _lastColorUpdateMs)
+            _lastColorUpdateMs = ms;
 
+        if (ms - _lastColorUpdateMs < colorUpdateIntervalMs)
+            return Array.Empty<Color>();
+
+        _lastColorUpdateMs = ms;
+        double slotIndex = ms / MsPerSlot;
+        double caretX = slotIndex * _slotWidth;
+        Canvas.SetLeft(_playheadCaret, caretX - 4);
+
+        if (ScrollLocked)
+        {
+            double viewportWidth = _scrollViewer.Viewport.Width;
+            double scrollTo = Math.Max(0, caretX - viewportWidth / 6);
+            _scrollViewer.Offset = new Vector(scrollTo, _scrollViewer.Offset.Y);
+        }
+
+        if (_isLiveInputActive && _liveBlock != null)
+        {
+            double startX = Canvas.GetLeft(_liveBlock.Container);
+            var snappedWidth = Math.Round(((caretX - startX) / _slotWidth) + 1) * _slotWidth;
+            _liveBlock.Container.Width = Math.Max(_slotWidth, snappedWidth);
+        }
+
+        var activeBlock = LightBlocks.FirstOrDefault(b =>
+        {
+            double left = Canvas.GetLeft(b.Container);
+            double width = b.Container.Width;
+            return caretX >= left && caretX <= left + width;
+        });
+
+        if (activeBlock == null)
+            return null;
+
+        double blockWidth = activeBlock.Container.Width;
+        if (blockWidth <= 0)
+            return null;
+
+        double blockLeft = Canvas.GetLeft(activeBlock.Container);
+        double relPos = Math.Clamp((caretX - blockLeft) / blockWidth, 0, 1);
+
+        return LightEffectsComputer.ComputeBlockEffects(activeBlock, relPos, brightnessScale);
+    }
+
+    /// <summary>
+    /// Handles block selection logic for left click, shift click, and ctrl click.
+    /// Returns the updated selected blocks list so the caller can open the editor.
+    /// </summary>
+    /// <param name="e"></param>
+    /// <param name="blockToAdd"></param>
+    public List<LightBlock> HandleBlockSelection(PointerPressedEventArgs e, LightBlock blockToAdd)
+    {
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        {
+            var min = double.MaxValue;
+            var max = -1.00;
+            foreach (var selectedblock in _selectedBlocks)
+            {
+                if (Canvas.GetLeft(selectedblock.Container) < min)
+                {
+                    min = Canvas.GetLeft(selectedblock.Container);
+                    Console.WriteLine("MIN = " + min);
+                }
+
+                if (Canvas.GetLeft(selectedblock.Container) > max)
+                {
+                    max = Canvas.GetLeft(selectedblock.Container);
+                }
+            }
+
+            if (min == double.MaxValue) //No blocks selected previously 
+            {
+                _selectedBlocks.Add(blockToAdd);
+                blockToAdd.isSelected = true;
+                return _selectedBlocks;
+            }
+
+            foreach (var lightblock in LightBlocks)
+            {
+                if (_selectedBlocks.Contains(lightblock))
+                    continue;
+
+                var blockLeft = Canvas.GetLeft(lightblock.Container);
+                if ((blockLeft > min && blockLeft <= Canvas.GetLeft(blockToAdd.Container))
+                    || (blockLeft < max && blockLeft >= Canvas.GetLeft(blockToAdd.Container)))
+                {
+                    //Add all selected blocks including block that was shift clicked
+                    _selectedBlocks.Add(lightblock);
+                    lightblock.isSelected = true;
+                    blockToAdd.isSelected = true;
+                }
+            }
+        }
+        else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        {
+            _selectedBlocks.Add(blockToAdd);
+            blockToAdd.isSelected = true;
+        }
+        else
+        {
+            foreach (var blockToRemove in _selectedBlocks)
+            {
+                blockToRemove.UpdateBackground(blockToRemove.BlockColor);
+                blockToRemove.isSelected = false;
+            }
+
+            _selectedBlocks.Clear();
+            _selectedBlocks.Add(blockToAdd);
+            blockToAdd.isSelected = true;
+        }
+
+        e.Handled = true;
+        return _selectedBlocks;
+    }
+
+    /// <summary>
+    /// Loads light blocks from saved track data onto the timeline canvas.
+    /// Caller must provide an onBlockPressed callback to wire up editor/delete interaction.
+    /// </summary>
+    /// <param name="trackData"></param>
+    /// <param name="onBlockPressed"></param>
+    public void LoadFromTrackData(TrackData trackData, Action<LightBlock, PointerPressedEventArgs> onBlockPressed)
+    {
+        foreach (var data in trackData._lightBlocks)
+        {
+            if (!Color.TryParse(data.Color, out var color)) continue;
+
+            var block = new LightBlock(LightBlocks, _scrollViewer, _slotWidth);
+            block.UpdateColor(color);
+            block.SecondBlockColor = (Color.TryParse(data.SecondColor, out var color2) ? color2 : new Color());
+            block.StartLight = data.StartLight;
+            block.EndLight = data.EndLight;
+            block.BlockEffects = data.BlockEffects;
+            block.Intensity = data.LightIntensity;
+            block.SecondaryStartLight = data.SecondaryDualInput1;
+            block.SecondaryEndLight = data.SecondaryDualInput2;
+            block.AdditionalIndividualInput1 = data.SecondarySingleInput1;
+            block.AdditionalIndividualInput2 = data.SecondarySingleInput2;
+            block.Container.Width = data.Width * _slotWidth;
+            Canvas.SetLeft(block.Container, data.X * _slotWidth);
+            Canvas.SetTop(block.Container, 0);
+
+            _timelineCanvas.Children.Add(block.Container);
+            LightBlocks.Add(block);
+
+            //Assign light block keybinds (Lclick edit, Rclick delete)
+            block.Container.PointerPressed += (_, e) => onBlockPressed(block, e);
+            
+        }
+    }
+    /// <summary>
+    /// Converts a canvas X position to milliseconds
+    /// </summary>
+    public int CanvasXToMs(double x)
+    {
+        return (int)((x / _slotWidth) * MsPerSlot);
+    }
 }

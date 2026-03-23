@@ -9,8 +9,8 @@ using System.Linq;
 using System.Collections.Generic;
 using Avalonia.Controls;
 /// <summary>
-/// Music provider allows for manipulation and fetching of the physical music, unlike the
-/// Playback handler which provides local track lighting data
+/// Music provider allows for manipulation and fetching of the physical music, It is controlled by
+/// PlaybackHandler which connects the music provider to the timeline UI element
 /// </summary>
 public interface IMusicProvider
 {

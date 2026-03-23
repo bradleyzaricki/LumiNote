@@ -138,7 +138,7 @@ namespace LumikitApp
                             new PlayerTransferPlaybackRequest(new List<string> { device.Id }) { Play = true }
                         );
 
-                        await Task.Delay(300); // Spotify needs a second
+                        await Task.Delay(500); // Spotify needs a second
 
                         await _spotify.Player.ResumePlayback(); // Retry
                         Debug.WriteLine("ResumePlayback retried after transfer.");
@@ -181,7 +181,7 @@ namespace LumikitApp
                             new PlayerTransferPlaybackRequest(new List<string> { device.Id }) { Play = false }
                         );
 
-                        await Task.Delay(300); // let Spotify settle
+                        await Task.Delay(500); // let Spotify settle
 
                         await _spotify.Player.PausePlayback(); // Retry pause
                         Debug.WriteLine("PausePlayback retried after transfer.");
@@ -209,13 +209,6 @@ namespace LumikitApp
                     
                     currentTrack = new TrackPOCO(Guid.Empty, track.Name, track.Artists[0].Name,track.Album.Images[1].Url);
                     return currentTrack;
-
-                }
-                else
-                {
-     
-                    Console.Write("ERROR");
-
                 }
 
             }

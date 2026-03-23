@@ -15,48 +15,45 @@
     using System.IO.Ports;
     using LumikitApp.Models;
 
-    //UpperCase = User defined global variables (settings, preferences etc..)
-    //camelCase = local temporary variables used in methods
-    //_thisCase = global variables needed on a class level
     namespace LumikitApp
     {
         public partial class LumikitWindow : Window
         {
             private static Color _spotifyGreen = new Color(255, 30, 215, 96);
-            
+            private Point _lastPointerPos;
+
+            //Hardware Adjusted Variables
             private int ActiveLedCount = 0;
             private int ColorUpdateIntervalMs = 50;
-            private int HardwareCurrent = 0;
+            private int HardwareCurrent = 0; //Amperes
             private double BrightnessScale = 1;
-            /// <summary> The music provider to handle audio playback (ex. Spotify, Local Files...) </summary>
+            
+            //Music Source
             private IMusicProvider _musicProvider;
             
-            /// <summary> The serial output for lighting communications  </summary>
-            private SerialHandler SerialHandler;
-            private Point _lastPointerPos;
-            
+            //Visual Music Timeline
             private TimelineController _timeline;
 
-
+            /// <summary> The serial output for lighting communications  </summary>
+            private SerialHandler SerialHandler;
+            
             //Possible color blocks for lightshow editing, can be redefined by the user
             private readonly List<Color> BlockColors = new()
             {
                 Colors.DarkRed, Colors.Red, Colors.Orange, Colors.Yellow, Colors.Green,Colors.Aqua, Colors.Blue,
                 Colors.Purple, Colors.Magenta, Colors.White
             };
-
-            private ObservableCollection<TrackItemUI> _tracks 
-                = new ObservableCollection<TrackItemUI>();
             
-            //This is used for local file mode 
+            //Current track data for accurate lightmap/audio matching logic
             private string currentGUID = Guid.Empty.ToString();
+            
+            //Lists to store both local track UI items and database track ui items
             private List<TrackItemUI> _allLocalTrackItems = new();
             private List<TrackItemUI> _allDatabaseTrackItems = new();
 
             //Avalonia UI elements
             private Canvas _blockColorDropBox;
             private Canvas _secondColorDropBox;
-
             private TextBox _bpmInput;
 
             //Handles unique playback logic depending on the music provider
@@ -65,19 +62,51 @@
 
             //Live "Piano Roll" Block Painting Variables
             Border? _activeSwatch;
+            private BlockEditorPanel _blockEditor;
 
             public LumikitWindow()
             {
                 InitializeComponent();
+
                 _timeline = new TimelineController(
                     this.FindControl<Canvas>("TimelineCanvas"),
                     this.FindControl<ScrollViewer>("TimelineScrollViewer")
                 );
                 _blockColorDropBox = this.FindControl<Canvas>("ColorDropBox");
                 _secondColorDropBox = this.FindControl<Canvas>("SecondColorDropBox");
+                _blockEditor = new BlockEditorPanel(
+                    _timeline,
+                    this.FindControl<Border>("BlockEditor"),
+                    _blockColorDropBox,
+                    _secondColorDropBox,
+                    this.FindControl<TextBox>("StartLightInput"),
+                    this.FindControl<TextBox>("EndLightInput"),
+                    this.FindControl<TextBox>("IntensityInput"),
+                    this.FindControl<TextBox>("AdditionalDualInput1TextBox"),
+                    this.FindControl<TextBox>("AdditionalDualInput2TextBox"),
+                    this.FindControl<TextBox>("AdditionalSingleInput1TextBox"),
+                    this.FindControl<TextBox>("AdditionalSingleInput2TextBox"),
+                    this.FindControl<CheckBox>("Effect_FadeIn"),
+                    this.FindControl<CheckBox>("Effect_FadeOut"),
+                    this.FindControl<CheckBox>("Effect_FadeStrobe"),
+                    this.FindControl<CheckBox>("Effect_Travel"),
+                    this.FindControl<CheckBox>("Effect_Combine"),
+                    this.FindControl<CheckBox>("Effect_Seperate"),
+                    this.FindControl<CheckBox>("Effect_Repeat"),
+                    this.FindControl<CheckBox>("Effect_ChangeColor"),
+                    this.FindControl<CheckBox>("Effect_Twinkle"),
+                    this.FindControl<StackPanel>("AdditionalDualInputsPanel"),
+                    this.FindControl<TextBlock>("AdditionalDualInput1Label"),
+                    this.FindControl<TextBlock>("AdditionalDualInput2Label"),
+                    this.FindControl<TextBlock>("AdditionalSingleInputLabel1"),
+                    this.FindControl<TextBlock>("AdditionalSingleInputLabel2"),
+                    this.FindControl<StackPanel>("AdditionalSingleInputPanel1"),
+                    this.FindControl<StackPanel>("AdditionalSingleInputPanel2")
+                );
+
                 _bpmInput = this.FindControl<TextBox>("BpmInput");
                 
-                LocalTracksListBox.ItemsSource = _tracks;
+                LocalTracksListBox.ItemsSource = new ObservableCollection<TrackItemUI>();;
 
                 var serialSettingsButton = this.FindControl<Button>("SerialSettingsButton");
 
@@ -111,14 +140,29 @@
                         e.Handled = true;
                     }
                 };
+                var seekBar = this.FindControl<Canvas>("SeekBarCanvas");
+                seekBar.PointerPressed += async (_, e) =>
+                {
+    
+                    var pos = e.GetPosition(seekBar);
+                    int ms = _timeline.CanvasXToMs(pos.X);
 
+                    bool wasPlaying = await _musicProvider.IsPlayingAsync();
+
+                    await _playbackHandler.PauseAsync();
+                     ms = (ms / 1000) * 1000;
+                    _musicProvider.SeekToPlaybackTime(ms);
+                    await Task.Delay(500);
+                                _playbackHandler.StartTimer(ms);
+                                await _playbackHandler.ResumeAsync();
+
+                };
                 this.KeyDown += OnKeyDown;
                 this.KeyUp += OnKeyUp;
                 _timeline._scrollViewer.AddHandler(PointerWheelChangedEvent, OnPointerWheelChanged, RoutingStrategies.Tunnel);
                 
                 var applyBtn = this.FindControl<Button>("ApplyBlockChangesButton");
-                if (applyBtn != null) applyBtn.Click += OnApplyBlockChangesClicked;
-                
+                if (applyBtn != null) applyBtn.Click += (_, _) => _blockEditor.ApplyBlockChanges();                
                 InitializeColorPalette();
                 _timeline.DrawTimelineSlots();
 
@@ -130,7 +174,8 @@
             {
                 Effect_Seperate.IsChecked = false;
                 Effect_Combine.IsChecked = false;
-                UpdateEffectSettingVisibility();
+                _blockEditor.UpdateEffectSettingVisibility();
+
             }
 
             /// Activate and Adjust Settings when combine is checked
@@ -138,7 +183,7 @@
             {
                 Effect_Seperate.IsChecked = false;
                 Effect_Travel.IsChecked = false;
-                UpdateEffectSettingVisibility();
+                _blockEditor.UpdateEffectSettingVisibility();
 
             }
             
@@ -147,143 +192,110 @@
             {
                 Effect_Combine.IsChecked = false;
                 Effect_Travel.IsChecked = false;
-                UpdateEffectSettingVisibility();
+                _blockEditor.UpdateEffectSettingVisibility();
+
             }
             //Effects Changed
             private void Effect_OnChanged(object? sender, RoutedEventArgs e)
             {
-                UpdateEffectSettingVisibility();
+                _blockEditor.UpdateEffectSettingVisibility();
+
             }
             
-           
-            /// <summary>
+                       
+             /// <summary>
             /// All key down logic
             /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
             private void OnKeyDown(object? sender, KeyEventArgs e)
             {
-                // Start a live block when hotkey (num 0-9) is pressed
-                if (!_timeline._isLiveInputActive && e.Key >= Key.D0 && e.Key <= Key.D9)
+                if (_timeline._isLiveInputActive) return;
+
+                if (e.Key >= Key.D0 && e.Key <= Key.D9)
+                    HandleLiveBlockStart(e.Key);
+                else if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.V)
+                    HandlePaste();
+            }
+
+            private void HandleLiveBlockStart(Key key)
+            {
+                _timeline._isLiveInputActive = true;
+                _timeline._liveStartMs = _playbackHandler?.CurrentProgressMs ?? 0;
+
+                double caretX = (_timeline._liveStartMs / TimelineController.MsPerSlot) * _timeline._slotWidth;
+                double snappedX = Math.Round(caretX / _timeline._slotWidth) * _timeline._slotWidth;
+
+                int colorIndex = key == Key.D0 ? 9 : (key - Key.D1);
+                var block = CreateAndPlaceBlock(BlockColors[colorIndex], snappedX, _timeline._slotWidth);
+
+                _timeline._liveBlock = block;
+            }
+
+            private void HandlePaste()
+            {
+                var snapshot = _timeline._selectedBlocks;
+                if (snapshot.Count == 0) return;
+
+                double leftmostX = snapshot.Min(b => Canvas.GetLeft(b.Container));
+
+                foreach (var source in snapshot)
                 {
-                    _timeline._isLiveInputActive = true;
-                    _timeline._liveStartMs = _playbackHandler?.CurrentProgressMs ?? 0; 
-                    double caretX = (_timeline._liveStartMs / TimelineController.MsPerSlot) * _timeline._slotWidth;
-
-                    // Create a new block at the caret
-                    var block = new LightBlock(_timeline.LightBlocks, _timeline._scrollViewer, _timeline._slotWidth);
-                    switch (e.Key)
-                    {
-                        case Key.D1:
-                            block.UpdateColor(BlockColors[0]);
-                            break;
-                        case Key.D2:
-                            block.UpdateColor(BlockColors[1]);
-                            break;
-                        case Key.D3:
-                            block.UpdateColor(BlockColors[2]);
-                            break;
-                        case Key.D4:
-                            block.UpdateColor(BlockColors[3]);
-                            break;
-                        case Key.D5:
-                            block.UpdateColor(BlockColors[4]);
-                            break;
-                        case Key.D6:
-                            block.UpdateColor(BlockColors[5]);
-                            break;
-                        case Key.D7:
-                            block.UpdateColor(BlockColors[6]);
-                            break;
-                        case Key.D8:
-                            block.UpdateColor(BlockColors[7]);
-                            break;
-                        case Key.D9:
-                            block.UpdateColor(BlockColors[8]);
-                            break;
-                        case Key.D0:
-                            block.UpdateColor(BlockColors[9]);
-                            break;
-                    }
-
-                    block.Container.Width = _timeline._slotWidth;
-                    var snappedX =  Math.Round(caretX / _timeline._slotWidth) * _timeline._slotWidth;
-                    Canvas.SetLeft(block.Container, snappedX);
-                    Canvas.SetTop(block.Container, 0);
-                    _timeline._timelineCanvas.Children.Add(block.Container);
-                    _timeline.LightBlocks.Add(block);
-                    _timeline._liveBlock = block;
-
-                    //Assign light block keybinds (Lclick edit, Rclick delete)
-                    block.Container.PointerPressed += (_, e) =>
-                    {
-                        if (e.GetCurrentPoint(block.Container).Properties.IsLeftButtonPressed)
-                        {
-                            AddNewLightBlockToTimeline(e, block);
-                        }
-
-                        if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
-                        {
-                            var selectedBlocksSnapshot = _timeline._selectedBlocks;
-                            foreach (var selectedBlock in selectedBlocksSnapshot)
-                            {
-                                selectedBlock.isSelected = false;
-                                _timeline._timelineCanvas.Children.Remove(selectedBlock.Container);
-                                _timeline.LightBlocks.Remove(selectedBlock);
-
-                            }
-
-                        }
-                    };
-                }
-
-                //Copy light blocks
-                if (!_timeline._isLiveInputActive && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.V)
-                {
-                    var selectedBlocksSnapshot = _timeline._selectedBlocks;
-                    var pasteX = double.MaxValue;
-                    foreach (var block in selectedBlocksSnapshot)
-                    {
-                        if (Canvas.GetLeft(block.Container) < pasteX)
-                        {
-                            pasteX = Canvas.GetLeft(block.Container);
-                        }
-                    }
-
-                    foreach (LightBlock blockToCopy in selectedBlocksSnapshot)
-                    {
-                        var addedBlock = new LightBlock(blockToCopy);
-                        addedBlock.UpdateColor(blockToCopy.BlockColor);
-
-                        Canvas.SetLeft(addedBlock.Container,
-                            _lastPointerPos.X + (Canvas.GetLeft(blockToCopy.Container) - pasteX));
-                        Canvas.SetTop(addedBlock.Container, 0);
-
-                        _timeline._timelineCanvas.Children.Add(addedBlock.Container);
-                        _timeline.LightBlocks.Add(addedBlock);
-                        addedBlock.Container.PointerPressed += (_, e) =>
-                        {
-                            if (e.GetCurrentPoint(addedBlock.Container).Properties.IsLeftButtonPressed)
-                            {
-                                AddNewLightBlockToTimeline(e, addedBlock);
-                            }
-
-                            if (e.GetCurrentPoint(addedBlock.Container).Properties.IsRightButtonPressed)
-                            {
-                                var selectedBlocksSnapshot = _timeline._selectedBlocks;
-                                foreach (var selectedBlock in selectedBlocksSnapshot)
-                                {
-                                    selectedBlock.isSelected = false;
-                                    _timeline._timelineCanvas.Children.Remove(selectedBlock.Container);
-                                    _timeline.LightBlocks.Remove(selectedBlock);
-
-                                }
-                            }
-                        };
-                    }
+                    double offsetX = _lastPointerPos.X + (Canvas.GetLeft(source.Container) - leftmostX);
+                    CreateAndPlaceBlock(new LightBlock(source), offsetX, source.BlockColor, source.Container.Width);
                 }
             }
 
+            private LightBlock CreateAndPlaceBlock(Color color, double x, double width)
+            {
+                var block = new LightBlock(_timeline.LightBlocks, _timeline._scrollViewer, _timeline._slotWidth);
+                return CreateAndPlaceBlock(block, x, color, width);
+            }
+
+            private LightBlock CreateAndPlaceBlock(LightBlock block, double x, Color color, double width)
+            {
+                block.Container.Width = width;
+                block.UpdateColor(color);
+                Canvas.SetLeft(block.Container, x);
+                Canvas.SetTop(block.Container, 0);
+
+                _timeline._timelineCanvas.Children.Add(block.Container);
+                _timeline.LightBlocks.Add(block);
+
+                block.Container.PointerPressed += OnBlockPointerPressed;
+
+                return block;
+            }
+
+            private void OnBlockPointerPressed(object? sender, PointerPressedEventArgs e)
+            {
+                var container = (Control)sender!;
+                var block = _timeline.LightBlocks.First(b => b.Container == container);
+                HandleBlockPressed(block, e);
+            }
+
+            private void HandleBlockPressed(LightBlock block, PointerPressedEventArgs e)
+            {
+                var point = e.GetCurrentPoint(block.Container);
+
+                if (point.Properties.IsLeftButtonPressed)
+                {
+                    var selected = _timeline.HandleBlockSelection(e, block);
+                    _blockEditor.LoadBlockIntoEditor(selected);
+
+                }
+
+                if (point.Properties.IsRightButtonPressed)
+                    DeleteSelectedBlocks();
+            }
+
+            private void DeleteSelectedBlocks()
+            {
+                foreach (var block in _timeline._selectedBlocks.ToList())
+                {
+                    block.isSelected = false;
+                    _timeline._timelineCanvas.Children.Remove(block.Container);
+                    _timeline.LightBlocks.Remove(block);
+                }
+            }
             private void OnPointerMoved(object? sender, PointerEventArgs e)
             {
                 _lastPointerPos = e.GetPosition(_timeline._timelineCanvas);
@@ -303,7 +315,7 @@
 
             public void InitializeWindow(IMusicProvider provider)
             {
-                BlockEditor.IsVisible = false;
+                _blockEditor.Hide();
                 this.FindControl<Button>("SaveTrackDataButton").Click += async (_, _) =>
                 {
                     var newPopUp = new NewTrackPopup();
@@ -358,7 +370,25 @@
                     Dispatcher.UIThread.Post(() =>
                     {
                         StopwatchLabel.Text = ms.ToString();
-                        UpdateCaretAndScroll(ms);
+
+                        var colors = _timeline.Tick(ms, ColorUpdateIntervalMs, BrightnessScale);
+                        if (colors == null)
+                        {
+                            SerialHandler?.SendFrame(Array.Empty<Color>());
+                            TopColorBar.Background = new SolidColorBrush(Colors.Transparent);
+                            BottomColorBar.Background = new SolidColorBrush(Colors.Transparent);
+                            return;
+                        } 
+                        if (colors.Length == 0) return; // throttled, skip this frame entirely
+                        //valid values
+                        {
+                            var blockColor = colors.FirstOrDefault(c => c.A > 0);
+                            TopColorBar.Background = new SolidColorBrush(blockColor);
+                            BottomColorBar.Background = new SolidColorBrush(blockColor);
+                            UpdateColorBar(colors);
+                            try { SerialHandler?.SendFrame(colors); }
+                            catch (Exception ex) { Console.WriteLine(ex); }
+                        }                    
                     });
                 };
                 this.FindControl<Button>("PauseTrackButton").Click += async (_, _) => await _playbackHandler.PauseAsync();
@@ -374,7 +404,6 @@
                 _musicProvider = provider;
                 ChangeAppTheme(); //Changes app colors to match provider (required by spotify TOS)
                 _allLocalTrackItems = JsonDataHandler.GetAllTrackItems();
-                LocalTracksListBox.ItemsSource = _allLocalTrackItems;
 
             }
 
@@ -400,48 +429,9 @@
                     _bpmInput.Text = _timeline.Bpm.ToString();
                     _timeline.DrawTimelineSlots();
 
-                    foreach (var data in trackDataLocal._lightBlocks)
-                    {
-                        if (!Color.TryParse(data.Color, out var color)) continue;
-                        var block = new LightBlock(_timeline.LightBlocks, _timeline._scrollViewer, _timeline._slotWidth);
-                        block.UpdateColor(color);
-                        block.SecondBlockColor = (Color.TryParse(data.SecondColor, out var color2) ? color2 : new Color());
-                        block.StartLight = data.StartLight;
-                        block.EndLight = data.EndLight;
-                        block.BlockEffects = data.BlockEffects;
-                        block.Intensity = data.LightIntensity;
-                        block.SecondaryStartLight = data.SecondaryDualInput1;
-                        block.SecondaryEndLight = data.SecondaryDualInput2;
-                        block.AdditionalIndividualInput1 = data.SecondarySingleInput1;
-                        block.AdditionalIndividualInput2 = data.SecondarySingleInput2;
-                        block.Container.Width = data.Width * _timeline._slotWidth;
-                        Canvas.SetLeft(block.Container, data.X * _timeline._slotWidth);
-                        Canvas.SetTop(block.Container, 0);
-
-                        _timeline._timelineCanvas.Children.Add(block.Container);
-                        _timeline.LightBlocks.Add(block);
-
-                        //Assign light block keybinds (Lclick edit, Rclick delete)
-                        block.Container.PointerPressed += (_, e) =>
-                        {
-                            if (e.GetCurrentPoint(block.Container).Properties.IsLeftButtonPressed)
-                            {
-                                AddNewLightBlockToTimeline(e, block);
-                            }
-
-                            if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
-                            {
-                                var selectedBlocksSnapshot = _timeline._selectedBlocks;
-                                foreach (var selectedBlock in selectedBlocksSnapshot)
-                                {
-                                    selectedBlock.isSelected = false;
-                                    _timeline._timelineCanvas.Children.Remove(selectedBlock.Container);
-                                    _timeline.LightBlocks.Remove(selectedBlock);
-
-                                }
-                            }
-                        };
-                    }
+                    
+                    _timeline.LoadFromTrackData(trackDataLocal, HandleBlockPressed);
+                    
                 }
                 else
                 {
@@ -451,135 +441,7 @@
                     _timeline.DrawTimelineSlots();
                 }
             }
-
-            private void AddNewLightBlockToTimeline(PointerPressedEventArgs e, LightBlock blockToAdd)
-            {
-                if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-                {
-                    var min = double.MaxValue;
-                    var max = -1.00;
-                    foreach (var selectedblock in _timeline._selectedBlocks)
-                    {
-                        if (Canvas.GetLeft(selectedblock.Container) < min)
-                        {
-                            min = Canvas.GetLeft(selectedblock.Container);
-                            Console.WriteLine("MIN = " + min);
-                        }
-
-                        if (Canvas.GetLeft(selectedblock.Container) > max)
-                        {
-                            max = Canvas.GetLeft(selectedblock.Container);
-                        }
-                    }
-
-                    if (min == double.MaxValue) //No blocks selected previously 
-                    {
-                        _timeline._selectedBlocks.Add(blockToAdd);
-                        blockToAdd.isSelected = true;
-                        LoadBlockIntoEditor(_timeline._selectedBlocks);
-                        return;
-
-                    }
-
-                    foreach (var lightblock in _timeline.LightBlocks)
-                    {
-                        if (_timeline._selectedBlocks.Contains(lightblock))
-                            continue;
-
-                        var blockLeft = Canvas.GetLeft(lightblock.Container);
-                        if ((blockLeft > min && blockLeft <= Canvas.GetLeft(blockToAdd.Container))
-                            || (blockLeft < max && blockLeft >= Canvas.GetLeft(blockToAdd.Container)))
-                        {
-                            //Add all selected blocks including block that was shift clicked
-                            _timeline._selectedBlocks.Add(lightblock);
-                            lightblock.isSelected = true;
-                            blockToAdd.isSelected = true;
-
-                            LoadBlockIntoEditor(_timeline._selectedBlocks);
-
-                        }
-                    }
-
-                }
-                else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
-                {
-                    _timeline._selectedBlocks.Add(blockToAdd);
-                    blockToAdd.isSelected = true;
-
-                    LoadBlockIntoEditor(_timeline._selectedBlocks);
-
-                }
-
-                else
-                {
-                    foreach (var blockToRemove in _timeline._selectedBlocks)
-                    {
-                        blockToRemove.UpdateBackground(blockToRemove.BlockColor);
-                        blockToRemove.isSelected = false;
-
-                    }
-
-                    _timeline._selectedBlocks.Clear();
-                    _timeline._selectedBlocks.Add(blockToAdd);
-                    blockToAdd.isSelected = true;
-
-                    LoadBlockIntoEditor(_timeline._selectedBlocks);
-
-                }
-
-                e.Handled = true;
-            }
-
-
-
-            /// <summary>
-            /// Loads sidebar editor with pre-existing lightblock values
-            /// </summary>
-            /// <param name="block"></param>
-            private void LoadBlockIntoEditor(List<LightBlock> selectedBlocks)
-            {
-                if(selectedBlocks == null || selectedBlocks.Count == 0)return;
-                BlockEditor.IsVisible = true;
-                UpdateSelectedColorsBackground();
-                UpdateEffectSettingVisibility();
-                foreach (var block in selectedBlocks)
-                {
-                    StartLightInput.Text = block.StartLight.ToString();
-                    EndLightInput.Text = block.EndLight.ToString();
-                    IntensityInput.Text = block.Intensity.ToString();
-                    AdditionalDualInput2TextBox.Text = block.SecondaryEndLight.ToString();
-                    AdditionalDualInput1TextBox.Text = block.SecondaryStartLight.ToString();
-                    AdditionalSingleInput1TextBox.Text = block.AdditionalIndividualInput1.ToString();
-                    AdditionalSingleInput2TextBox.Text = block.AdditionalIndividualInput2.ToString();
-                    _blockColorDropBox.Background = new SolidColorBrush(block.BlockColor);
-                    _secondColorDropBox.Background = new SolidColorBrush(block.SecondBlockColor);
-                    // Reset effect selection
-
-                    this.FindControl<CheckBox>("Effect_FadeIn").IsChecked =
-                        block.BlockEffects.Contains(LightBlock.Effect.FadeIn);
-                    this.FindControl<CheckBox>("Effect_FadeOut").IsChecked =
-                        block.BlockEffects.Contains(LightBlock.Effect.FadeOut);
-                    this.FindControl<CheckBox>("Effect_FadeStrobe").IsChecked =
-                        block.BlockEffects.Contains(LightBlock.Effect.Strobe);
-                    this.FindControl<CheckBox>("Effect_Travel").IsChecked =
-                        block.BlockEffects.Contains(LightBlock.Effect.Travel);
-                    this.FindControl<CheckBox>("Effect_Combine").IsChecked =
-                        block.BlockEffects.Contains(LightBlock.Effect.Combine);
-                    this.FindControl<CheckBox>("Effect_Seperate").IsChecked =
-                        block.BlockEffects.Contains(LightBlock.Effect.Seperate);
-                    this.FindControl<CheckBox>("Effect_Repeat").IsChecked =
-                        block.BlockEffects.Contains((LightBlock.Effect.Repeat));
-                    this.FindControl<CheckBox>("Effect_ChangeColor").IsChecked =
-                        block.BlockEffects.Contains((LightBlock.Effect.ChangeColor));
-                    this.FindControl<CheckBox>("Effect_Twinkle").IsChecked =
-                        block.BlockEffects.Contains(LightBlock.Effect.Twinkle);
-
-                }
-                UpdateEffectSettingVisibility();
-
-
-            }
-
+            
             /// <summary>
             /// Parse and set album cover visual
             /// </summary>
@@ -725,6 +587,11 @@
             }
 
 
+            /// <summary>
+            /// Drag n Drop Functionality for Light Block Color Settings
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
             private void OnColorCanvasDrop(object? sender, DragEventArgs e)
             {
                 if (!e.Data.Contains("block-color")) return;
@@ -769,149 +636,39 @@
                 var colorString = e.Data.Get("block-color")?.ToString();
                 if (colorString == null || !Color.TryParse(colorString, out var color)) return;
 
-                //Drop selected R G B color value to the playback track
                 var pos = e.GetPosition(_timeline._timelineCanvas);
                 double snappedX = Math.Round(pos.X / _timeline._slotWidth) * _timeline._slotWidth;
                 snappedX = Math.Max(0, Math.Min(snappedX, _timeline._timelineCanvas.Width - _timeline._slotWidth));
+
+                double finalWidth = CalculateDropWidth(snappedX);
+                if (finalWidth < _timeline._slotWidth) return;
+
+                var block = CreateAndPlaceBlock(color, snappedX, finalWidth);
+                block.Intensity = 255;
+                block.EndLight = 1000;
+            }
+
+            private double CalculateDropWidth(double snappedX)
+            {
                 double maxWidth = Math.Min(_timeline._slotWidth * 50, _timeline._timelineCanvas.Width - snappedX);
                 double finalWidth = maxWidth;
 
                 while (finalWidth >= _timeline._slotWidth)
                 {
-                    bool collision = false;
-                    foreach (var existing in _timeline.LightBlocks)
+                    bool collision = _timeline.LightBlocks.Any(existing =>
                     {
                         double left = Canvas.GetLeft(existing.Container);
                         double width = existing.Container.Width;
-                        if (snappedX < left + width && snappedX + finalWidth > left)
-                        {
-                            collision = true;
-                            break;
-                        }
-                    }
+                        return snappedX < left + width && snappedX + finalWidth > left;
+                    });
 
                     if (!collision) break;
                     finalWidth -= _timeline._slotWidth;
                 }
 
-                if (finalWidth < _timeline._slotWidth) return;
-
-                var block = new LightBlock(_timeline.LightBlocks, _timeline._scrollViewer, _timeline._slotWidth);
-                block.Container.Width = finalWidth;
-                Canvas.SetLeft(block.Container, snappedX);
-                Canvas.SetTop(block.Container, 0);
-                _timeline._timelineCanvas.Children.Add(block.Container);
-                _timeline.LightBlocks.Add(block);
-                block.UpdateColor(color);
-                block.Intensity = 255;
-                block.EndLight = 1000;
-                
-                //Assign light block keybinds (Lclick edit, Rclick delete)
-                block.Container.PointerPressed += (_, e) =>
-                {
-                    if (e.GetCurrentPoint(block.Container).Properties.IsLeftButtonPressed)
-                    {
-                        AddNewLightBlockToTimeline(e, block);
-                    }
-
-                    if (e.GetCurrentPoint(block.Container).Properties.IsRightButtonPressed)
-                    {
-                        var selectedBlocksSnapshot = _timeline._selectedBlocks;
-                        foreach (var selectedBlock in selectedBlocksSnapshot)
-                        {
-                            selectedBlock.isSelected = false;
-                            _timeline._timelineCanvas.Children.Remove(selectedBlock.Container);
-                            _timeline.LightBlocks.Remove(selectedBlock);
-
-                        }
-
-                        e.Handled = true;
-                    }
-                };
-
+                return finalWidth;
             }
-
-            /// <summary>
-            /// Update visualization of light playback. Imitates the microcontroller for visualization and development purposes
-            /// </summary>
-            /// <param name="ms"></param>
-            private void UpdateCaretAndScroll(int ms)
-            {
-                if (ms < _timeline._lastColorUpdateMs)
-                    _timeline._lastColorUpdateMs = ms;
-
-                if (ms - _timeline._lastColorUpdateMs < ColorUpdateIntervalMs)
-                    return;
-
-                _timeline._lastColorUpdateMs = ms;
-                double slotIndex = ms / TimelineController.MsPerSlot;
-                double caretX = slotIndex * _timeline._slotWidth;
-                Canvas.SetLeft(_timeline._playheadCaret, caretX - 4);
-
-                if (_timeline.ScrollLocked)
-                {
-                    double viewportWidth = _timeline._scrollViewer.Viewport.Width;
-                    double scrollTo = Math.Max(0, caretX - viewportWidth / 6);
-                    _timeline._scrollViewer.Offset = new Vector(scrollTo, _timeline._scrollViewer.Offset.Y);
-                }
-
-                if (_timeline._isLiveInputActive && _timeline._liveBlock != null)
-                {
-                    double startX = Canvas.GetLeft(_timeline._liveBlock.Container);
-                    var snappedWidth = Math.Round(((caretX - startX) / _timeline._slotWidth ) +1 )* _timeline._slotWidth;
-                    _timeline._liveBlock.Container.Width = Math.Max(_timeline._slotWidth, snappedWidth);
-                }
-
-                var activeBlock = _timeline.LightBlocks.FirstOrDefault(b =>
-                {
-                    double left = Canvas.GetLeft(b.Container);
-                    double width = b.Container.Width;
-                    return caretX >= left && caretX <= left + width;
-                });
-
-                if (activeBlock == null)
-                {
-                    if (SerialHandler != null)
-                    {
-                        SerialHandler.SendFrame(Array.Empty<Color>());
-
-                    }
-                    
-                    TopColorBar.Background = new SolidColorBrush(Colors.Transparent);
-                    BottomColorBar.Background = new SolidColorBrush(Colors.Transparent);
-                    return;
-                }
-
-                var blockColor = activeBlock.BlockColor;
-                TopColorBar.Background = new SolidColorBrush(blockColor);
-                BottomColorBar.Background = new SolidColorBrush(blockColor);
-
-                double width = activeBlock.Container.Width;
-                if (width <= 0)
-                    return;
-
-                double left = Canvas.GetLeft(activeBlock.Container);
-                double relPos = Math.Clamp((caretX - left) / width, 0, 1);
-
-
-                var stripColors = LightEffectsComputer.ComputeBlockEffects(activeBlock, relPos, BrightnessScale);
-
-                UpdateColorBar(stripColors);
-
-                if (SerialHandler != null)
-                {
-                    try
-                    {
-                        SerialHandler.SendFrame(stripColors);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.ToString());
-                    }
-                }
-            }
-
-            
+ 
             /// <summary>
             /// Calculates the RGB positions and applies them to the simulated color bars
             /// </summary>
@@ -965,159 +722,13 @@
                 BottomColorBar.Background = TopColorBar.Background;
             }
             
-            private void OnApplyBlockChangesClicked(object? s, RoutedEventArgs e)
-            {
-                
-                if (_timeline._selectedBlocks == null) return;
-                //Apply settings made in block editor to every selected block
-                foreach (var selectedBlock in _timeline._selectedBlocks)  
-                {
-                    // Start/End lights
-                    if (int.TryParse(this.FindControl<TextBox>("StartLightInput").Text, out int start))
-                        selectedBlock.StartLight = start;
-                    if (int.TryParse(this.FindControl<TextBox>("EndLightInput").Text, out int end))
-                        selectedBlock.EndLight = end;
-                    
-                    // Intensity
-                    if (int.TryParse(this.FindControl<TextBox>("IntensityInput").Text, out int intensity))
-                        selectedBlock.Intensity = Math.Clamp(intensity, 0, 255);
-                    
-                    //2 Additional Text Boxes
-                    if (int.TryParse(this.FindControl<TextBox>("AdditionalDualInput1TextBox").Text, out int travelStart))
-                        selectedBlock.SecondaryStartLight = travelStart;
-                    
-                    if (int.TryParse(this.FindControl<TextBox>("AdditionalDualInput2TextBox").Text, out int travelEnd))
-                        selectedBlock.SecondaryEndLight = travelEnd;
-                    
-                    //Additional Single Text Box
-                    if(int.TryParse(this.Find<TextBox>("AdditionalSingleInput1TextBox").Text, out int single1))
-                        selectedBlock.AdditionalIndividualInput1 = single1;
-                    //Additional Single Text Box
-                    if(int.TryParse(this.Find<TextBox>("AdditionalSingleInput2TextBox").Text, out int single2))
-                        selectedBlock.AdditionalIndividualInput2 = single2;
-                    
-                    // Effect radio buttons
-                    var rbIn     = this.FindControl<CheckBox>("Effect_FadeIn");
-                    var rbOut    = this.FindControl<CheckBox>("Effect_FadeOut");
-                    var rbStrobe = this.FindControl<CheckBox>("Effect_FadeStrobe");
-                    var rbTravel     = this.FindControl<CheckBox>("Effect_Travel");
-                    var rbCombine    = this.FindControl<CheckBox>("Effect_Combine");
-                    var rbSeperate = this.FindControl<CheckBox>("Effect_Seperate");
-                    var rbRepeat    = this.FindControl<CheckBox>("Effect_Repeat");
-                    var colorChange = this.FindControl<CheckBox>("Effect_ChangeColor");
-                    var rbTwinkle = this.FindControl<CheckBox>("Effect_Twinkle");
+          
 
-
-                    selectedBlock.BlockEffects = new List<LightBlock.Effect>();
-                    if (rbIn?.IsChecked == true)
-                        selectedBlock.BlockEffects.Add(LightBlock.Effect.FadeIn);
-                    if (rbOut?.IsChecked == true)
-                        selectedBlock.BlockEffects.Add(LightBlock.Effect.FadeOut);
-                    if (rbStrobe?.IsChecked == true)
-                        selectedBlock.BlockEffects.Add(LightBlock.Effect.Strobe); 
-                    if(rbTravel?.IsChecked == true)
-                        selectedBlock.BlockEffects.Add(LightBlock.Effect.Travel);
-                    if (rbCombine?.IsChecked == true) 
-                        selectedBlock.BlockEffects.Add(LightBlock.Effect.Combine);
-                    if (rbSeperate?.IsChecked == true)
-                        selectedBlock.BlockEffects.Add(LightBlock.Effect.Seperate);
-                    if (rbRepeat?.IsChecked == true)
-                        selectedBlock.BlockEffects.Add(LightBlock.Effect.Repeat);
-                    if(colorChange.IsChecked ==true)
-                        selectedBlock.BlockEffects.Add((LightBlock.Effect.ChangeColor));
-                    if (rbTwinkle?.IsChecked == true)
-                        selectedBlock.BlockEffects.Add(LightBlock.Effect.Twinkle);
-                }
-            }
-     
-            /// <summary>
-            /// Visual indicator for selected lightblock
-            /// </summary>
-            public void UpdateSelectedColorsBackground()
-            {
-                foreach (var selectedBlock in _timeline._selectedBlocks)
-                {
-                    var color = selectedBlock.BlockColor;
-                    var newcolor = new Color((byte)(color.A * 0.5), color.R, color.G, color.B);
-                    selectedBlock.UpdateBackground(newcolor);
-                }
-            }
-
-            /// <summary>
-            /// Updates the visibility of the lightblock effect variables to ensure proper light effect combinations
-            /// </summary>
-            private void UpdateEffectSettingVisibility()
-            {
-                var travelEffectActive = Effect_Travel?.IsChecked == true;
-                var combineEffectActive = Effect_Combine?.IsChecked == true;
-                var seperateEffectActive = Effect_Seperate?.IsChecked == true;
-                var repeatEffectActive = Effect_Repeat?.IsChecked == true;
-                var changeColorActive = Effect_ChangeColor?.IsChecked == true;
-                //No Positional Effects
-                if (!(travelEffectActive || combineEffectActive || seperateEffectActive))
-                {
-                    //Deactivate Dual Text Boxes
-                    AdditionalDualInputsPanel.IsVisible = false;
-                    AdditionalDualInput1TextBox.Text = "";
-                    AdditionalDualInput2TextBox.Text = "";
-                    
-                    //Deactivate Single Text Box 1
-                    AdditionalSingleInputLabel1.Text = "";
-                    AdditionalSingleInput1TextBox.Text = "";
-                    AdditionalSingleInput1TextBox.IsVisible = false;
-
-                }
-
-                //Travel
-                if (travelEffectActive)
-                {
-                    //Dual Input Boxes
-                    AdditionalDualInputsPanel.IsVisible = true;
-                    AdditionalDualInput1Label.Text = "Final Start Light (0-1000)";
-                    AdditionalDualInput2Label.Text = "Final End Light (0-1000)";
-                    
-                    
-                    //Deactivate Single Text Box 1
-                    AdditionalSingleInputLabel1.Text = "";
-                    AdditionalSingleInput1TextBox.Text = "";
-                    AdditionalSingleInput1TextBox.IsVisible = false;
-
-                }
-                
-                //Combine/Seperate
-                if ((combineEffectActive || seperateEffectActive))
-                {
-                    //Activate Dual Boxes (DualInput 1 & 2)
-                    AdditionalDualInputsPanel.IsVisible = true;
-                    AdditionalDualInput1Label.Text = "Second Start Light (0-1000)";
-                    AdditionalDualInput2Label.Text = "Second End Light (0-1000)";
-                    
-                    //Activate Width Box (Single Input 1)
-                    AdditionalSingleInput1TextBox.IsVisible = true;
-                    AdditionalSingleInputLabel1.Text = "Combined Width (0-1000)";
-
-                }
-
-                //Repeatable
-                if (repeatEffectActive)
-                {
-                    AdditionalSingleInputLabel2.Text = "Repeat Number";
-                    AdditionalSingleInput2TextBox.IsVisible = true;
-                }
-                else
-                {
-                    AdditionalSingleInputLabel2.Text = "";
-                    AdditionalSingleInput2TextBox.Text = "";
-                    AdditionalSingleInput2TextBox.IsVisible = false;
-                }
-
-                if (changeColorActive)
-                {
-                    
-                }
-
-            }
             public void RefreshPorts(object sender, RoutedEventArgs e)
+            {
+                RefreshPorts();
+            }
+            public void RefreshPorts()
             {
                 var ports = SerialPort.GetPortNames().OrderBy(p => p).ToArray();
 
@@ -1133,6 +744,7 @@
                     PortComboBox.SelectedIndex = 0;
             
             }
+            
             private void SaveHardwareSettings(object? sender, RoutedEventArgs e)
             {
                 if (SerialHandler != null)
@@ -1145,6 +757,7 @@
                 SerialHandler = new SerialHandler(ActiveLedCount,
                     new SerialPort(PortComboBox.SelectedItem as string, 460800, Parity.None, 8, StopBits.One));
             }
+            
             /// <summary>
             /// Changes app theme depending on current music provider source (Spotify green vs Luminote purple)
             /// </summary>
@@ -1167,13 +780,36 @@
                 }
                 
             }
-
-
+            
             private void HardwareSettingsOnClick(object? sender, RoutedEventArgs e)
             {
-                RefreshPorts(null, null);
+                RefreshPorts();
             }
+            
+            /// <summary>
+            /// New Lightmap Button (Either prompts user for file or uses currentlyPLayign Track) 
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
+            private void OpenAudioFileButton_OnClick(object? sender, RoutedEventArgs e)
+            {
+                if (_musicProvider is MusicFileProvider musicFileProvider)
+                {
+                    if (sender is Button b && this.Resources["OpenAudioFlyout"] is Flyout f) 
+                        f.ShowAt(b);
+                }
 
+                if (_musicProvider is SpotifyProvider spotifyProvider)
+                {
+                    Console.WriteLine("syncing spotify");
+                    var path = spotifyProvider.GetCurrentlyPlayingTrackIdAsync();
+                    _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
+                    _musicProvider.currentlyPlayingPath = path;
+                    _playbackHandler.SkipAsync();
+                    UpdateCurrentTrack(true, Guid.Empty); 
+                }            
+            }
+            
             /// <summary>
             /// Select new lightmap track file from local files
             /// </summary>
@@ -1234,6 +870,11 @@
                 LocalTracksListBox.ItemsSource = _allLocalTrackItems;
             }
 
+            /// <summary>
+            /// Local track search box changed
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
             private void LocalTrackSearchBox_TextChanged(object? sender, Avalonia.Controls.TextChangedEventArgs e)
             {
                 var search = LocalTrackSearchBox.Text?.ToLower() ?? "";
@@ -1247,6 +888,21 @@
                 LocalTracksListBox.ItemsSource = filtered;
             }
             
+            /// <summary>
+            /// Upload a local lightmapped track to the database
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
+            private async void LocalTrack_Upload_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+            {
+                if (sender is not Avalonia.Controls.Control c) return;
+                if (c.DataContext is not TrackItemUI item) return;
+                DatabaseAccess.SaveTrackAsync(item.TrackId.ToString(), JsonDataHandler.GetTrack(item.TrackId.ToString()));
+                Console.WriteLine(JsonDataHandler.GetTrack(item.TrackId.ToString()).provider);
+
+            }
+
+           
             /// <summary>
             /// Play selected track from local selection
             /// </summary>
@@ -1269,42 +925,6 @@
                 UpdateCurrentTrack(true, track.trackGUID); // refresh on next track
 
             }
-
-            private async void LocalTrack_Upload_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-            {
-                if (sender is not Avalonia.Controls.Control c) return;
-                if (c.DataContext is not TrackItemUI item) return;
-                DatabaseAccess.SaveTrackAsync(item.TrackId.ToString(), JsonDataHandler.GetTrack(item.TrackId.ToString()));
-                Console.WriteLine(JsonDataHandler.GetTrack(item.TrackId.ToString()).provider);
-
-            }
-
-
-            
-            /// <summary>
-            /// New Lightmap Button (Either prompts user for file or uses currentlyPLayign Track) 
-            /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
-            private void OpenAudioFileButton_OnClick(object? sender, RoutedEventArgs e)
-            {
-                if (_musicProvider is MusicFileProvider musicFileProvider)
-                {
-                    if (sender is Button b && this.Resources["OpenAudioFlyout"] is Flyout f) 
-                        f.ShowAt(b);
-                }
-
-                if (_musicProvider is SpotifyProvider spotifyProvider)
-                {
-                    Console.WriteLine("syncing spotify");
-                    var path = spotifyProvider.GetCurrentlyPlayingTrackIdAsync();
-                    _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
-                    _musicProvider.currentlyPlayingPath = path;
-                    _playbackHandler.SkipAsync();
-                    UpdateCurrentTrack(true, Guid.Empty); 
-                }            
-            }
-            
             
             /// <summary>
             /// Delete selected local track lightmap file
@@ -1330,7 +950,7 @@
             /// </summary>
             /// <param name="sender"></param>
             /// <param name="e"></param>
-            private async void RefreshDatabaseTracks_Click(object? sender, RoutedEventArgs e)
+            private async void DatabaseTrack_Refresh_Click(object? sender, RoutedEventArgs e)
             {
                 _allDatabaseTrackItems = await DatabaseAccess.ListTracksAsync(_musicProvider.providerName, false);
                 DatabaseTracksListBox.ItemsSource = _allDatabaseTrackItems;

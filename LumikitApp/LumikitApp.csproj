@@ -11,14 +11,11 @@
     <None Remove="StartupWindow.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <AvaloniaXaml Include="StartupWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-  </ItemGroup>
-  <ItemGroup>
     <AvaloniaResource Include="Icons/logo.png" />
     <AvaloniaResource Include="Icons/file_icon.png" />
     <AvaloniaResource Include="Icons/spotify_icon_black.png" />
+    <AvaloniaResource Include="Icons/spot_white_logo_full.png"/>
+
 
   </ItemGroup>
   <ItemGroup>
@@ -49,17 +46,36 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Update="LumikitWindow.axaml.cs">
-      <DependentUpon>LumikitWindow.axaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
   <PropertyGroup>
     <RuntimeIdentifier>osx-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Local Music\" />
-    <Folder Include="TrackInfo\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Frontend Logic\LumikitWindow.axaml.cs">
+      <DependentUpon>LumikitWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Windows\LumikitWindow.axaml.cs">
+      <DependentUpon>LumikitWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Windows\NewTrackPopup.axaml.cs">
+      <DependentUpon>NewTrackPopup.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Windows\ProviderPickerWindow.axaml.cs">
+      <DependentUpon>ProviderPickerWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml Include="UI\Windows\StartupWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
   </ItemGroup>
 </Project>

@@ -30,7 +30,7 @@ namespace LumikitApp
                 
                 //adjust playback timer for any potential delay between services
                 _progressMs = await _musicProvider.GetPlaybackProgressMsAsync();
-                await Task.Delay(100);
+                
                 ProgressUpdated?.Invoke(_progressMs);
 
             }
@@ -42,6 +42,7 @@ namespace LumikitApp
 
         public async Task ResumeAsync()
         {
+            //Spotify API very finnicky with this logic try not to change it 
             var seconds = await _musicProvider.GetPlaybackProgressMsAsync() / 1000;
             await _musicProvider.SeekToPlaybackTime(seconds*1000);
             _progressMs = 0;

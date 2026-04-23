@@ -24,8 +24,14 @@ build_property.EnableCodeStyleSeverity =
 [/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/LumikitWindow.axaml]
+[/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/UI/Windows/LumikitWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/StartupWindow.xaml]
+[/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/UI/Windows/NewTrackPopup.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/UI/Windows/ProviderPickerWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/bradleyzaricki/RiderProjects/LumiNote/LumikitApp/UI/Windows/StartupWindow.xaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

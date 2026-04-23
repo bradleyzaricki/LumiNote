@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <RuntimeIdentifier>osx-arm64</RuntimeIdentifier>
+    <AvaloniaIncludeApplicationIconAsWindowIcon>false</AvaloniaIncludeApplicationIconAsWindowIcon>
+    <AvaloniaIncludeApplicationIconAsWindowIcon Condition="'$(RuntimeIdentifier)'=='osx-arm64'">false</AvaloniaIncludeApplicationIconAsWindowIcon>
+
   </PropertyGroup>
   <ItemGroup>
     <None Remove="StartupWindow.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <AvaloniaResource Include="Icons/logo.png" />
+    <AvaloniaResource Include="Icons\spotify_green_logo_full.png" />
     <AvaloniaResource Include="Icons/file_icon.png" />
     <AvaloniaResource Include="Icons/spotify_icon_black.png" />
     <AvaloniaResource Include="Icons/spot_white_logo_full.png"/>
@@ -45,10 +45,10 @@
       <TargetPath>bass.dylib</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    
   </ItemGroup>
-  <PropertyGroup>
-    <RuntimeIdentifier>osx-arm64</RuntimeIdentifier>
-  </PropertyGroup>
+
+
 
   <ItemGroup>
     <Folder Include="Local Music\" />

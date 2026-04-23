@@ -7,6 +7,7 @@ using SpotifyAPI.Web;
 using System.Linq;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Media;
 
 namespace LumikitApp
 {
@@ -15,6 +16,13 @@ namespace LumikitApp
     /// </summary>
     public class SpotifyProvider : IMusicProvider
     {
+        /// <summary>
+        /// Spotify Green Color
+        /// </summary>
+        public Color ProviderColor {get; set;}
+
+        public bool IsProviderLocal { get; set; }
+
         public string providerName => "Spotify";
         private readonly string _clientId;
         private readonly string _redirectUri;
@@ -33,6 +41,7 @@ namespace LumikitApp
         /// <param name="redirectUri"></param>
         public SpotifyProvider(Window mainWindow, string clientId, string redirectUri)
         {
+            ProviderColor = new Color(255, 30, 215, 96);
             _mainWindow = mainWindow;
             _clientId = clientId;
             _redirectUri = redirectUri;
@@ -100,6 +109,21 @@ namespace LumikitApp
             var devices = await _spotify.Player.GetAvailableDevices();
             return devices.Devices.FirstOrDefault(d => d.IsActive) ?? devices.Devices.FirstOrDefault();
             
+        }
+
+        public async Task PlayTrackAsync()
+        {
+
+            var request = new PlayerResumePlaybackRequest
+            {
+                Uris = new List<string>
+                {
+                    $"spotify:track:{currentlyPlayingPath}"
+                }
+            };
+            Console.WriteLine("Switching to " + currentlyPlayingPath);
+            await _spotify.Player.ResumePlayback(request);
+            //await WaitForTrackChange(oldId);
         }
 
         public async Task<bool> IsPlayingAsync()
@@ -271,26 +295,11 @@ namespace LumikitApp
                 }
             }
         }
-
-        /// <summary>
-        /// Skip the current track and 
-        /// </summary>
-        public async Task SkipTrack()
+        public IPlaybackHandler GetPlaybackHandler()
         {
-            var playback = await _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest());
-            var oldId = (playback?.Item as FullTrack)?.Id;
-
-            var request = new PlayerResumePlaybackRequest
-            {
-                Uris = new List<string>
-                {
-                    $"spotify:track:{currentlyPlayingPath}"
-                }
-            };
-            Console.WriteLine("Switching to " + currentlyPlayingPath);
-            await _spotify.Player.ResumePlayback(request);
-            //await WaitForTrackChange(oldId);
+            return new SpotifyPlaybackHandler(this);
         }
+
 
         private async Task WaitForTrackChange(string oldTrackId)
         {

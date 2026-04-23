@@ -163,7 +163,7 @@ public class BlockEditorPanel
         _loadedSingleInput1 = _additionalSingleInput1.Text;
         _loadedSingleInput2 = _additionalSingleInput2.Text;
 
-        // For effects: checked = all blocks have it, unchecked = no blocks have it, null = mixed
+        // For effects: checked = all blocks have it, unchecked = no blocks have it, dot = mixed
         SetEffectCheckbox(_effectFadeIn,    selectedBlocks, LightBlock.Effect.FadeIn);
         SetEffectCheckbox(_effectFadeOut,   selectedBlocks, LightBlock.Effect.FadeOut);
         SetEffectCheckbox(_effectStrobe,    selectedBlocks, LightBlock.Effect.Strobe);

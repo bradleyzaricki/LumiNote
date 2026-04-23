@@ -19,25 +19,52 @@
     {
         public partial class LumikitWindow : Window
         {
-            private static Color _spotifyGreen = new Color(255, 30, 215, 96);
+            /// <summary>
+            /// The track fields to send to the music provider when track is unknown, to avoid displaying or editing data for an incorrect class
+            /// </summary>
+            private static TrackPOCO s_unknownTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
+
+            /// <summary>
+            /// Last recorded mouse pointer location
+            /// </summary>
             private Point _lastPointerPos;
 
-            //Hardware Adjusted Variables
+            //Hardware Adjusted Variables for specific systems
+            
+            /// <summary>
+            /// The active LED count (determined by the number of LEDs connected to the system)
+            /// </summary>
             private int ActiveLedCount = 0;
-            private int ColorUpdateIntervalMs = 50;
-            private int HardwareCurrent = 0; //Amperes
+            
+            /// <summary>
+            /// Color update interval (determined by the max update interval with current light config)
+            /// </summary>
+            private const int ColorUpdateIntervalMs = 50;
+            
+            /// <summary>
+            /// Current supplied by the power supply (in amps)
+            /// </summary>
+            private int HardwareCurrent = 0; 
+            
+            /// <summary>
+            /// Brightness scale determined by the input current, and number of lights
+            /// </summary>
             private double BrightnessScale = 1;
             
-            //Music Source
+            /// <summary>
+            /// The source responsible for playing/pausing/locating a point in a music file
+            /// </summary>
             private IMusicProvider _musicProvider;
             
-            //Visual Music Timeline
+            /// <summary>
+            /// The music/lighting timeline 
+            /// </summary>
             private TimelineController _timeline;
 
             /// <summary> The serial output for lighting communications  </summary>
             private SerialHandler SerialHandler;
             
-            //Possible color blocks for lightshow editing, can be redefined by the user
+            /// <summary> Possible color blocks for lightshow editing, can be redefined by the user </summary>
             private readonly List<Color> BlockColors = new()
             {
                 Colors.DarkRed, Colors.Red, Colors.Orange, Colors.Yellow, Colors.Green,Colors.Aqua, Colors.Blue,
@@ -333,9 +360,9 @@
                         {
                             currentGUID = Guid.NewGuid().ToString();
                         }
+                        Console.WriteLine("Saving " + title +" lightmap with filepath: " + _musicProvider.currentlyPlayingPath);
                         var trackData = new TrackData
                         {
-
                             filePath = _musicProvider.currentlyPlayingPath,
                             _trackName = title,
                             author = authors,
@@ -364,7 +391,11 @@
                     }
                 };
 
-                _playbackHandler = new PlaybackHandler(provider);
+                _musicProvider = provider;
+
+                //Returns custom playbackhandler based on the music provider
+                //--This exists because different apps may have different latencies which require a delay
+                _playbackHandler = _musicProvider.GetPlaybackHandler();
                 _playbackHandler.ProgressUpdated += ms =>
                 {
                     Dispatcher.UIThread.Post(() =>
@@ -395,13 +426,15 @@
                 this.FindControl<Button>("ResumeTrackButton").Click += async (_, _) => await _playbackHandler.ResumeAsync();
                 this.FindControl<Button>("NextTrackButton").Click += async (_, _) =>
                 {
-                    _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
-                    await _playbackHandler.SkipAsync();
+                    _musicProvider.currentTrack = s_unknownTrack;
+                    //set currently playing path to next track in queue
+                    //_musicProvider.currentlyPlayingPath = Nextpath;
+
+                    await _playbackHandler.PlayAsync();
                     UpdateCurrentTrack(true, trackGUID:Guid.Empty); // refresh on next track
                 };
                 this.FindControl<Button>("RestartTrackButton").Click += async (_, _) => _playbackHandler.RestartAsync();
 
-                _musicProvider = provider;
                 ChangeAppTheme(); //Changes app colors to match provider (required by spotify TOS)
                 _allLocalTrackItems = JsonDataHandler.GetAllTrackItems();
 
@@ -410,8 +443,9 @@
             public async void UpdateCurrentTrack(bool startNewLightShow, Guid trackGUID)
             {
                 currentGUID=trackGUID.ToString();
-                var track = await _musicProvider.GetCurrentlyPlayingTrackAsync();
 
+                var track = await _musicProvider.GetCurrentlyPlayingTrackAsync();
+                Console.WriteLine(track.trackName);
                 this.FindControl<TextBlock>("NowPlayingTrackText").Text = track.trackName;
                 this.FindControl<TextBlock>("NowPlayingArtistText").Text = track.artistName;
 
@@ -763,21 +797,12 @@
             /// </summary>
             private void ChangeAppTheme()
             {
-                if (_musicProvider.providerName == "LocalFiles")
-                {
-                    ResumeTrackButton.Background = Brushes.BlueViolet;
-                    PauseTrackButton.Background = Brushes.BlueViolet;
-                    RestartTrackButton.Background = Brushes.BlueViolet;
-                    NextTrackButton.Background = Brushes.BlueViolet;
-                }
-
-                if (_musicProvider.providerName == "Spotify")
-                {
-                    ResumeTrackButton.Background = new SolidColorBrush(_spotifyGreen, 1);
-                    PauseTrackButton.Background = new SolidColorBrush(_spotifyGreen, 1);
-                    RestartTrackButton.Background = new SolidColorBrush(_spotifyGreen, 1);
-                    NextTrackButton.Background = new SolidColorBrush(_spotifyGreen, 1);
-                }
+ 
+                    ResumeTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
+                    PauseTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
+                    RestartTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
+                    NextTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
+                
                 
             }
             
@@ -793,19 +818,18 @@
             /// <param name="e"></param>
             private void OpenAudioFileButton_OnClick(object? sender, RoutedEventArgs e)
             {
-                if (_musicProvider is MusicFileProvider musicFileProvider)
+                if (_musicProvider.IsProviderLocal) //if track retrieval method is through local files, open file manager
                 {
                     if (sender is Button b && this.Resources["OpenAudioFlyout"] is Flyout f) 
                         f.ShowAt(b);
                 }
 
-                if (_musicProvider is SpotifyProvider spotifyProvider)
+                if (!_musicProvider.IsProviderLocal) //set current track to currently playing track
                 {
-                    Console.WriteLine("syncing spotify");
-                    var path = spotifyProvider.GetCurrentlyPlayingTrackIdAsync();
+                    var path = _musicProvider.GetCurrentlyPlayingTrackIdAsync();
                     _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
                     _musicProvider.currentlyPlayingPath = path;
-                    _playbackHandler.SkipAsync();
+                    _playbackHandler.PlayAsync();
                     UpdateCurrentTrack(true, Guid.Empty); 
                 }            
             }
@@ -854,7 +878,7 @@
             
                 _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
                 _musicProvider.currentlyPlayingPath = path;
-                _playbackHandler.SkipAsync();
+                _playbackHandler.PlayAsync();
                 UpdateCurrentTrack(true, trackGUID: Guid.Empty); // refresh on next track
                 
             }
@@ -898,7 +922,6 @@
                 if (sender is not Avalonia.Controls.Control c) return;
                 if (c.DataContext is not TrackItemUI item) return;
                 DatabaseAccess.SaveTrackAsync(item.TrackId.ToString(), JsonDataHandler.GetTrack(item.TrackId.ToString()));
-                Console.WriteLine(JsonDataHandler.GetTrack(item.TrackId.ToString()).provider);
 
             }
 
@@ -915,13 +938,11 @@
                 
                 //Insert and play from top of queue
                 _trackQueue.Insert(0,item.TrackId.ToString());
-                Console.WriteLine("LOOKING 4");
-
                 var track = JsonDataHandler.GetTrack(_trackQueue.First());
                 _musicProvider.currentlyPlayingPath = track.filePath;
                 //Set visual information for track that is stored in json
                 _musicProvider.currentTrack = new TrackPOCO(track.trackGUID, track._trackName, track.author, null);
-                await _playbackHandler.SkipAsync();
+                await _playbackHandler.PlayAsync();
                 UpdateCurrentTrack(true, track.trackGUID); // refresh on next track
 
             }
@@ -954,8 +975,6 @@
             {
                 _allDatabaseTrackItems = await DatabaseAccess.ListTracksAsync(_musicProvider.providerName, false);
                 DatabaseTracksListBox.ItemsSource = _allDatabaseTrackItems;
-                Console.WriteLine(_allDatabaseTrackItems.Count);
-                Console.WriteLine("searching " + "|" + _allDatabaseTrackItems.First().TrackId + "|");
             }
             
             /// <summary>

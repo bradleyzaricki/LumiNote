@@ -28,10 +28,16 @@ public class LightEffectsComputer
 
         if (hasStrobe)
         {
-            if (int.IsEvenInteger((int)(relPos * 20)))
-                return null;              
-        }
+            double flashesPerSecond = 10.0;
+            double pixelsPerSecond = 100.0; // whatever your timeline uses
 
+            double blockDurationSeconds = block.Container.Width / pixelsPerSecond;
+            double elapsedSeconds = relPos * blockDurationSeconds;
+            double phase = (elapsedSeconds * flashesPerSecond) % 1.0;
+
+            if (phase >= 0.5)
+                return null;
+        }
         if (hasFadeOut)
         {
             if (relPos >= 0.5)
@@ -93,92 +99,94 @@ public class LightEffectsComputer
                     stripColorsIndividual[i] = new Color(entireIntensity, baseColor.R, baseColor.G, baseColor.B);
             }
         }
-        else if (hasCombineOrSeperate)
-        {
-            double s0 = block.StartLight;
-            double e0 = block.EndLight;
+else if (hasCombineOrSeperate)
+{
+    static double Lerp(double a, double b, double t) => a + (b - a) * t;
 
-            double s2 = block.SecondaryStartLight;
-            double e2 = block.SecondaryEndLight;
+    static (double start, double end) Normalize(double a, double b)
+    {
+        return a <= b ? (a, b) : (b, a);
+    }
 
-            double wTargetTotal = block.AdditionalIndividualInput1;
+    double t = Math.Clamp(relPos, 0.0, 1.0);
+    bool isSeparate = block.BlockEffects.Contains(LightBlock.Effect.Seperate);
 
-            double w0 = Math.Abs(e0 - s0);
-            double w2 = Math.Abs(e2 - s2);
+    // Input 1 = left side, Input 2 = right side
+    var left0 = Normalize(block.StartLight, block.EndLight);
+    var right0 = Normalize(block.SecondaryStartLight, block.SecondaryEndLight);
 
-            double c0 = (s0 + e0) * 0.5;
-            double c2 = (s2 + e2) * 0.5;
+    double leftStart0 = left0.start;
+    double leftEnd0 = left0.end;
+    double rightStart0 = right0.start;
+    double rightEnd0 = right0.end;
 
-            double t = Math.Clamp(relPos, 0, 1);
+    // Make sure they are ordered left-to-right
+    double leftCenter0 = (leftStart0 + leftEnd0) * 0.5;
+    double rightCenter0 = (rightStart0 + rightEnd0) * 0.5;
 
-            bool isSeparate = block.BlockEffects.Contains(LightBlock.Effect.Seperate);
+    if (leftCenter0 > rightCenter0)
+    {
+        (leftStart0, rightStart0) = (rightStart0, leftStart0);
+        (leftEnd0, rightEnd0) = (rightEnd0, leftEnd0);
+    }
 
-            bool firstIsLeft = c0 <= c2;
+    double leftWidth0 = Math.Max(0.0, leftEnd0 - leftStart0);
+    double rightWidth0 = Math.Max(0.0, rightEnd0 - rightStart0);
 
-            double leftS = firstIsLeft ? Math.Min(s0, e0) : Math.Min(s2, e2);
-            double leftE = firstIsLeft ? Math.Max(s0, e0) : Math.Max(s2, e2);
-            double rightS = firstIsLeft ? Math.Min(s2, e2) : Math.Min(s0, e0);
-            double rightE = firstIsLeft ? Math.Max(s2, e2) : Math.Max(s0, e0);
+    // Meeting point = midpoint between the inner edges
+    double meet = (leftEnd0 + rightStart0) * 0.5;
 
-            double wL = firstIsLeft ? w0 : w2;
-            double wR = firstIsLeft ? w2 : w0;
+    // Third field = desired final TOTAL width
+    double targetTotalWidth = Math.Max(0.0, block.AdditionalIndividualInput1);
 
-            double cL0 = (leftS + leftE) * 0.5;
-            double cR0 = (rightS + rightE) * 0.5;
+    double totalInitialWidth = leftWidth0 + rightWidth0;
 
-            double M = (cL0 + cR0) * 0.5;
+    double targetLeftWidth;
+    double targetRightWidth;
 
-            double gap0 = rightS - leftE;
+    if (totalInitialWidth > 0.0)
+    {
+        double leftRatio = leftWidth0 / totalInitialWidth;
+        double rightRatio = rightWidth0 / totalInitialWidth;
 
-            double desiredGap = Math.Min(0.0, wTargetTotal - (wL + wR));
+        targetLeftWidth = targetTotalWidth * leftRatio;
+        targetRightWidth = targetTotalWidth * rightRatio;
+    }
+    else
+    {
+        targetLeftWidth = targetTotalWidth * 0.5;
+        targetRightWidth = targetTotalWidth * 0.5;
+    }
 
-            double gap;
-            if (isSeparate)
-                gap = desiredGap + (gap0 - desiredGap) * t;
-            else
-                gap = gap0 + (desiredGap - gap0) * t;
+    // Final state: both segments meet in the middle
+    double leftStart1 = meet - targetLeftWidth;
+    double leftEnd1 = meet;
 
-            double dCenters = (wL + wR) * 0.5 + gap;
+    double rightStart1 = meet;
+    double rightEnd1 = meet + targetRightWidth;
 
-            double cLp = M - dCenters * 0.5;
-            double cRp = M + dCenters * 0.5;
+    // Combine moves original -> meeting state
+    // Separate moves meeting state -> original
+    double leftStart = isSeparate ? Lerp(leftStart1, leftStart0, t) : Lerp(leftStart0, leftStart1, t);
+    double leftEnd   = isSeparate ? Lerp(leftEnd1,   leftEnd0,   t) : Lerp(leftEnd0,   leftEnd1,   t);
+    double rightStart= isSeparate ? Lerp(rightStart1,rightStart0,t) : Lerp(rightStart0,rightStart1,t);
+    double rightEnd  = isSeparate ? Lerp(rightEnd1,  rightEnd0,  t) : Lerp(rightEnd0,  rightEnd1,  t);
 
-            double sLp = cLp - wL * 0.5;
-            double eLp = cLp + wL * 0.5;
+    double lo1 = Math.Clamp(Math.Min(leftStart, leftEnd), 0, lightcount - 1);
+    double hi1 = Math.Clamp(Math.Max(leftStart, leftEnd), 0, lightcount - 1);
+    double lo2 = Math.Clamp(Math.Min(rightStart, rightEnd), 0, lightcount - 1);
+    double hi2 = Math.Clamp(Math.Max(rightStart, rightEnd), 0, lightcount - 1);
 
-            double sRp = cRp - wR * 0.5;
-            double eRp = cRp + wR * 0.5;
+    for (int i = 0; i < lightcount; i++)
+    {
+        bool inLeft = i >= lo1 && i <= hi1;
+        bool inRight = i >= lo2 && i <= hi2;
 
-            double s0p, e0p, s2p, e2p;
-
-            if (firstIsLeft)
-            {
-                s0p = sLp; e0p = eLp;
-                s2p = sRp; e2p = eRp;
-            }
-            else
-            {
-                s2p = sLp; e2p = eLp;
-                s0p = sRp; e0p = eRp;
-            }
-
-            double lo1 = Math.Clamp(Math.Min(s0p, e0p), 0, lightcount - 1);
-            double hi1 = Math.Clamp(Math.Max(s0p, e0p), 0, lightcount - 1);
-            double lo2 = Math.Clamp(Math.Min(s2p, e2p), 0, lightcount - 1);
-            double hi2 = Math.Clamp(Math.Max(s2p, e2p), 0, lightcount - 1);
-
-            for (int i = 0; i < lightcount; i++)
-            {
-                bool inFirst = (i >= lo1 && i <= hi1);
-                bool inSecond = (i >= lo2 && i <= hi2);
-
-                if (inFirst || inSecond)
-                    stripColorsIndividual[i] = new Color(entireIntensity, baseColor.R, baseColor.G, baseColor.B);
-                else
-                    stripColorsIndividual[i] = new Color(0, 0, 0, 0);
-            }
-        }
-
+        stripColorsIndividual[i] = (inLeft || inRight)
+            ? new Color(entireIntensity, baseColor.R, baseColor.G, baseColor.B)
+            : new Color(0, 0, 0, 0);
+    }
+}
         if (hasTwinkle)
         {
             uint seed = (uint)(Canvas.GetLeft(block.Container) * 1000.0) ^

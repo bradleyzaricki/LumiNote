@@ -1,11 +1,13 @@
-using SpotifyAPI.Web;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace LumikitApp
 {
-    public class PlaybackHandler : IPlaybackHandler
+    /// <summary>
+    /// Playback handler to handle local files with minimal latancy
+    /// </summary>
+    public class LocalFilesPlaybackHandler : IPlaybackHandler
     {
         private readonly IMusicProvider _musicProvider;
         private readonly Stopwatch _syncStopwatch = new();
@@ -16,7 +18,7 @@ namespace LumikitApp
 
         public event Action<int> ProgressUpdated;
 
-        public PlaybackHandler(IMusicProvider provider)
+        public LocalFilesPlaybackHandler(IMusicProvider provider)
         {
             _musicProvider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
@@ -42,36 +44,29 @@ namespace LumikitApp
 
         public async Task ResumeAsync()
         {
-            //Spotify API very finnicky with this logic try not to change it 
             var seconds = await _musicProvider.GetPlaybackProgressMsAsync() / 1000;
-            await _musicProvider.SeekToPlaybackTime(seconds*1000);
             _progressMs = 0;
-            try
-            {
+
                 if (!await _musicProvider.IsPlayingAsync())
                 {
                     await _musicProvider.ResumePlaybackAsync();
                     _syncStopwatch.Restart();
                     StartTimer(_progressMs + seconds*1000);
                 }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Resume failed: " + ex);
-            }
+
         }
 
-        public async Task SkipAsync()
+        public async Task PlayAsync()
         {
             try
             {
                 StopTimer();
-                await _musicProvider.SkipTrack();
+                await _musicProvider.PlayTrackAsync();
                 await RestartAsync();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Skip failed: " + ex);
+                Debug.WriteLine("Play Track failed: " + ex);
             }
         }
 
@@ -80,7 +75,7 @@ namespace LumikitApp
             await PauseAsync();
             _musicProvider.SeekToPlaybackTime(0);
             _progressMs = 0;
-            await Task.Delay(500);
+            await Task.Delay(10);
             await ResumeAsync();
 
         }

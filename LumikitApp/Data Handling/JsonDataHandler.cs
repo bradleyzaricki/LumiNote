@@ -24,10 +24,8 @@ namespace LumikitApp
             if (string.IsNullOrWhiteSpace(trackID)) return null;
 
             var path = TrackFilePath(trackID);
-            Console.WriteLine(path + "LOOKING");
 
             if (!File.Exists(path)) return null;
-            Console.WriteLine(path + "FOUND");
             var json = File.ReadAllText(path);
             return JsonSerializer.Deserialize<TrackData>(json);
         }

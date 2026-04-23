@@ -51,7 +51,6 @@ namespace LumikitApp
                 Services = BuildServices(picker.UseSpotify);
 
                 var musicProvider = Services.GetRequiredService<IMusicProvider>();
-                musicProvider.SetMainWindow(mainWindow);
 
                 await musicProvider.InitializeClient();
 

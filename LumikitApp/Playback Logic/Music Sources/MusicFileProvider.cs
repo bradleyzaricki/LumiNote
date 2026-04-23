@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Media;
 using ManagedBass;
 
 namespace LumikitApp
@@ -10,6 +11,13 @@ namespace LumikitApp
     /// </summary>
     public class MusicFileProvider : IMusicProvider
     {
+        public string GetCurrentlyPlayingTrackIdAsync()
+        {
+            return null;
+        }
+
+        public Color ProviderColor {get; set;}
+        public bool IsProviderLocal { get; set; }
         public string providerName => "LocalFiles";
         public TrackPOCO currentTrack { get; set; }
         private int _stream;
@@ -25,7 +33,7 @@ namespace LumikitApp
         /// <param name="redirectUri"></param>
         public MusicFileProvider(Window mainWindow)
         {
-
+            ProviderColor = Brushes.BlueViolet.Color;
             _mainWindow = mainWindow;
 
         }
@@ -37,7 +45,10 @@ namespace LumikitApp
             return Task.FromResult(Bass.ChannelIsActive(_stream) == PlaybackState.Playing);
         }
 
-
+        public IPlaybackHandler GetPlaybackHandler()
+        {
+            return new LocalFilesPlaybackHandler(this);
+        }
         /// <summary>
         /// Resume current playback as fast as possible to avoid any latency
         /// </summary>
@@ -76,7 +87,6 @@ namespace LumikitApp
             return Task.FromResult((int)(sec * 1000));
         }
 
-
         public Task SeekToPlaybackTime(int ms)
         {
             if (_stream == 0) return Task.CompletedTask;
@@ -85,30 +95,11 @@ namespace LumikitApp
             Bass.ChannelSetPosition(_stream, bytes);
             return Task.CompletedTask;
         }
-        
+
         /// <summary>
         /// Skip the current track and 
         /// </summary>
-        public async Task SkipTrack(TrackPOCO track, string filePath)
-        {
-            await InitializeClient();
-            currentTrack = track;
-            var path = filePath;
-
-            if (_stream != 0)
-            {
-                Bass.ChannelStop(_stream);
-                Bass.StreamFree(_stream);
-                _stream = 0;
-            }
-
-            _stream = Bass.CreateStream(path, Flags: BassFlags.Default);
-            Bass.ChannelPlay(_stream);
-
-            System.Console.WriteLine("Playing");
-        }
-        
-        public async Task SkipTrack()
+        public async Task PlayTrackAsync()
         {
             await InitializeClient();
 
@@ -120,9 +111,8 @@ namespace LumikitApp
             }
 
             _stream = Bass.CreateStream(currentlyPlayingPath, Flags: BassFlags.Default);
+            Bass.ChannelSetPosition(_stream, 0);
             Bass.ChannelPlay(_stream);
-
-            System.Console.WriteLine("Playing");
         }
         
         public Task InitializeClient()

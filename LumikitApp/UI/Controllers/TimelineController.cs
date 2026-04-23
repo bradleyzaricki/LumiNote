@@ -26,7 +26,7 @@ public class TimelineController
     public LightBlock? _liveBlock = null;
 
     /// <summary> The current selected light block available for user editing</summary>
-    public List<LightBlock>? _selectedBlocks = new List<LightBlock>();
+    public List<LightBlock>? _selectedBlocks;
     
     public List<LightBlock> LightBlocks = new();
     public ScrollViewer _scrollViewer;
@@ -41,6 +41,9 @@ public class TimelineController
         _scrollViewer.PointerPressed += (_, _) => ScrollLocked = false;
     }
 
+    /// <summary>
+    /// Clear all lightblocks off the timeline canvas
+    /// </summary>
     public void ClearBlocks()
     {
         foreach (var block in LightBlocks)
@@ -283,7 +286,6 @@ public class TimelineController
                 if (Canvas.GetLeft(selectedblock.Container) < min)
                 {
                     min = Canvas.GetLeft(selectedblock.Container);
-                    Console.WriteLine("MIN = " + min);
                 }
 
                 if (Canvas.GetLeft(selectedblock.Container) > max)

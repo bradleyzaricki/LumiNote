@@ -85,13 +85,7 @@ namespace LumikitApp
                 BorderThickness = new Thickness(0.01)
             };
 
-            var grid = new Grid();
-            grid.Children.Add(MakeCorner(HorizontalAlignment.Left, VerticalAlignment.Top));
-            grid.Children.Add(MakeCorner(HorizontalAlignment.Right, VerticalAlignment.Top));
-            grid.Children.Add(MakeCorner(HorizontalAlignment.Left, VerticalAlignment.Bottom));
-            grid.Children.Add(MakeCorner(HorizontalAlignment.Right, VerticalAlignment.Bottom));
 
-            Container.Child = grid;
 
             Container.PointerPressed += OnPointerPressed;
             Container.PointerMoved += OnPointerMoved;
@@ -105,6 +99,13 @@ namespace LumikitApp
         {
             BlockColor = color;
             Container.Background = new SolidColorBrush(color);
+            var grid = new Grid();
+            grid.Children.Add(MakeCorner(HorizontalAlignment.Left, VerticalAlignment.Top));
+            grid.Children.Add(MakeCorner(HorizontalAlignment.Right, VerticalAlignment.Top));
+            grid.Children.Add(MakeCorner(HorizontalAlignment.Left, VerticalAlignment.Bottom));
+            grid.Children.Add(MakeCorner(HorizontalAlignment.Right, VerticalAlignment.Bottom));
+
+            Container.Child = grid;
         }
         /// <summary>
         /// Update ONLY the background color of the lightblock. Visual purposes only no actual functionality
@@ -113,6 +114,7 @@ namespace LumikitApp
         public void UpdateBackground(Color color)
         {
             Container.Background = new SolidColorBrush(color);
+            
         }
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
@@ -245,11 +247,21 @@ namespace LumikitApp
         /// <returns></returns>
         private Control MakeCorner(HorizontalAlignment h, VerticalAlignment v)
         {
+            IBrush borderBrush;
+            if (((BlockColor.R >200) && (BlockColor.G > 200)) && (BlockColor.B > 200))
+            { 
+                 borderBrush = Brushes.Black;
+            }
+            else
+            {
+                borderBrush = Brushes.White;
+
+            }
             return new Border
             {
                 Width = 8,
                 Height = 8,
-                BorderBrush = Brushes.White,
+                BorderBrush = borderBrush,
                 BorderThickness = new Thickness(
                     h == HorizontalAlignment.Left ? 2 : 0,
                     v == VerticalAlignment.Top ? 2 : 0,

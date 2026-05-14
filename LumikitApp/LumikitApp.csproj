@@ -2,9 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
-    <RuntimeIdentifier>osx-arm64</RuntimeIdentifier>
     <AvaloniaIncludeApplicationIconAsWindowIcon>false</AvaloniaIncludeApplicationIconAsWindowIcon>
-    <AvaloniaIncludeApplicationIconAsWindowIcon Condition="'$(RuntimeIdentifier)'=='osx-arm64'">false</AvaloniaIncludeApplicationIconAsWindowIcon>
 
   </PropertyGroup>
   <ItemGroup>
@@ -36,22 +34,12 @@
     <PackageReference Include="SpotifyAPI.Web.Auth" Version="7.2.1" />
     <PackageReference Include="System.IO.Ports" Version="9.0.9" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Native/OSX/arm64/libbass.dylib">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
 
-    <None Include="Native/OSX/arm64/libbass.dylib">
-      <TargetPath>bass.dylib</TargetPath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     
-  </ItemGroup>
-
-
 
   <ItemGroup>
     <Folder Include="Local Music\" />
+    <Folder Include="Native\win-x64\" />
   </ItemGroup>
 
   <ItemGroup>

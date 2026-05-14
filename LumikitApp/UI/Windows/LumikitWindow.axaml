@@ -78,7 +78,7 @@
         </Flyout>
     </Window.Resources>
 
-    <Grid ColumnDefinitions="*, 300" RowDefinitions="Auto,Auto,*" Margin="10">
+    <Grid ColumnDefinitions="*, 300" RowDefinitions="Auto,Auto,*,Auto" Margin="10">
 
         <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Horizontal" Spacing="10">
             <Button Name="PauseTrackButton" Content="Pause" Width="80"/>
@@ -452,6 +452,9 @@
                 </StackPanel>
             </Border>
         </ScrollViewer>
+        
+        <TextBlock Grid.Column="0" Grid.Row="3" Name="ContextText" FontSize="14" Text="ContextText" IsVisible="False" Margin="10"/>
 
     </Grid>
+        
 </Window>

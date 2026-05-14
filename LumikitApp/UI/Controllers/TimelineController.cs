@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace LumikitApp;
 using Avalonia;
 using Avalonia.Controls;
@@ -37,9 +39,11 @@ public class TimelineController
         _timelineCanvas = canvas;
         _scrollViewer = scrollViewer;
         _selectedBlocks = new List<LightBlock>();
-    
         _scrollViewer.PointerPressed += (_, _) => ScrollLocked = false;
+        int pid = Environment.ProcessId;
+        Console.WriteLine("[PID] " + pid);
     }
+
 
     /// <summary>
     /// Clear all lightblocks off the timeline canvas
@@ -244,18 +248,23 @@ public class TimelineController
 
         if (_isLiveInputActive && _liveBlock != null)
         {
+            int pid = Environment.ProcessId;
+            Console.WriteLine("[PID] " + pid);
+
             double startX = Canvas.GetLeft(_liveBlock.Container);
             var snappedWidth = Math.Round(((caretX - startX) / _slotWidth) + 1) * _slotWidth;
             _liveBlock.Container.Width = Math.Max(_slotWidth, snappedWidth);
         }
-
-        var activeBlock = LightBlocks.FirstOrDefault(b =>
-        {
-            double left = Canvas.GetLeft(b.Container);
-            double width = b.Container.Width;
-            return caretX >= left && caretX <= left + width;
-        });
-
+        
+        //Binary Search for next Lightblock
+        var activeBlock = LocateCurrentLightBlock(caretX, LightBlocks, 0, LightBlocks.Count - 1); 
+        /* var activeBlock = LightBlocks.FirstOrDefault(b =>
+                {
+                    double left = Canvas.GetLeft(b.Container);
+                    double width = b.Container.Width;
+                    return caretX >= left && caretX <= left + width;
+                });
+        */
         if (activeBlock == null)
             return null;
 
@@ -269,6 +278,33 @@ public class TimelineController
         return LightEffectsComputer.ComputeBlockEffects(activeBlock, relPos, brightnessScale);
     }
 
+    /// <summary>
+    /// Called when changes to lightblock order or values change
+    /// (Call on Add, Delete, Save, and Move)
+    /// </summary>
+    public void ReorderLightBlocks()
+    {
+        LightBlocks.Sort((a, b) => 
+            Canvas.GetLeft(a.Container).CompareTo(Canvas.GetLeft(b.Container)));
+    }
+    public LightBlock LocateCurrentLightBlock(double currPos, List<LightBlock> blocks, int left, int right)
+    {
+        if (left > right) return null;
+
+        int midIndex = (left + right) / 2;
+        var mid = blocks[midIndex];
+
+        double start = Canvas.GetLeft(mid.Container);
+        double end = start + mid.Container.Width;
+
+        if (currPos < start)
+            return LocateCurrentLightBlock(currPos, blocks, left, midIndex - 1);
+
+        if (currPos > end)
+            return LocateCurrentLightBlock(currPos, blocks, midIndex + 1, right);
+
+        return mid;
+    }
     /// <summary>
     /// Handles block selection logic for left click, shift click, and ctrl click.
     /// Returns the updated selected blocks list so the caller can open the editor.

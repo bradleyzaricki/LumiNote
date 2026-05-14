@@ -82,8 +82,12 @@
             private Canvas _blockColorDropBox;
             private Canvas _secondColorDropBox;
             private TextBox _bpmInput;
+            private TextBlock _errorText;
 
-            //Handles unique playback logic depending on the music provider
+            
+            /// <summary>
+            /// implemented playback handler to control implemented music provider
+            /// </summary>
             private IPlaybackHandler _playbackHandler;
             private List<String> _trackQueue = new List<string>();
 
@@ -91,9 +95,15 @@
             Border? _activeSwatch;
             private BlockEditorPanel _blockEditor;
 
-            public LumikitWindow()
+            public LumikitWindow(IMusicProvider provider)
             {
+                _musicProvider = provider;
                 InitializeComponent();
+                foreach (System.Collections.DictionaryEntry VARIABLE in Environment.GetEnvironmentVariables())
+                {
+                    Console.WriteLine(VARIABLE.Key + "  " + VARIABLE.Value);
+                }
+                Console.WriteLine();
 
                 _timeline = new TimelineController(
                     this.FindControl<Canvas>("TimelineCanvas"),
@@ -271,12 +281,27 @@
                 }
             }
 
+            /// <summary>
+            /// Create a basic lightblock and place it on th timeline 
+            /// </summary>
+            /// <param name="color"></param>
+            /// <param name="x"></param>
+            /// <param name="width"></param>
+            /// <returns></returns>
             private LightBlock CreateAndPlaceBlock(Color color, double x, double width)
             {
                 var block = new LightBlock(_timeline.LightBlocks, _timeline._scrollViewer, _timeline._slotWidth);
                 return CreateAndPlaceBlock(block, x, color, width);
             }
 
+            /// <summary>
+            /// Add an existing lightblock to the timeline and create a container for it with a primary color
+            /// </summary>
+            /// <param name="block"></param>
+            /// <param name="x"></param>
+            /// <param name="color"></param>
+            /// <param name="width"></param>
+            /// <returns></returns>
             private LightBlock CreateAndPlaceBlock(LightBlock block, double x, Color color, double width)
             {
                 block.Container.Width = width;
@@ -286,7 +311,7 @@
 
                 _timeline._timelineCanvas.Children.Add(block.Container);
                 _timeline.LightBlocks.Add(block);
-
+                _timeline.ReorderLightBlocks();
                 block.Container.PointerPressed += OnBlockPointerPressed;
 
                 return block;
@@ -340,9 +365,10 @@
                 }
             }
 
-            public void InitializeWindow(IMusicProvider provider)
+            public void InitializeWindow()
             {
                 _blockEditor.Hide();
+                
                 this.FindControl<Button>("SaveTrackDataButton").Click += async (_, _) =>
                 {
                     var newPopUp = new NewTrackPopup();
@@ -355,12 +381,13 @@
                         string title = newPopUp.TitleText;
                         string authors = newPopUp.AuthorText;
 
-                        var track = await provider.GetCurrentlyPlayingTrackAsync();
+                        var track = await _musicProvider.GetCurrentlyPlayingTrackAsync();
                         if (currentGUID == Guid.Empty.ToString())
                         {
                             currentGUID = Guid.NewGuid().ToString();
                         }
                         Console.WriteLine("Saving " + title +" lightmap with filepath: " + _musicProvider.currentlyPlayingPath);
+                        _timeline.ReorderLightBlocks();
                         var trackData = new TrackData
                         {
                             filePath = _musicProvider.currentlyPlayingPath,
@@ -369,21 +396,24 @@
                             trackGUID = Guid.Parse(currentGUID),
                             provider = _musicProvider.providerName,
                             _BPM = double.Parse(_bpmInput.Text),
-                            _lightBlocks = _timeline.LightBlocks.Select(b => new LightBlockData
-                            {
-                                X = Canvas.GetLeft(b.Container) / _timeline._slotWidth,
-                                Width = b.Container.Width / _timeline._slotWidth,
-                                Color = (b.BlockColor).ToString(),
-                                SecondColor = (b.SecondBlockColor).ToString(),
-                                StartLight = b.StartLight,
-                                EndLight = b.EndLight,
-                                SecondaryDualInput2 = b.SecondaryEndLight,
-                                SecondaryDualInput1 = b.SecondaryStartLight,
-                                SecondarySingleInput1 = b.AdditionalIndividualInput1,
-                                SecondarySingleInput2 = b.AdditionalIndividualInput2,
-                                BlockEffects = b.BlockEffects,
-                                LightIntensity = b.Intensity
-                            }).ToList()
+                            _lightBlocks = _timeline.LightBlocks
+                                .Select(b => new LightBlockData
+                                {
+                                    X = Canvas.GetLeft(b.Container) / _timeline._slotWidth,
+                                    Width = b.Container.Width / _timeline._slotWidth,
+                                    Color = (b.BlockColor).ToString(),
+                                    SecondColor = (b.SecondBlockColor).ToString(),
+                                    StartLight = b.StartLight,
+                                    EndLight = b.EndLight,
+                                    SecondaryDualInput2 = b.SecondaryEndLight,
+                                    SecondaryDualInput1 = b.SecondaryStartLight,
+                                    SecondarySingleInput1 = b.AdditionalIndividualInput1,
+                                    SecondarySingleInput2 = b.AdditionalIndividualInput2,
+                                    BlockEffects = b.BlockEffects,
+                                    LightIntensity = b.Intensity
+                                })
+                                .ToList()
+                                
                         };
                         JsonDataHandler
                             .SaveTrack(
@@ -391,7 +421,6 @@
                     }
                 };
 
-                _musicProvider = provider;
 
                 //Returns custom playbackhandler based on the music provider
                 //--This exists because different apps may have different latencies which require a delay
@@ -497,6 +526,20 @@
                 }
             }
 
+            /// <summary>
+            /// Frontend UI text to signal program did not behave as expected
+            /// </summary>
+            /// <param name="error"></param>
+            public void UpdateErrorText(string error)
+            {
+                if (_errorText == null) return; //lost cause at this point
+                
+                if (!_errorText.IsVisible)
+                {
+                    _errorText.IsVisible = true;
+                }
+                _errorText.Text = error;
+            }
             /// <summary>
             /// Create color pallet and dragndrop functionality via avalonia swatches
             /// </summary>
@@ -764,7 +807,7 @@
             }
             public void RefreshPorts()
             {
-                var ports = SerialPort.GetPortNames().OrderBy(p => p).ToArray();
+                var ports =  SerialPort.GetPortNames().OrderBy(p => p).ToArray();
 
                 var previous = PortComboBox.SelectedItem as string;
 
@@ -783,27 +826,43 @@
             {
                 if (SerialHandler != null)
                 {
-                    SerialHandler.ClosePort();
+                    try
+                    {
+                        SerialHandler.ClosePort();
+                    }
+                    catch (Exception ex)
+                    {
+                        //ClosePort threw error, abort hardware saving
+                        UpdateErrorText("Failed to close previous port, please retry");
+                        return;
+                    }
                 }
                 ActiveLedCount = Int32.Parse(ActiveLightsTextBox.Text);
                 HardwareCurrent = (int)(HardwareCurrentSlider.Value);
                 BrightnessScale = HardwareCurrent / (ActiveLedCount * 0.06);
-                SerialHandler = new SerialHandler(ActiveLedCount,
-                    new SerialPort(PortComboBox.SelectedItem as string, 460800, Parity.None, 8, StopBits.One));
+                try
+                {
+                    SerialHandler = new SerialHandler(ActiveLedCount,
+                        new SerialPort(PortComboBox.SelectedItem as string, 460800, Parity.None, 8, StopBits.One));
+                }
+                catch (Exception exception)
+                {
+                    UpdateErrorText("Failed to create port connection, please retry");
+                    Console.WriteLine(exception);
+                    return;
+                }
+
             }
             
             /// <summary>
-            /// Changes app theme depending on current music provider source (Spotify green vs Luminote purple)
+            /// Changes app theme depending on current music provider source (ex. Spotify green vs Lumanite purple)
             /// </summary>
             private void ChangeAppTheme()
             {
- 
-                    ResumeTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
-                    PauseTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
-                    RestartTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
-                    NextTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
-                
-                
+                ResumeTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
+                PauseTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
+                RestartTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
+                NextTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
             }
             
             private void HardwareSettingsOnClick(object? sender, RoutedEventArgs e)

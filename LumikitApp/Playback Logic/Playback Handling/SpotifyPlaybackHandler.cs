@@ -74,6 +74,9 @@ namespace LumikitApp
             }
         }
 
+        /// <summary>
+        /// Restarts the spotify track from the start, allows additional time for spotify to respond
+        /// </summary>
         public async Task RestartAsync()
         {
             await PauseAsync();
@@ -81,7 +84,6 @@ namespace LumikitApp
             _progressMs = 0;
             await Task.Delay(500);
             await ResumeAsync();
-
         }
 
         /// <summary>

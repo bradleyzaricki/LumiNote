@@ -1,5 +1,6 @@
 using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -30,7 +31,7 @@ namespace LumikitApp
                 useSpotify
                     ? sp.GetRequiredService<SpotifyProvider>()
                     : sp.GetRequiredService<MusicFileProvider>());
-
+            services.AddTransient<LumikitWindow>();
             return services.BuildServiceProvider();
         }
 
@@ -38,23 +39,25 @@ namespace LumikitApp
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                var mainWindow = new LumikitWindow();
-                desktop.MainWindow = mainWindow;
-                mainWindow.Show();
-
-
-
                 var picker = new ProviderPickerWindow();
-                await picker.ShowDialog(mainWindow);
+
+                var tempWindow = new Window();
+                desktop.MainWindow = tempWindow;
+                tempWindow.Show();
+                tempWindow.Width = 0;
+
+                await picker.ShowDialog(tempWindow);
 
 
                 Services = BuildServices(picker.UseSpotify);
-
+                var mainWindow = Services.GetService<LumikitWindow>();
+                mainWindow.Show();
+                
                 var musicProvider = Services.GetRequiredService<IMusicProvider>();
 
                 await musicProvider.InitializeClient();
 
-                mainWindow.InitializeWindow(musicProvider);
+                mainWindow.InitializeWindow();
                 mainWindow.Activate();
             }
 

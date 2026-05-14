@@ -11,12 +11,25 @@ public class SerialHandler
     byte _frameSeq;
     readonly SerialPort _serialPort;
 
+    /// <summary>
+    /// creates a new serial handler instance to handle a fixed number of lights
+    /// </summary>
+    /// <param name="activeLedCount"></param>
+    /// <param name="port"></param>
     public SerialHandler(int activeLedCount, SerialPort port)
     {
         _activeLedCount = activeLedCount;
         _serialPort = port;
         _frameBuffer = new byte[2 + 1 + 2 + (_activeLedCount * 3) + 2];
-        NewSerialSetup();
+        try
+        {
+            NewSerialSetup();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     public void ClosePort()
@@ -39,14 +52,18 @@ public class SerialHandler
         }
         return;
     }
+    
+    /// <summary>
+    /// Create new serial 
+    /// </summary>
     void NewSerialSetup()
     {
         _serialPort.Handshake = Handshake.None;
         _serialPort.WriteTimeout = -1;
         _serialPort.ReadTimeout = -1;
         _serialPort.WriteBufferSize = 65536;
-        try { _serialPort.Open();         SetActiveLedCount(_activeLedCount);
-        } catch (Exception) { }
+        _serialPort.Open();
+        SetActiveLedCount(_activeLedCount);
     }
 
     void EnsureBufferForCount(int count)
@@ -55,6 +72,10 @@ public class SerialHandler
         if (_frameBuffer.Length < needed) _frameBuffer = new byte[needed];
     }
 
+    /// <summary>
+    /// Set the active light count of the 
+    /// </summary>
+    /// <param name="newCount"></param>
     public void SetActiveLedCount(int newCount)
     {
         if (!_serialPort.IsOpen) return;
@@ -80,6 +101,10 @@ public class SerialHandler
         EnsureBufferForCount(_activeLedCount);
     }
 
+    /// <summary>
+    /// Send the frame to the hardware via serial connection 
+    /// </summary>
+    /// <param name="stripColors"></param>
     public void SendFrame(Color[] stripColors)
     {
         if (!_serialPort.IsOpen) return;

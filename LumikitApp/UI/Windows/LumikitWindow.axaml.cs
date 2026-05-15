@@ -95,8 +95,9 @@
             Border? _activeSwatch;
             private BlockEditorPanel _blockEditor;
 
-            public LumikitWindow(IMusicProvider provider)
+            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler)
             {
+                _playbackHandler = playbackHandler;
                 _musicProvider = provider;
                 InitializeComponent();
                 foreach (System.Collections.DictionaryEntry VARIABLE in Environment.GetEnvironmentVariables())
@@ -421,10 +422,10 @@
                     }
                 };
 
-
+                                
+                
                 //Returns custom playbackhandler based on the music provider
                 //--This exists because different apps may have different latencies which require a delay
-                _playbackHandler = _musicProvider.GetPlaybackHandler();
                 _playbackHandler.ProgressUpdated += ms =>
                 {
                     Dispatcher.UIThread.Post(() =>

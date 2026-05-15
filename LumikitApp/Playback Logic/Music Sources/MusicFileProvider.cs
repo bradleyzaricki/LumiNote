@@ -22,20 +22,16 @@ namespace LumikitApp
         public TrackPOCO currentTrack { get; set; }
         private int _stream;
         private bool _init;
-        private Window _mainWindow;
 
         public string currentlyPlayingPath {get; set;}
         /// <summary>
         /// Spotify API wrapper for Lumikit procedures
         /// </summary>
-        /// <param name="mainWindow"></param>
         /// <param name="clientId"></param>
         /// <param name="redirectUri"></param>
-        public MusicFileProvider(Window mainWindow)
+        public MusicFileProvider()
         {
             ProviderColor = Brushes.BlueViolet.Color;
-            _mainWindow = mainWindow;
-
         }
         
 
@@ -121,11 +117,6 @@ namespace LumikitApp
             _init = Bass.Init();
             return Task.CompletedTask;
         }
-
-
-        public void SetMainWindow(Window mainWindow)
-        {
-            _mainWindow = mainWindow;
-        }
+        
     }
 }

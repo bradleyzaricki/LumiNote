@@ -26,7 +26,6 @@ namespace LumikitApp
         public string providerName => "Spotify";
         private readonly string _clientId;
         private readonly string _redirectUri;
-        private Window _mainWindow;
         private SpotifyClient _spotify;
         
         //not for spotify
@@ -39,10 +38,9 @@ namespace LumikitApp
         /// <param name="mainWindow"></param>
         /// <param name="clientId"></param>
         /// <param name="redirectUri"></param>
-        public SpotifyProvider(Window mainWindow, string clientId, string redirectUri)
+        public SpotifyProvider(string clientId, string redirectUri)
         {
             ProviderColor = new Color(255, 30, 215, 96);
-            _mainWindow = mainWindow;
             _clientId = clientId;
             _redirectUri = redirectUri;
         }
@@ -318,10 +316,6 @@ namespace LumikitApp
 
             throw new TimeoutException("Track didn't change within expected time.");
         }
-
-        public void SetMainWindow(Window mainWindow)
-        {
-            _mainWindow = mainWindow;
-        }
+        
     }
 }

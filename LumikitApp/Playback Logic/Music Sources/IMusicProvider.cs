@@ -80,6 +80,5 @@ public interface IMusicProvider
     string GetCurrentlyPlayingTrackIdAsync();
     public Task InitializeClient();
     public IPlaybackHandler GetPlaybackHandler();
-    public void SetMainWindow(Window mainWindow);
 
 }

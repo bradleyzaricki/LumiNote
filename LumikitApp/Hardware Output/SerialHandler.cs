@@ -107,10 +107,10 @@ public class SerialHandler
     /// <param name="stripColors"></param>
     public void SendFrame(Color[] stripColors)
     {
-        if (!_serialPort.IsOpen) return;
+        if (!_serialPort.IsOpen) throw new Exception("Serial port not open");
 
         int payloadLen = _activeLedCount * 3;
-        EnsureBufferForCount(_activeLedCount);
+        EnsureBufferForCount(_activeLedCount); 
 
         int i = 0;
         _frameBuffer[i++] = 0xAA;

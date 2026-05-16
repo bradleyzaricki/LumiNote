@@ -82,8 +82,9 @@
             private Canvas _blockColorDropBox;
             private Canvas _secondColorDropBox;
             private TextBox _bpmInput;
+            
             private TextBlock _errorText;
-
+            private TextBlock _hardwareConnectionText; 
             
             /// <summary>
             /// implemented playback handler to control implemented music provider
@@ -110,6 +111,8 @@
                     this.FindControl<Canvas>("TimelineCanvas"),
                     this.FindControl<ScrollViewer>("TimelineScrollViewer")
                 );
+                _errorText = this.FindControl<TextBlock>("ErrorText");
+                _hardwareConnectionText = this.FindControl<TextBlock>("HardwareConnectionText");
                 _blockColorDropBox = this.FindControl<Canvas>("ColorDropBox");
                 _secondColorDropBox = this.FindControl<Canvas>("SecondColorDropBox");
                 _blockEditor = new BlockEditorPanel(
@@ -203,7 +206,6 @@
                 if (applyBtn != null) applyBtn.Click += (_, _) => _blockEditor.ApplyBlockChanges();                
                 InitializeColorPalette();
                 _timeline.DrawTimelineSlots();
-
             }
             
 
@@ -435,7 +437,24 @@
                         var colors = _timeline.Tick(ms, ColorUpdateIntervalMs, BrightnessScale);
                         if (colors == null)
                         {
-                            SerialHandler?.SendFrame(Array.Empty<Color>());
+                            try
+                            {
+                                SerialHandler?.SendFrame(Array.Empty<Color>());
+                            }
+                            catch
+                            {
+                                try
+                                {
+                                    UpdateErrorText("Serial Communication Disconnected, please reconnect");
+                                    SerialHandler.ClosePort();
+                                }
+                                catch
+                                {
+                                    UpdateErrorText("Serial Communication Disconnected, please reconnect");
+                                }
+                                UpdateHardwareConnectionText("Serial Disconnected");
+                                SerialHandler = null;
+                            }
                             TopColorBar.Background = new SolidColorBrush(Colors.Transparent);
                             BottomColorBar.Background = new SolidColorBrush(Colors.Transparent);
                             return;
@@ -447,8 +466,24 @@
                             TopColorBar.Background = new SolidColorBrush(blockColor);
                             BottomColorBar.Background = new SolidColorBrush(blockColor);
                             UpdateColorBar(colors);
-                            try { SerialHandler?.SendFrame(colors); }
-                            catch (Exception ex) { Console.WriteLine(ex); }
+                            try
+                            {
+                                SerialHandler?.SendFrame(colors);
+                            }
+                            catch
+                            {
+                                try
+                                {
+                                    UpdateErrorText("Serial Communication Disconnected, please reconnect");
+                                    SerialHandler.ClosePort();
+                                }
+                                catch
+                                {
+                                    UpdateErrorText("Serial Communication Disconnected, please reconnect");
+                                }
+                                UpdateHardwareConnectionText("Serial Disconnected");
+                                SerialHandler = null;
+                            }                        
                         }                    
                     });
                 };
@@ -541,6 +576,18 @@
                 }
                 _errorText.Text = error;
             }
+            
+            /// <summary>
+            /// Frontend UI text to indicate hardware connection status
+            /// </summary>
+            /// <param name="error"></param>
+            public void UpdateHardwareConnectionText(string updatedText)
+            {
+                if (_hardwareConnectionText == null) return; //lost cause at this point
+                
+                _hardwareConnectionText.Text = updatedText;
+            }
+            
             /// <summary>
             /// Create color pallet and dragndrop functionality via avalonia swatches
             /// </summary>
@@ -830,6 +877,7 @@
                     try
                     {
                         SerialHandler.ClosePort();
+                        UpdateHardwareConnectionText("Serial Disconnected");
                     }
                     catch (Exception ex)
                     {
@@ -845,6 +893,7 @@
                 {
                     SerialHandler = new SerialHandler(ActiveLedCount,
                         new SerialPort(PortComboBox.SelectedItem as string, 460800, Parity.None, 8, StopBits.One));
+                    UpdateHardwareConnectionText($"Connected to {PortComboBox.SelectedItem as string}");
                 }
                 catch (Exception exception)
                 {

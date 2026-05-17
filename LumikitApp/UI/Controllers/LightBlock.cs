@@ -147,7 +147,7 @@ namespace LumikitApp
 
         private void OnPointerMoved(object? sender, PointerEventArgs e)
         {
-            
+            if(!isMoving && !isResizingLeft && !isResizingRight) return;
             var canvas = (Canvas?)Container.Parent;
             if (canvas == null || !isSelected) return;
 

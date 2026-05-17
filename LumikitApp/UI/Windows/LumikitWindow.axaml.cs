@@ -249,8 +249,11 @@
             private void OnKeyDown(object? sender, KeyEventArgs e)
             {
                 if (_timeline._isLiveInputActive) return;
-
-                if (e.Key >= Key.D0 && e.Key <= Key.D9)
+                var focused = TopLevel.GetTopLevel(this)?
+                    .FocusManager?
+                    .GetFocusedElement() is TextBox or ComboBox or AutoCompleteBox;
+                
+                if (e.Key >= Key.D0 && e.Key <= Key.D9 && focused == false)
                     HandleLiveBlockStart(e.Key);
                 else if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.V)
                     HandlePaste();
@@ -428,81 +431,61 @@
                 
                 //Returns custom playbackhandler based on the music provider
                 //--This exists because different apps may have different latencies which require a delay
-                _playbackHandler.ProgressUpdated += ms =>
+                _playbackHandler.ProgressUpdated += async ms =>
                 {
-                    Dispatcher.UIThread.Post(() =>
+                    Dispatcher.UIThread.Post(async () =>
                     {
                         StopwatchLabel.Text = ms.ToString();
 
-                        var colors = _timeline.Tick(ms, ColorUpdateIntervalMs, BrightnessScale);
+                        //Compute individual LED colors stored in color array
+                        Color[]? colors = _timeline.Tick(ms, ColorUpdateIntervalMs, BrightnessScale);
+                        
                         if (colors == null)
                         {
-                            try
-                            {
-                                SerialHandler?.SendFrame(Array.Empty<Color>());
-                            }
-                            catch
-                            {
-                                try
-                                {
-                                    UpdateErrorText("Serial Communication Disconnected, please reconnect");
-                                    SerialHandler.ClosePort();
-                                }
-                                catch
-                                {
-                                    UpdateErrorText("Serial Communication Disconnected, please reconnect");
-                                }
-                                UpdateHardwareConnectionText("Serial Disconnected");
-                                SerialHandler = null;
-                            }
-                            TopColorBar.Background = new SolidColorBrush(Colors.Transparent);
-                            BottomColorBar.Background = new SolidColorBrush(Colors.Transparent);
+                            TopColorBar.Background =
+                                new SolidColorBrush(Colors.Transparent);
+                            BottomColorBar.Background =
+                                new SolidColorBrush(Colors.Transparent);
+                            await TrySendFrameAsync(colors);
                             return;
-                        } 
-                        if (colors.Length == 0) return; // throttled, skip this frame entirely
-                        //valid values
-                        {
-                            var blockColor = colors.FirstOrDefault(c => c.A > 0);
-                            TopColorBar.Background = new SolidColorBrush(blockColor);
-                            BottomColorBar.Background = new SolidColorBrush(blockColor);
-                            UpdateColorBar(colors);
-                            try
-                            {
-                                SerialHandler?.SendFrame(colors);
-                            }
-                            catch
-                            {
-                                try
-                                {
-                                    UpdateErrorText("Serial Communication Disconnected, please reconnect");
-                                    SerialHandler.ClosePort();
-                                }
-                                catch
-                                {
-                                    UpdateErrorText("Serial Communication Disconnected, please reconnect");
-                                }
-                                UpdateHardwareConnectionText("Serial Disconnected");
-                                SerialHandler = null;
-                            }                        
-                        }                    
+                        }
+
+                        if (colors.Length == 0)
+                            return;
+
+                        var blockColor = colors.FirstOrDefault(c => c.A > 0);
+
+                        TopColorBar.Background =
+                            new SolidColorBrush(blockColor);
+
+                        BottomColorBar.Background =
+                            new SolidColorBrush(blockColor);
+
+                        UpdateColorBar(colors);
+
+                        await TrySendFrameAsync(colors);
                     });
                 };
-                this.FindControl<Button>("PauseTrackButton").Click += async (_, _) => await _playbackHandler.PauseAsync();
-                this.FindControl<Button>("ResumeTrackButton").Click += async (_, _) => await _playbackHandler.ResumeAsync();
-                this.FindControl<Button>("NextTrackButton").Click += async (_, _) =>
-                {
-                    _musicProvider.currentTrack = s_unknownTrack;
-                    //set currently playing path to next track in queue
-                    //_musicProvider.currentlyPlayingPath = Nextpath;
+                    this.FindControl<Button>("PauseTrackButton").Click +=
+                        async (_, _) => await _playbackHandler.PauseAsync();
+                    this.FindControl<Button>("ResumeTrackButton").Click +=
+                        async (_, _) => await _playbackHandler.ResumeAsync();
+                    this.FindControl<Button>("NextTrackButton").Click += async (_, _) =>
+                    {
+                        _musicProvider.currentTrack = s_unknownTrack;
+                        //set currently playing path to next track in queue
+                        //_musicProvider.currentlyPlayingPath = Nextpath;
 
-                    await _playbackHandler.PlayAsync();
-                    UpdateCurrentTrack(true, trackGUID:Guid.Empty); // refresh on next track
-                };
-                this.FindControl<Button>("RestartTrackButton").Click += async (_, _) => _playbackHandler.RestartAsync();
+                        await _playbackHandler.PlayAsync();
+                        UpdateCurrentTrack(true, trackGUID: Guid.Empty); // refresh on next track
+                    };
+                    this.FindControl<Button>("RestartTrackButton").Click +=
+                        async (_, _) => _playbackHandler.RestartAsync();
 
-                ChangeAppTheme(); //Changes app colors to match provider (required by spotify TOS)
-                _allLocalTrackItems = JsonDataHandler.GetAllTrackItems();
-
+                    ChangeAppTheme(); //Changes app colors to match provider (required by spotify TOS)
+                    _allLocalTrackItems = JsonDataHandler.GetAllTrackItems();
+                        
+                
             }
 
             public async void UpdateCurrentTrack(bool startNewLightShow, Guid trackGUID)
@@ -587,7 +570,26 @@
                 
                 _hardwareConnectionText.Text = updatedText;
             }
-            
+            private async Task TrySendFrameAsync(Color[]? colors)
+            {
+                try
+                {
+                    if (SerialHandler == null)
+                        return;
+
+                    await Task.Run(() => SerialHandler.SendFrame(colors));
+                }
+                catch
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        UpdateErrorText("Serial Communication Disconnected, please reconnect");
+                        UpdateHardwareConnectionText("Serial Disconnected");
+                    });
+
+                    SerialHandler = null;
+                }
+            }
             /// <summary>
             /// Create color pallet and dragndrop functionality via avalonia swatches
             /// </summary>
@@ -600,7 +602,6 @@
                 picker.PropertyChanged -= SwatchFlyoutPickerOnPropertyChanged;
                 picker.PropertyChanged += SwatchFlyoutPickerOnPropertyChanged;
 
-                var hardwareSettingsButton = this.FindControl<Button>("HardwareSettingsButton");
                 for (int i = 0; i < BlockColors.Count; i++)
                 {
                     int idx = i;
@@ -668,7 +669,7 @@
                         {
                             var data = new DataObject();
                             data.Set("block-color", BlockColors[idx].ToString());
-                            await DragDrop.DoDragDrop(e, data, DragDropEffects.Copy);
+                       //     DragDrop.DoDragDrop(e, data, DragDropEffects.Copy);
                         }
                     };
 

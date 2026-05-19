@@ -33,6 +33,7 @@ namespace LumikitApp
             //Adds IMusicProvider and IPlaybackHandler constructor connections to any connected class
             services.AddSingleton(provider);
             services.AddSingleton(playbackHandler);
+            services.AddSingleton<JsonDataHandler>();
             services.AddTransient<LumikitWindow>();
             return services.BuildServiceProvider();
         }

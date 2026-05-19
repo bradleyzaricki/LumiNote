@@ -5,15 +5,18 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
+using Avalonia.Media;
 using LumikitApp.Models;
 
 namespace LumikitApp
 {
-    internal class JsonDataHandler
+    public class JsonDataHandler
     {
         private static readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true };
 
         private static string TrackInfoDir => DirectoryPaths.TrackInfoDir;
+
+        private readonly IMusicProvider _provider;
 
 
         public static string TrackFilePath(string trackId) =>
@@ -30,27 +33,44 @@ namespace LumikitApp
             return JsonSerializer.Deserialize<TrackData>(json);
         }
 
-        public static List<TrackData> GetAllTracks()
+        public JsonDataHandler(IMusicProvider provider)
+        {
+            _provider = provider;
+        }
+        public List<TrackData> GetAllTracks()
         {
             if (!Directory.Exists(TrackInfoDir)) return new List<TrackData>();
 
             var files = Directory.EnumerateFiles(TrackInfoDir, "*.json", SearchOption.TopDirectoryOnly);
-            var list = new List<TrackData>();
-
+            var listFront = new List<TrackData>();
+            var listBack = new List<TrackData>();
             foreach (var file in files)
             {
                 try
                 {
+                    //O(n) sort by provider type
                     var json = File.ReadAllText(file);
                     var track = JsonSerializer.Deserialize<TrackData>(json);
-                    if (track != null) list.Add(track);
+                    if (_provider.providerName == null)
+                    {
+                        listFront.Add(track);
+                        continue;
+                    }
+                    if (track.provider.Equals(_provider.providerName))
+                    {
+                        listFront.Add(track);
+                    }
+                    else
+                    {
+                        listBack.Add(track);
+                    }
                 }
                 catch
                 {
                 }
             }
-
-            return list;
+            listFront.AddRange(listBack);
+            return listFront;
         }
 
         public static void SaveTrack(TrackData track)
@@ -111,7 +131,12 @@ namespace LumikitApp
             if (cleaned.Length > 120) cleaned = cleaned.Substring(0, 120);
             return cleaned;
         }
-        public static List<TrackItemUI> GetAllTrackItems()
+        
+        /// <summary>
+        /// Get all tracks from the local storage and returns them as a list of TrackItemUI elements
+        /// </summary>
+        /// <returns></returns>
+        public  List<TrackItemUI> GetAllTrackItems()
         {
             var tracks = GetAllTracks();
 
@@ -121,7 +146,11 @@ namespace LumikitApp
                 {
                     TrackId = t.trackGUID.ToString(),
                     TrackName = t._trackName ?? "",
-                    Subtitle = t.author ?? ""
+                    Subtitle = t.author ?? "",
+
+                    Color = _provider.providerName != null && t.provider == _provider.providerName
+                        ? new SolidColorBrush(_provider.ProviderColor)
+                        : Brushes.Gray
                 })
                 .ToList();
         }

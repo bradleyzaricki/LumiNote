@@ -200,7 +200,9 @@
                                             CornerRadius="10"
                                             Padding="12"
                                             Margin="6"
-                                            Height="64">
+                                            Height="64"
+                                            BorderThickness="3"
+                                            BorderBrush="{Binding Color}">
                                         <Grid ColumnDefinitions="*,Auto,Auto, Auto"
                                               VerticalAlignment="Center"
                                               HorizontalAlignment="Stretch">

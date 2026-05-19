@@ -56,6 +56,7 @@
             /// </summary>
             private IMusicProvider _musicProvider;
             
+            private JsonDataHandler _jsonDataHandler;
             /// <summary>
             /// The music/lighting timeline 
             /// </summary>
@@ -96,8 +97,9 @@
             Border? _activeSwatch;
             private BlockEditorPanel _blockEditor;
 
-            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler)
+            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler)
             {
+                _jsonDataHandler = jsonDataHandler;
                 _playbackHandler = playbackHandler;
                 _musicProvider = provider;
                 InitializeComponent();
@@ -483,7 +485,7 @@
                         async (_, _) => _playbackHandler.RestartAsync();
 
                     ChangeAppTheme(); //Changes app colors to match provider (required by spotify TOS)
-                    _allLocalTrackItems = JsonDataHandler.GetAllTrackItems();
+                    _allLocalTrackItems = _jsonDataHandler.GetAllTrackItems();
                         
                 
             }
@@ -1000,8 +1002,9 @@
             /// <param name="e"></param>
             private void RefreshLocalTracks_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
             {
-                _allLocalTrackItems = JsonDataHandler.GetAllTrackItems();
+                _allLocalTrackItems = _jsonDataHandler.GetAllTrackItems();
                 LocalTracksListBox.ItemsSource = _allLocalTrackItems;
+                
             }
 
             /// <summary>
@@ -1071,7 +1074,7 @@
 
                 JsonDataHandler.DeleteTrack(item.TrackId.ToString());
                 
-                _allLocalTrackItems = JsonDataHandler.GetAllTrackItems();
+                _allLocalTrackItems = _jsonDataHandler.GetAllTrackItems();
                 LocalTracksListBox.ItemsSource = _allLocalTrackItems;
                 
             }

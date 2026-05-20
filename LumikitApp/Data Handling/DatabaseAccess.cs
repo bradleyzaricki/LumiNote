@@ -7,21 +7,25 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.IO;
 using LumikitApp.Models;
-
+using Avalonia.Media;
 namespace LumikitApp;
 
-public static class DatabaseAccess
+public class DatabaseAccess
 {
     private static readonly HttpClient Http = new HttpClient();
 
     private const string BaseUrl = "https://worker1.bzaricki56.workers.dev";
     private const string ApiKey  = "see-88-paw-583-film";
-
+    private IMusicProvider _provider;
     private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
     {
         PropertyNameCaseInsensitive = true
     };
 
+    public  DatabaseAccess(IMusicProvider provider)
+    {
+        _provider = provider;
+    }
 
     
     /// <summary>
@@ -95,11 +99,12 @@ public static class DatabaseAccess
     /// <param name="provider">optional parameter to filter for tracks by provider</param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public static async Task<List<TrackItemUI>> ListTracksAsync(string? provider = null, bool addUnusableTracks = false)
+    public async Task<List<TrackItemUI>> ListTracksAsync(bool addUnusableTracks = true)
     {
-        var url = provider == null
+        var url = (addUnusableTracks
             ? new Uri($"{BaseUrl}/tracks")
-            : new Uri($"{BaseUrl}/tracks?provider={provider}");
+            : new Uri($"{BaseUrl}/tracks?provider={_provider.providerName}"));
+
 
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         req.Headers.Add("x-api-key", ApiKey);
@@ -115,7 +120,7 @@ public static class DatabaseAccess
         if (!doc.RootElement.TryGetProperty("items", out var items))
             throw new Exception($"Unexpected JSON:\n{body}");
 
-        var list = new List<TrackItemUI>();
+        var listStart = new List<TrackItemUI>();
         var listEnd = new List<TrackItemUI>();
         
         foreach (var item in items.EnumerateArray())
@@ -129,31 +134,27 @@ public static class DatabaseAccess
                 TrackId = trackId,
                 TrackName = trackName,
                 Subtitle = $"{p} • {bpm} BPM",
-                Provider = p
-                
+                Provider = p,
+                Color = _provider.providerName != null && p == _provider.providerName
+                ? new SolidColorBrush(_provider.ProviderColor)
+                : Brushes.Gray
             };              
-            if (provider != null)
+            if (_provider.providerName != null)
             {
-                if (p == provider)
+                if (p == _provider.providerName)
                 {
-                    list.Add(trackItem);
+                    listStart.Add(trackItem);
                 }
                 else if (addUnusableTracks)
                 {
                     listEnd.Add(trackItem);
                 }
             }
-            else
-            {
-                if (p == provider)
-                {
-                list.Add(trackItem);
-                }
-            }
-        }
-        list.AddRange(listEnd);
 
-        return list;
+        }
+        listStart.AddRange(listEnd);
+
+        return listStart;
     }
 
 

@@ -57,6 +57,8 @@
             private IMusicProvider _musicProvider;
             
             private JsonDataHandler _jsonDataHandler;
+            
+            private DatabaseAccess _databaseAccess;
             /// <summary>
             /// The music/lighting timeline 
             /// </summary>
@@ -97,11 +99,13 @@
             Border? _activeSwatch;
             private BlockEditorPanel _blockEditor;
 
-            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler)
+            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess)
             {
-                _jsonDataHandler = jsonDataHandler;
-                _playbackHandler = playbackHandler;
                 _musicProvider = provider;
+                _playbackHandler = playbackHandler;
+                _jsonDataHandler = jsonDataHandler;
+                _databaseAccess = databaseAccess;
+
                 InitializeComponent();
                 foreach (System.Collections.DictionaryEntry VARIABLE in Environment.GetEnvironmentVariables())
                 {
@@ -671,7 +675,7 @@
                         {
                             var data = new DataObject();
                             data.Set("block-color", BlockColors[idx].ToString());
-                       //     DragDrop.DoDragDrop(e, data, DragDropEffects.Copy);
+                            DragDrop.DoDragDrop(e, data, DragDropEffects.Copy);
                         }
                     };
 
@@ -1086,7 +1090,7 @@
             /// <param name="e"></param>
             private async void DatabaseTrack_Refresh_Click(object? sender, RoutedEventArgs e)
             {
-                _allDatabaseTrackItems = await DatabaseAccess.ListTracksAsync(_musicProvider.providerName, false);
+                _allDatabaseTrackItems = await _databaseAccess.ListTracksAsync(false);
                 DatabaseTracksListBox.ItemsSource = _allDatabaseTrackItems;
             }
             

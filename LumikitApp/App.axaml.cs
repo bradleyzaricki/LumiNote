@@ -34,6 +34,7 @@ namespace LumikitApp
             services.AddSingleton(provider);
             services.AddSingleton(playbackHandler);
             services.AddSingleton<JsonDataHandler>();
+            services.AddSingleton<DatabaseAccess>();
             services.AddTransient<LumikitWindow>();
             return services.BuildServiceProvider();
         }

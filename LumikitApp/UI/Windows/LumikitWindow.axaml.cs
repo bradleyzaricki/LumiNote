@@ -8,6 +8,7 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Net.Http;
@@ -19,6 +20,10 @@
     {
         public partial class LumikitWindow : Window
         {
+            private DispatcherTimer? _previewTimer;
+            private int _previewMs;
+            private readonly Stopwatch _previewWatch = new();
+            
             /// <summary>
             /// The track fields to send to the music provider when track is unknown, to avoid displaying or editing data for an incorrect class
             /// </summary>
@@ -1114,6 +1119,62 @@
                     JsonDataHandler.SaveTrack(tdToAdd);
                 }
 
+            }
+            
+            private void PlayPreview_Click(object? sender, RoutedEventArgs e)
+            {
+                if (_timeline._selectedBlocks.Count == 0)
+                    return;
+
+                _previewTimer ??= new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(ColorUpdateIntervalMs)
+                };
+
+                _previewTimer.Tick -= PreviewTick;
+                _previewTimer.Tick += PreviewTick;
+
+                _previewWatch.Restart();
+
+                _previewTimer.Start();
+            }
+
+            private void StopPreview_Click(object? sender, RoutedEventArgs e)
+            {
+                _previewTimer?.Stop();
+                _previewWatch.Stop();
+            }
+
+            private async void PreviewTick(object? sender, EventArgs e)
+            {
+                if (_timeline._selectedBlocks.Count == 0)
+                    return;
+
+                var block = _timeline._selectedBlocks[0];
+
+                double durationMs = block.Container.Width;
+
+                double elapsedMs = _previewWatch.Elapsed.TotalMilliseconds;
+
+                var result = await Task.Run(() =>
+                {
+                    double relPos = Math.Clamp(
+                        elapsedMs / durationMs,
+                        0.0,
+                        1.0);
+
+                    Color[] leds = LightEffectsComputer.ComputeBlockEffects(
+                        block,
+                        relPos,
+                        100);
+
+                    return (leds, relPos);
+                });
+
+                LedPreview.SetColors(result.leds);
+
+                if (result.relPos >= 1.0)
+                    _previewWatch.Restart();
             }
         }
     }

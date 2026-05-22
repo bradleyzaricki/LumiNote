@@ -1149,32 +1149,71 @@
             {
                 if (_timeline._selectedBlocks.Count == 0)
                     return;
+                
+                //Create block data object to pass UI data off the UI thread
+                var blocks = _timeline._selectedBlocks
+                    .Select(b => new
+                    {
+                        Block = b,
+                        Left = Canvas.GetLeft(b.Container),
+                        Width = b.Container.Width
+                    })
+                    .OrderBy(b => b.Left)
+                    .ToList();
 
-                var block = _timeline._selectedBlocks[0];
+                if (blocks.Count == 0)
+                    return;
 
-                double durationMs = block.Container.Width;
+                double currentMs =
+                    _previewWatch.Elapsed.TotalMilliseconds;
 
-                double elapsedMs = _previewWatch.Elapsed.TotalMilliseconds;
+                double slotMs = TimelineController.MsPerSlot;
 
-                var result = await Task.Run(() =>
+                
+                var leds = await Task.Run(() =>
                 {
-                    double relPos = Math.Clamp(
-                        elapsedMs / durationMs,
-                        0.0,
-                        1.0);
+                    Color[] finalLeds = new Color[1000];
 
-                    Color[] leds = LightEffectsComputer.ComputeBlockEffects(
-                        block,
-                        relPos,
-                        100);
+                    foreach (var b in blocks)
+                    {
+                        //convert pixel offset to time offset
+                        double blockTimeOffset =
+                            (b.Left - blocks[0].Left) * slotMs / _timeline._slotWidth;
 
-                    return (leds, relPos);
+                        double localTime =
+                            currentMs - blockTimeOffset;
+
+                        double relPos =
+                            localTime / (b.Width * slotMs / _timeline._slotWidth);
+
+                        relPos = Math.Clamp(relPos, 0.0, 1.0);
+
+                        if (localTime < 0 || relPos > 1)
+                            continue;
+
+                        Color[] blockLeds =
+                            LightEffectsComputer.ComputeBlockEffects(
+                                b.Block,
+                                relPos,
+                                100);
+
+                        for (int i = 0; i < finalLeds.Length; i++)
+                            finalLeds[i] = blockLeds[i];
+                    }
+
+                    return finalLeds;
                 });
 
-                LedPreview.SetColors(result.leds);
+                LedPreview.SetColors(leds);
 
-                if (result.relPos >= 1.0)
+                //calculate last selected position before looping back
+                double last = blocks.Max(b => b.Left + b.Width);
+
+                if (_previewWatch.Elapsed.TotalMilliseconds >
+                    (last - blocks[0].Left) * slotMs / _timeline._slotWidth)
+                {
                     _previewWatch.Restart();
+                }
             }
         }
     }

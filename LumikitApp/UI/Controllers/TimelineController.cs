@@ -305,6 +305,25 @@ public class TimelineController
 
         return mid;
     }
+    
+    /// <summary>
+    /// Add block to _selectedBlocks and sort it
+    /// </summary>
+    /// <param name="block"></param>
+    private void AddSelectedBlock(LightBlock block)
+    {
+        // Prevent duplicates
+        if (_selectedBlocks.Contains(block))
+            return;
+
+        _selectedBlocks.Add(block);
+
+        // Order by X position on timeline
+        _selectedBlocks = _selectedBlocks
+            .OrderBy(b => Canvas.GetLeft(b.Container))
+            .ToList();
+    }
+    
     /// <summary>
     /// Handles block selection logic for left click, shift click, and ctrl click.
     /// Returns the updated selected blocks list so the caller can open the editor.
@@ -332,7 +351,7 @@ public class TimelineController
 
             if (min == double.MaxValue) //No blocks selected previously 
             {
-                _selectedBlocks.Add(blockToAdd);
+                AddSelectedBlock(blockToAdd);
                 blockToAdd.isSelected = true;
                 return _selectedBlocks;
             }
@@ -347,7 +366,7 @@ public class TimelineController
                     || (blockLeft < max && blockLeft >= Canvas.GetLeft(blockToAdd.Container)))
                 {
                     //Add all selected blocks including block that was shift clicked
-                    _selectedBlocks.Add(lightblock);
+                    AddSelectedBlock(lightblock);
                     lightblock.isSelected = true;
                     blockToAdd.isSelected = true;
                 }
@@ -355,7 +374,7 @@ public class TimelineController
         }
         else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
         {
-            _selectedBlocks.Add(blockToAdd);
+            AddSelectedBlock(blockToAdd);
             blockToAdd.isSelected = true;
         }
         else
@@ -367,7 +386,7 @@ public class TimelineController
             }
 
             _selectedBlocks.Clear();
-            _selectedBlocks.Add(blockToAdd);
+            AddSelectedBlock(blockToAdd);
             blockToAdd.isSelected = true;
         }
 

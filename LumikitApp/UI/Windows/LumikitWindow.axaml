@@ -366,11 +366,13 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <local:LedStripPreview
+                        <local:LedStripPreview 
                             x:Name="LedPreview"
                             Grid.Row="1"
                             Margin="10"
-                            Height="140"/>
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            />
                     </Grid>
 
                 </TabItem>

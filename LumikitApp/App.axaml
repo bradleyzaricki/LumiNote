@@ -1,6 +1,7 @@
 
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:themes="using:RangeSlider.Avalonia.Themes.Fluent"
              xmlns:converters="using:LumikitApp.Converters"
              x:Class="LumikitApp.App"
              RequestedThemeVariant="Dark">
@@ -10,6 +11,7 @@
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+        <themes:RangeSliderTheme />
         
     </Application.Styles>
     

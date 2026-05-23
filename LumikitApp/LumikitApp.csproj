@@ -12,7 +12,7 @@
     <AvaloniaResource Include="Icons\spotify_green_logo_full.png" />
     <AvaloniaResource Include="Icons/file_icon.png" />
     <AvaloniaResource Include="Icons/spotify_icon_black.png" />
-    <AvaloniaResource Include="Icons/spot_white_logo_full.png"/>
+    <AvaloniaResource Include="Icons/spot_white_logo_full.png" />
 
 
   </ItemGroup>
@@ -30,6 +30,7 @@
     <PackageReference Include="ManagedBass" Version="4.0.2" />
     <PackageReference Include="ManagedBass.Fx" Version="4.0.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
+    <PackageReference Include="RangeSlider.Avalonia" Version="2.1.0" />
     <PackageReference Include="SpotifyAPI.Web" Version="7.2.1" />
     <PackageReference Include="SpotifyAPI.Web.Auth" Version="7.2.1" />
     <PackageReference Include="System.IO.Ports" Version="9.0.9" />

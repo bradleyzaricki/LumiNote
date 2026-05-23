@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:LumikitApp.Controls"
+        xmlns:rs="clr-namespace:RangeSlider.Avalonia.Controls;assembly=RangeSlider.Avalonia"
         xmlns:models="clr-namespace:LumikitApp.Models"
         x:Class="LumikitApp.LumikitWindow"
         Width="1600" Height="900"
@@ -349,16 +350,18 @@
             </TabItem>
                 <TabItem Header="Light Preview" Margin="0,10,0,0">
 
-                    <Grid RowDefinitions="Auto,*">
+                    <Grid RowDefinitions="Auto,*,Auto">
 
-                        <StackPanel Orientation="Horizontal"
+                        <!-- Top controls -->
+                        <StackPanel Grid.Row="0"
+                                    Orientation="Horizontal"
                                     Margin="10"
                                     Spacing="10">
 
                             <Button Content="Play Preview"
                                     Click="PlayPreview_Click"/>
 
-                            <Button Content="Stop Preview"  
+                            <Button Content="Stop Preview"
                                     Click="StopPreview_Click"/>
 
                             <TextBlock Text="Selected Block Simulator"
@@ -366,15 +369,75 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <local:LedStripPreview 
-                            x:Name="LedPreview"
-                            Grid.Row="1"
-                            Margin="10"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            />
-                    </Grid>
+                        <Grid Grid.Row="1" Margin="10">
 
+                            <!-- LED BACKGROUND -->
+                            <local:LedStripPreview
+                                x:Name="LedPreview"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"/>
+
+                            <!-- SLIDER OVERLAY PANEL -->
+                            <Grid HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Bottom"
+                                  Margin="10"
+                                  Height="300"
+                                  ZIndex="10"
+                                  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+
+                                <rs:RangeSlider Grid.Row="0"
+                                                Minimum="0"
+                                                Maximum="1000"
+                                                LowerSelectedValue="100"
+                                                UpperSelectedValue="200"
+                                                Height="35"
+                                                Margin="0,2"/>
+
+                                <rs:RangeSlider Grid.Row="1"
+                                                Minimum="0"
+                                                Maximum="1000"
+                                                LowerSelectedValue="200"
+                                                UpperSelectedValue="300"
+                                                Height="35"
+                                                Margin="0,2"/>
+
+                                <rs:RangeSlider Grid.Row="2"
+                                                Minimum="0"
+                                                Maximum="1000"
+                                                LowerSelectedValue="300"
+                                                UpperSelectedValue="400"
+                                                Height="35"
+                                                Margin="0,2"/>
+
+                                <rs:RangeSlider Grid.Row="3"
+                                                Minimum="0"
+                                                Maximum="1000"
+                                                LowerSelectedValue="400"
+                                                UpperSelectedValue="500"
+                                                Height="35"
+                                                Margin="0,2"/>
+
+                                <rs:RangeSlider Grid.Row="4"
+                                                Minimum="0"
+                                                Maximum="1000"
+                                                LowerSelectedValue="500"
+                                                UpperSelectedValue="600"
+                                                Height="35"
+                                                Margin="0,2"/>
+
+                                <rs:RangeSlider Grid.Row="5"
+                                                Minimum="0"
+                                                Maximum="1000"
+                                                LowerSelectedValue="600"
+                                                UpperSelectedValue="700"
+                                                Height="35"
+                                                Margin="0,2"/>
+
+                            </Grid>
+
+                        </Grid>
+                    </Grid>
+ 
                 </TabItem>
             </TabControl>
 

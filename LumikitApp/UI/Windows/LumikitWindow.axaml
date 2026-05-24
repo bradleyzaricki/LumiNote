@@ -377,62 +377,26 @@
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"/>
 
-                            <!-- SLIDER OVERLAY PANEL -->
+                            <!-- LIGHTBLOCK SETTINGS -->
                             <Grid HorizontalAlignment="Stretch"
-                                  VerticalAlignment="Bottom"
-                                  Margin="10"
+                                  VerticalAlignment="Top"
+                                  Margin="30,25"
                                   Height="300"
                                   ZIndex="10"
-                                  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
-
-                                <rs:RangeSlider Grid.Row="0"
-                                                Minimum="0"
-                                                Maximum="1000"
-                                                LowerSelectedValue="100"
-                                                UpperSelectedValue="200"
-                                                Height="35"
-                                                Margin="0,2"/>
-
-                                <rs:RangeSlider Grid.Row="1"
-                                                Minimum="0"
-                                                Maximum="1000"
-                                                LowerSelectedValue="200"
-                                                UpperSelectedValue="300"
-                                                Height="35"
-                                                Margin="0,2"/>
-
-                                <rs:RangeSlider Grid.Row="2"
-                                                Minimum="0"
-                                                Maximum="1000"
-                                                LowerSelectedValue="300"
-                                                UpperSelectedValue="400"
-                                                Height="35"
-                                                Margin="0,2"/>
-
-                                <rs:RangeSlider Grid.Row="3"
-                                                Minimum="0"
-                                                Maximum="1000"
-                                                LowerSelectedValue="400"
-                                                UpperSelectedValue="500"
-                                                Height="35"
-                                                Margin="0,2"/>
-
-                                <rs:RangeSlider Grid.Row="4"
-                                                Minimum="0"
-                                                Maximum="1000"
-                                                LowerSelectedValue="500"
-                                                UpperSelectedValue="600"
-                                                Height="35"
-                                                Margin="0,2"/>
-
-                                <rs:RangeSlider Grid.Row="5"
-                                                Minimum="0"
-                                                Maximum="1000"
-                                                LowerSelectedValue="600"
-                                                UpperSelectedValue="700"
-                                                Height="35"
-                                                Margin="0,2"/>
-
+                                  RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                                <StackPanel Grid.Row="0">
+                                    <TextBlock Text="LightSpan"/>
+                                    <rs:RangeSlider Minimum="0" Maximum="1000"
+                                                    LowerSelectedValue="100" UpperSelectedValue="200"  IsHitTestVisible="False">
+                                        <rs:RangeSlider.Resources>
+                                            <SolidColorBrush x:Key="SliderTrackValueFill" Color="Red"/>
+                                            <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="OrangeRed"/>
+                                            <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="DarkRed"/>
+                                        </rs:RangeSlider.Resources>
+                                    </rs:RangeSlider>
+                                </StackPanel>
+                                
+                                
                             </Grid>
 
                         </Grid>

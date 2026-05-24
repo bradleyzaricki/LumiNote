@@ -112,11 +112,6 @@
                 _databaseAccess = databaseAccess;
 
                 InitializeComponent();
-                foreach (System.Collections.DictionaryEntry VARIABLE in Environment.GetEnvironmentVariables())
-                {
-                    Console.WriteLine(VARIABLE.Key + "  " + VARIABLE.Value);
-                }
-                Console.WriteLine();
 
                 _timeline = new TimelineController(
                     this.FindControl<Canvas>("TimelineCanvas"),
@@ -962,7 +957,7 @@
             /// <param name="e"></param>
             private async void BrowseAudioFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
             {
-                if (_musicProvider is MusicFileProvider musicFileProvider)
+                if (_musicProvider.providerName == "LocalFiles")
                 {
                     var dlg = new OpenFileDialog
                     {

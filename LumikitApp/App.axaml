@@ -2,15 +2,30 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:themes="using:RangeSlider.Avalonia.Themes.Fluent"
+             xmlns:rs="using:RangeSlider.Avalonia.Controls"
              xmlns:converters="using:LumikitApp.Converters"
              x:Class="LumikitApp.App"
              RequestedThemeVariant="Dark">
     <Application.Resources>
         <converters:DarkenConverter x:Key="DarkenConverter"/>
+        <SolidColorBrush x:Key="SliderThumbBackground" Color="Transparent"/>
+        <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="Transparent"/>
+        <SolidColorBrush x:Key="SliderThumbBackgroundPressed" Color="Transparent"/>
+        <SolidColorBrush x:Key="SliderThumbBorderBrush" Color="Transparent"/>
+        <SolidColorBrush x:Key="SliderThumbBorderBrushPointerOver" Color="Transparent"/>
+        <SolidColorBrush x:Key="SliderThumbBorderBrushPressed" Color="Transparent"/>
+        <x:Double x:Key="SliderTrackThemeHeight">12</x:Double>
+        <x:Double x:Key="SliderHorizontalThumbWidth">0</x:Double>
     </Application.Resources>
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+        <Style Selector="rs|RangeSlider">
+            <Setter Property="IsSnapToTickEnabled" Value="True"/>
+            <Setter Property="TickFrequency" Value="1"/>
+            <Setter Property="MoveWholeRange" Value="False"/>
+            <Setter Property="Height" Value="35"/>
+        </Style>
         <themes:RangeSliderTheme />
         
     </Application.Styles>

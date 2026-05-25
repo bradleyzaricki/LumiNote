@@ -224,9 +224,10 @@ public class TimelineController
     /// Returns computed strip colors for the active block, or null if no block is active.
     /// </summary>
     /// <param name="ms"></param>
-    /// <param name="colorUpdateIntervalMs"></param>
+    /// <param name="colorUpdateIntervalMs">Visual throttle interval — Tick returns empty when called faster than this.</param>
     /// <param name="brightnessScale"></param>
-    public Color[]? Tick(int ms, int colorUpdateIntervalMs, double brightnessScale)
+    /// <param name="serialIntervalMs">Serial hardware update interval forwarded to ComputeBlockEffects for strobe snapping.</param>
+    public Color[]? Tick(int ms, int colorUpdateIntervalMs, double brightnessScale, double serialIntervalMs = 50.0)
     {
         if (ms < _lastColorUpdateMs)
             _lastColorUpdateMs = ms;
@@ -272,10 +273,12 @@ public class TimelineController
         if (blockWidth <= 0)
             return null;
 
-        double blockLeft = Canvas.GetLeft(activeBlock.Container);
-        double relPos = Math.Clamp((caretX - blockLeft) / blockWidth, 0, 1);
+        double blockLeft    = Canvas.GetLeft(activeBlock.Container);
+        double relPos       = Math.Clamp((caretX - blockLeft) / blockWidth, 0, 1);
+        double blockElapsedMs = (caretX - blockLeft) / _slotWidth * MsPerSlot;
 
-        return LightEffectsComputer.ComputeBlockEffects(activeBlock, relPos, brightnessScale);
+        return LightEffectsComputer.ComputeBlockEffects(activeBlock, relPos, brightnessScale,
+            elapsedMs: blockElapsedMs, serialIntervalMs: serialIntervalMs);
     }
 
     /// <summary>

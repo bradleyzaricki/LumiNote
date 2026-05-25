@@ -1,4 +1,3 @@
-
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:themes="using:RangeSlider.Avalonia.Themes.Fluent"
@@ -8,26 +7,41 @@
              RequestedThemeVariant="Dark">
     <Application.Resources>
         <converters:DarkenConverter x:Key="DarkenConverter"/>
-        <SolidColorBrush x:Key="SliderThumbBackground" Color="Transparent"/>
-        <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="Transparent"/>
-        <SolidColorBrush x:Key="SliderThumbBackgroundPressed" Color="Transparent"/>
-        <SolidColorBrush x:Key="SliderThumbBorderBrush" Color="Transparent"/>
-        <SolidColorBrush x:Key="SliderThumbBorderBrushPointerOver" Color="Transparent"/>
-        <SolidColorBrush x:Key="SliderThumbBorderBrushPressed" Color="Transparent"/>
+        <SolidColorBrush x:Key="SliderThumbBackground" Color="White"/>
+        <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="White"/>
+        <SolidColorBrush x:Key="SliderThumbBackgroundPressed" Color="White"/>
+        <SolidColorBrush x:Key="SliderThumbBorderBrush" Color="White"/>
+        <SolidColorBrush x:Key="SliderThumbBorderBrushPointerOver" Color="White"/>
+        <SolidColorBrush x:Key="SliderThumbBorderBrushPressed" Color="White"/>
+        <x:Double x:Key="SliderHorizontalThumbHeight">18</x:Double>
+        <x:Double x:Key="SliderVerticalThumbWidth">18</x:Double>
+        <x:Double x:Key="SliderVerticalThumbHeight">18</x:Double>
         <x:Double x:Key="SliderTrackThemeHeight">12</x:Double>
-        <x:Double x:Key="SliderHorizontalThumbWidth">0</x:Double>
+        <x:Double x:Key="SliderHorizontalThumbWidth">18</x:Double>
     </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+
+        <!-- Default settings for the RangeSlider itself -->
         <Style Selector="rs|RangeSlider">
             <Setter Property="IsSnapToTickEnabled" Value="True"/>
             <Setter Property="TickFrequency" Value="1"/>
             <Setter Property="MoveWholeRange" Value="False"/>
             <Setter Property="Height" Value="35"/>
         </Style>
+
         <themes:RangeSliderTheme />
-        
+
+        <Style Selector="rs|RangeSlider /template/ Thumb">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Rectangle Fill="{DynamicResource SliderThumbBackground}"
+                               Stroke="{DynamicResource SliderThumbBorderBrush}"
+                               StrokeThickness="1"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
     </Application.Styles>
-    
 </Application>

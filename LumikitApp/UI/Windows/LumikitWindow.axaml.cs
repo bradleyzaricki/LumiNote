@@ -20,9 +20,9 @@
     {
         public partial class LumikitWindow : Window
         {
-            private DispatcherTimer? _previewTimer;
-            private int _previewMs;
+            private bool _previewRunning;
             private readonly Stopwatch _previewWatch = new();
+            private int _lastSerialSendMs = 0;
             
             /// <summary>
             /// The track fields to send to the music provider when track is unknown, to avoid displaying or editing data for an incorrect class
@@ -121,35 +121,7 @@
                 _hardwareConnectionText = this.FindControl<TextBlock>("HardwareConnectionText");
                 _blockColorDropBox = this.FindControl<Canvas>("ColorDropBox");
                 _secondColorDropBox = this.FindControl<Canvas>("SecondColorDropBox");
-                _blockEditor = new BlockEditorPanel(
-                    _timeline,
-                    this.FindControl<Border>("BlockEditor"),
-                    _blockColorDropBox,
-                    _secondColorDropBox,
-                    this.FindControl<TextBox>("StartLightInput"),
-                    this.FindControl<TextBox>("EndLightInput"),
-                    this.FindControl<TextBox>("IntensityInput"),
-                    this.FindControl<TextBox>("AdditionalDualInput1TextBox"),
-                    this.FindControl<TextBox>("AdditionalDualInput2TextBox"),
-                    this.FindControl<TextBox>("AdditionalSingleInput1TextBox"),
-                    this.FindControl<TextBox>("AdditionalSingleInput2TextBox"),
-                    this.FindControl<CheckBox>("Effect_FadeIn"),
-                    this.FindControl<CheckBox>("Effect_FadeOut"),
-                    this.FindControl<CheckBox>("Effect_FadeStrobe"),
-                    this.FindControl<CheckBox>("Effect_Travel"),
-                    this.FindControl<CheckBox>("Effect_Combine"),
-                    this.FindControl<CheckBox>("Effect_Seperate"),
-                    this.FindControl<CheckBox>("Effect_Repeat"),
-                    this.FindControl<CheckBox>("Effect_ChangeColor"),
-                    this.FindControl<CheckBox>("Effect_Twinkle"),
-                    this.FindControl<StackPanel>("AdditionalDualInputsPanel"),
-                    this.FindControl<TextBlock>("AdditionalDualInput1Label"),
-                    this.FindControl<TextBlock>("AdditionalDualInput2Label"),
-                    this.FindControl<TextBlock>("AdditionalSingleInputLabel1"),
-                    this.FindControl<TextBlock>("AdditionalSingleInputLabel2"),
-                    this.FindControl<StackPanel>("AdditionalSingleInputPanel1"),
-                    this.FindControl<StackPanel>("AdditionalSingleInputPanel2")
-                );
+                _blockEditor = new BlockEditorPanel(this, _timeline);
 
                 _bpmInput = this.FindControl<TextBox>("BpmInput");
                 
@@ -443,16 +415,24 @@
                     {
                         StopwatchLabel.Text = ms.ToString();
 
-                        //Compute individual LED colors stored in color array
-                        Color[]? colors = _timeline.Tick(ms, ColorUpdateIntervalMs, BrightnessScale);
-                        
+                        // Reset serial throttle if ms went backwards (new track / seek / restart)
+                        if (ms < _lastSerialSendMs) _lastSerialSendMs = 0;
+
+                        // Tick at 10 ms so visuals and strobe match the preview frame rate.
+                        // Serial sends are throttled separately to avoid overwhelming the bus.
+                        Color[]? colors = _timeline.Tick(ms, 10, BrightnessScale, ColorUpdateIntervalMs);
+
                         if (colors == null)
                         {
                             TopColorBar.Background =
                                 new SolidColorBrush(Colors.Transparent);
                             BottomColorBar.Background =
                                 new SolidColorBrush(Colors.Transparent);
-                            await TrySendFrameAsync(colors);
+                            if (ms - _lastSerialSendMs >= ColorUpdateIntervalMs)
+                            {
+                                _lastSerialSendMs = ms;
+                                await TrySendFrameAsync(colors);
+                            }
                             return;
                         }
 
@@ -469,7 +449,11 @@
 
                         UpdateColorBar(colors);
 
-                        await TrySendFrameAsync(colors);
+                        if (ms - _lastSerialSendMs >= ColorUpdateIntervalMs)
+                        {
+                            _lastSerialSendMs = ms;
+                            await TrySendFrameAsync(colors);
+                        }
                     });
                 };
                     this.FindControl<Button>("PauseTrackButton").Click +=
@@ -1118,97 +1102,77 @@
             
             private void PlayPreview_Click(object? sender, RoutedEventArgs e)
             {
-                if (_timeline._selectedBlocks.Count == 0)
-                    return;
+                if (_timeline._selectedBlocks.Count == 0) return;
 
-                _previewTimer ??= new DispatcherTimer
-                {
-                    Interval = TimeSpan.FromMilliseconds(ColorUpdateIntervalMs)
-                };
-
-                _previewTimer.Tick -= PreviewTick;
-                _previewTimer.Tick += PreviewTick;
-
+                _previewRunning = false; // stop any existing loop
                 _previewWatch.Restart();
+                _previewRunning = true;
 
-                _previewTimer.Start();
+                // Mirror LocalFilesPlaybackHandler: tight 10 ms background loop posts
+                // accurate Stopwatch time to the UI thread — no DispatcherTimer jitter.
+                _ = Task.Run(async () =>
+                {
+                    while (_previewRunning)
+                    {
+                        double currentMs = _previewWatch.Elapsed.TotalMilliseconds;
+                        Dispatcher.UIThread.Post(() => RenderPreviewFrame(currentMs));
+                        await Task.Delay(10);
+                    }
+                });
             }
 
             private void StopPreview_Click(object? sender, RoutedEventArgs e)
             {
-                _previewTimer?.Stop();
+                _previewRunning = false;
                 _previewWatch.Stop();
             }
 
-            private async void PreviewTick(object? sender, EventArgs e)
+            private void RenderPreviewFrame(double currentMs)
             {
-                if (_timeline._selectedBlocks.Count == 0)
-                    return;
-                
-                //Create block data object to pass UI data off the UI thread
+                if (_timeline._selectedBlocks.Count == 0) return;
+
                 var blocks = _timeline._selectedBlocks
                     .Select(b => new
                     {
                         Block = b,
-                        Left = Canvas.GetLeft(b.Container),
+                        Left  = Canvas.GetLeft(b.Container),
                         Width = b.Container.Width
                     })
                     .OrderBy(b => b.Left)
                     .ToList();
 
-                if (blocks.Count == 0)
-                    return;
+                if (blocks.Count == 0) return;
 
-                double currentMs =
-                    _previewWatch.Elapsed.TotalMilliseconds;
+                double slotMs    = TimelineController.MsPerSlot;
+                Color[] finalLeds = new Color[1000];
 
-                double slotMs = TimelineController.MsPerSlot;
-
-                
-                var leds = await Task.Run(() =>
+                foreach (var b in blocks)
                 {
-                    Color[] finalLeds = new Color[1000];
+                    double blockTimeOffset = (b.Left - blocks[0].Left) * slotMs / _timeline._slotWidth;
+                    double localTime       = currentMs - blockTimeOffset;
+                    double relPos          = Math.Clamp(localTime / (b.Width * slotMs / _timeline._slotWidth), 0.0, 1.0);
 
-                    foreach (var b in blocks)
-                    {
-                        //convert pixel offset to time offset
-                        double blockTimeOffset =
-                            (b.Left - blocks[0].Left) * slotMs / _timeline._slotWidth;
+                    if (localTime < 0) continue;
 
-                        double localTime =
-                            currentMs - blockTimeOffset;
+                    Color[] blockLeds = LightEffectsComputer.ComputeBlockEffects(
+                        b.Block, relPos, 100,
+                        containerWidth:  b.Width,
+                        containerLeft:   b.Left,
+                        elapsedMs:       localTime,
+                        serialIntervalMs: ColorUpdateIntervalMs);
 
-                        double relPos =
-                            localTime / (b.Width * slotMs / _timeline._slotWidth);
+                    if (blockLeds == null) continue; // strobe off-phase — leave LEDs dark
 
-                        relPos = Math.Clamp(relPos, 0.0, 1.0);
-
-                        if (localTime < 0 || relPos > 1)
-                            continue;
-
-                        Color[] blockLeds =
-                            LightEffectsComputer.ComputeBlockEffects(
-                                b.Block,
-                                relPos,
-                                100);
-
-                        for (int i = 0; i < finalLeds.Length; i++)
-                            finalLeds[i] = blockLeds[i];
-                    }
-
-                    return finalLeds;
-                });
-
-                LedPreview.SetColors(leds);
-
-                //calculate last selected position before looping back
-                double last = blocks.Max(b => b.Left + b.Width);
-
-                if (_previewWatch.Elapsed.TotalMilliseconds >
-                    (last - blocks[0].Left) * slotMs / _timeline._slotWidth)
-                {
-                    _previewWatch.Restart();
+                    for (int i = 0; i < finalLeds.Length; i++)
+                        finalLeds[i] = blockLeds[i];
                 }
+
+                LedPreview.SetColors(finalLeds);
+
+                // Loop back when the last block finishes
+                double last = blocks.Max(b => b.Left + b.Width);
+                if (currentMs > (last - blocks[0].Left) * slotMs / _timeline._slotWidth)
+                    _previewWatch.Restart();
             }
         }
     }

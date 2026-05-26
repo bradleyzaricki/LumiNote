@@ -59,12 +59,13 @@ namespace LumikitApp
             EndLight = blockToMimic.EndLight;
             Intensity = blockToMimic.Intensity;
             BlockColor = blockToMimic.BlockColor;
+            SecondBlockColor = blockToMimic.SecondBlockColor;
             BlockEffects = new List<Effect>(blockToMimic.BlockEffects);
             SecondaryStartLight = blockToMimic.SecondaryStartLight;
             SecondaryEndLight = blockToMimic.SecondaryEndLight;
             AdditionalIndividualInput1 = blockToMimic.AdditionalIndividualInput1;
             AdditionalIndividualInput2 = blockToMimic.AdditionalIndividualInput2;
-
+            
             Container.Width = blockToMimic.Container.Width;
         }
         

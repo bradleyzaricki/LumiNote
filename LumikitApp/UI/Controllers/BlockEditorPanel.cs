@@ -1,134 +1,41 @@
 namespace LumikitApp;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using System;
 using System.Collections.Generic;
-using System;
 using System.Linq;
+
 /// <summary>
 /// Owns all block editor sidebar logic such as loading block values into the editor
-/// and applying selected changes onto lightblocks
-/// LumikitWindow holds references to the UI controls and passes them in via a (long) constructor.
+/// and applying selected changes onto lightblocks.
+/// Accesses all UI controls directly via the LumikitWindow reference.
 /// </summary>
 public class BlockEditorPanel
 {
-    //Timeline Reference
+    private readonly LumikitWindow _window;
     private readonly TimelineController _timeline;
 
-    //Sidebar Visibillity
-    private readonly Border _blockEditorBorder;
-
-    //Main and secondary color drop boxes
-    private readonly Canvas _blockColorDropBox;
-    private readonly Canvas _secondColorDropBox;
-
-    //Light Settings Inputs
-    private readonly TextBox _startLightInput;
-    private readonly TextBox _endLightInput;
-    private readonly TextBox _intensityInput;
-    private readonly TextBox _additionalDualInput1;
-    private readonly TextBox _additionalDualInput2;
-    private readonly TextBox _additionalSingleInput1;
-    private readonly TextBox _additionalSingleInput2;
-
-    //Effect Checkboxes
-    private readonly CheckBox _effectFadeIn;
-    private readonly CheckBox _effectFadeOut;
-    private readonly CheckBox _effectStrobe;
-    private readonly CheckBox _effectTravel;
-    private readonly CheckBox _effectCombine;
-    private readonly CheckBox _effectSeperate;
-    private readonly CheckBox _effectRepeat;
-    private readonly CheckBox _effectChangeColor;
-    private readonly CheckBox _effectTwinkle;
-
-    //Effect Labels (For Visibility Purposes)
-    private readonly StackPanel _additionalDualInputsPanel;
-    private readonly TextBlock _additionalDualInput1Label;
-    private readonly TextBlock _additionalDualInput2Label;
-    private readonly TextBlock _additionalSingleInputLabel1;
-    private readonly TextBlock _additionalSingleInputLabel2;
-    private readonly StackPanel _additionalSingleInputPanel1;
-    private readonly StackPanel _additionalSingleInputPanel2;
-   // Stores the text values at load time so we can detect user changes
-    private string _loadedStartLight;
-    private string _loadedEndLight;
+    // Snapshot of loaded text-box values — used to detect what the user actually changed.
+    // Range sliders don't need snapshots; their current position is always applied directly.
     private string _loadedIntensity;
-    private string _loadedDualInput1;
-    private string _loadedDualInput2;
     private string _loadedSingleInput1;
     private string _loadedSingleInput2;
 
-    public BlockEditorPanel(
-        TimelineController timeline,
-        Border blockEditorBorder,
-        Canvas blockColorDropBox,
-        Canvas secondColorDropBox,
-        TextBox startLightInput,
-        TextBox endLightInput,
-        TextBox intensityInput,
-        TextBox additionalDualInput1,
-        TextBox additionalDualInput2,
-        TextBox additionalSingleInput1,
-        TextBox additionalSingleInput2,
-        CheckBox effectFadeIn,
-        CheckBox effectFadeOut,
-        CheckBox effectStrobe,
-        CheckBox effectTravel,
-        CheckBox effectCombine,
-        CheckBox effectSeperate,
-        CheckBox effectRepeat,
-        CheckBox effectChangeColor,
-        CheckBox effectTwinkle,
-        StackPanel additionalDualInputsPanel,
-        TextBlock additionalDualInput1Label,
-        TextBlock additionalDualInput2Label,
-        TextBlock additionalSingleInputLabel1,
-        TextBlock additionalSingleInputLabel2,
-        StackPanel additionalSingleInputPanel1,
-        StackPanel additionalSingleInputPanel2
-    )
+    public BlockEditorPanel(LumikitWindow window, TimelineController timeline)
     {
+        _window = window;
         _timeline = timeline;
-        _blockEditorBorder = blockEditorBorder;
-        _blockColorDropBox = blockColorDropBox;
-        _secondColorDropBox = secondColorDropBox;
-        _startLightInput = startLightInput;
-        _endLightInput = endLightInput;
-        _intensityInput = intensityInput;
-        _additionalDualInput1 = additionalDualInput1;
-        _additionalDualInput2 = additionalDualInput2;
-        _additionalSingleInput1 = additionalSingleInput1;
-        _additionalSingleInput2 = additionalSingleInput2;
-        _effectFadeIn = effectFadeIn;
-        _effectFadeOut = effectFadeOut;
-        _effectStrobe = effectStrobe;
-        _effectTravel = effectTravel;
-        _effectCombine = effectCombine;
-        _effectSeperate = effectSeperate;
-        _effectRepeat = effectRepeat;
-        _effectChangeColor = effectChangeColor;
-        _effectTwinkle = effectTwinkle;
-        _additionalDualInputsPanel = additionalDualInputsPanel;
-        _additionalDualInput1Label = additionalDualInput1Label;
-        _additionalDualInput2Label = additionalDualInput2Label;
-        _additionalSingleInputLabel1 = additionalSingleInputLabel1;
-        _additionalSingleInputLabel2 = additionalSingleInputLabel2;
-        _additionalSingleInputPanel1 = additionalSingleInputPanel1;
-        _additionalSingleInputPanel2 = additionalSingleInputPanel2;
 
-        // Allow indeterminate state on all effect checkboxes
-        _effectFadeIn.IsThreeState = true;
-        _effectFadeOut.IsThreeState = true;
-        _effectStrobe.IsThreeState = true;
-        _effectTravel.IsThreeState = true;
-        _effectCombine.IsThreeState = true;
-        _effectSeperate.IsThreeState = true;
-        _effectRepeat.IsThreeState = true;
-        _effectChangeColor.IsThreeState = true;
-        _effectTwinkle.IsThreeState = true;
+        // Allow indeterminate state on all effect checkboxes (used for when multiple blocks selected)
+        _window.Effect_FadeIn.IsThreeState      = true;
+        _window.Effect_FadeOut.IsThreeState     = true;
+        _window.Effect_FadeStrobe.IsThreeState  = true;
+        _window.Effect_Travel.IsThreeState      = true;
+        _window.Effect_Combine.IsThreeState     = true;
+        _window.Effect_Seperate.IsThreeState    = true;
+        _window.Effect_Repeat.IsThreeState      = true;
+        _window.Effect_ChangeColor.IsThreeState = true;
+        _window.Effect_Twinkle.IsThreeState     = true;
     }
 
     /// <summary>
@@ -139,42 +46,45 @@ public class BlockEditorPanel
     public void LoadBlockIntoEditor(List<LightBlock> selectedBlocks)
     {
         if (selectedBlocks == null || selectedBlocks.Count == 0) return;
-        _blockEditorBorder.IsVisible = true;
+        _window.BlockEditorScrollViewer.IsVisible = true;
+        _window.MainTabControl.SelectedIndex = 1; // Light Preview tab
         UpdateSelectedColorsBackground();
 
-        // Use the last block for numeric values (same as before)
+        // Use the last block for numeric values
         var block = selectedBlocks.Last();
-        _startLightInput.Text = block.StartLight.ToString();
-        _endLightInput.Text = block.EndLight.ToString();
-        _intensityInput.Text = block.Intensity.ToString();
-        _additionalDualInput1.Text = block.SecondaryStartLight.ToString();
-        _additionalDualInput2.Text = block.SecondaryEndLight.ToString();
-        _additionalSingleInput1.Text = block.AdditionalIndividualInput1.ToString();
-        _additionalSingleInput2.Text = block.AdditionalIndividualInput2.ToString();
-        _blockColorDropBox.Background = new SolidColorBrush(block.BlockColor);
-        _secondColorDropBox.Background = new SolidColorBrush(block.SecondBlockColor);
 
-        // Store loaded values so ApplyBlockChanges can detect what changed
-        _loadedStartLight = _startLightInput.Text;
-        _loadedEndLight = _endLightInput.Text;
-        _loadedIntensity = _intensityInput.Text;
-        _loadedDualInput1 = _additionalDualInput1.Text;
-        _loadedDualInput2 = _additionalDualInput2.Text;
-        _loadedSingleInput1 = _additionalSingleInput1.Text;
-        _loadedSingleInput2 = _additionalSingleInput2.Text;
+        // Primary light range — shared between both slider panels so either shows correct values
+        _window.LightRangeSlider.LowerSelectedValue   = block.StartLight;
+        _window.LightRangeSlider.UpperSelectedValue   = block.EndLight;
+        
+        // Secondary light range — only used in dual-range mode (Travel / Combine / Separate)
+        _window.LightRange2Slider1.LowerSelectedValue = block.StartLight;
+        _window.LightRange2Slider1.UpperSelectedValue = block.EndLight;
+        _window.LightRange2Slider2.LowerSelectedValue = block.SecondaryStartLight;
+        _window.LightRange2Slider2.UpperSelectedValue = block.SecondaryEndLight;
 
-        // For effects: checked = all blocks have it, unchecked = no blocks have it, dot = mixed
-        SetEffectCheckbox(_effectFadeIn,    selectedBlocks, LightBlock.Effect.FadeIn);
-        SetEffectCheckbox(_effectFadeOut,   selectedBlocks, LightBlock.Effect.FadeOut);
-        SetEffectCheckbox(_effectStrobe,    selectedBlocks, LightBlock.Effect.Strobe);
-        SetEffectCheckbox(_effectTravel,    selectedBlocks, LightBlock.Effect.Travel);
-        SetEffectCheckbox(_effectCombine,   selectedBlocks, LightBlock.Effect.Combine);
-        SetEffectCheckbox(_effectSeperate,  selectedBlocks, LightBlock.Effect.Seperate);
-        SetEffectCheckbox(_effectRepeat,    selectedBlocks, LightBlock.Effect.Repeat);
-        SetEffectCheckbox(_effectChangeColor, selectedBlocks, LightBlock.Effect.ChangeColor);
-        SetEffectCheckbox(_effectTwinkle,   selectedBlocks, LightBlock.Effect.Twinkle);
+        _window.ColorDropBox.Background       = new SolidColorBrush(block.BlockColor);
+        _window.SecondColorDropBox.Background = new SolidColorBrush(block.SecondBlockColor);
+        // For effects: checked = all blocks have it, unchecked = none, indeterminate = mixed
+        SetEffectCheckbox(_window.Effect_FadeIn, selectedBlocks, LightBlock.Effect.FadeIn);
+        SetEffectCheckbox(_window.Effect_FadeOut, selectedBlocks, LightBlock.Effect.FadeOut);
+        SetEffectCheckbox(_window.Effect_FadeStrobe, selectedBlocks, LightBlock.Effect.Strobe);
+        SetEffectCheckbox(_window.Effect_Travel, selectedBlocks, LightBlock.Effect.Travel);
+        SetEffectCheckbox(_window.Effect_Combine, selectedBlocks, LightBlock.Effect.Combine);
+        SetEffectCheckbox(_window.Effect_Seperate, selectedBlocks, LightBlock.Effect.Seperate);
+        SetEffectCheckbox(_window.Effect_Repeat, selectedBlocks, LightBlock.Effect.Repeat);
+        SetEffectCheckbox(_window.Effect_ChangeColor, selectedBlocks, LightBlock.Effect.ChangeColor);
+        SetEffectCheckbox(_window.Effect_Twinkle, selectedBlocks, LightBlock.Effect.Twinkle);
 
         UpdateEffectSettingVisibility();
+        
+        _window.IntensityInput.Text                = block.Intensity.ToString();
+        _window.AdditionalSingleInput1TextBox.Text = block.AdditionalIndividualInput1.ToString();
+        _window.AdditionalSingleInput2TextBox.Text = block.AdditionalIndividualInput2.ToString();
+
+        _loadedIntensity    = _window.IntensityInput.Text;
+        _loadedSingleInput1 = _window.AdditionalSingleInput1TextBox.Text;
+        _loadedSingleInput2 = _window.AdditionalSingleInput2TextBox.Text;
     }
 
     /// <summary>
@@ -185,45 +95,56 @@ public class BlockEditorPanel
     {
         bool allHave  = blocks.All(b => b.BlockEffects.Contains(effect));
         bool noneHave = blocks.All(b => !b.BlockEffects.Contains(effect));
-
         checkbox.IsChecked = allHave ? true : noneHave ? false : null;
     }
 
     /// <summary>
-    /// Applies only the values the user actually changed since loading.
-    /// Numeric fields: only applied if text differs from loaded value.
+    /// Applies block values back from the editor controls.
+    /// Slider values are always applied; text-box values only when changed from load snapshot.
     /// Effects: null (indeterminate) = untouched, true = add, false = remove.
     /// </summary>
     public void ApplyBlockChanges()
     {
         if (_timeline._selectedBlocks == null) return;
+
+        bool dualRange = _window.Effect_Travel?.IsChecked  == true
+                      || _window.Effect_Combine?.IsChecked == true
+                      || _window.Effect_Seperate?.IsChecked == true;
+
         foreach (var selectedBlock in _timeline._selectedBlocks)
         {
-            if (_startLightInput.Text != _loadedStartLight && int.TryParse(_startLightInput.Text, out int start))
-                selectedBlock.StartLight = start;
-            if (_endLightInput.Text != _loadedEndLight && int.TryParse(_endLightInput.Text, out int end))
-                selectedBlock.EndLight = end;
-            if (_intensityInput.Text != _loadedIntensity && int.TryParse(_intensityInput.Text, out int intensity))
+            // Light range — read from whichever slider panel is active
+            if (dualRange)
+            {
+                selectedBlock.StartLight          = (int)_window.LightRange2Slider1.LowerSelectedValue;
+                selectedBlock.EndLight            = (int)_window.LightRange2Slider1.UpperSelectedValue;
+                selectedBlock.SecondaryStartLight = (int)_window.LightRange2Slider2.LowerSelectedValue;
+                selectedBlock.SecondaryEndLight   = (int)_window.LightRange2Slider2.UpperSelectedValue;
+            }
+            else
+            {
+                selectedBlock.StartLight = (int)_window.LightRangeSlider.LowerSelectedValue;
+                selectedBlock.EndLight   = (int)_window.LightRangeSlider.UpperSelectedValue;
+            }
+
+            // Text box inputs — only apply if the user changed them since load
+            if (_window.IntensityInput.Text != _loadedIntensity && int.TryParse(_window.IntensityInput.Text, out int intensity))
                 selectedBlock.Intensity = Math.Clamp(intensity, 0, 255);
-            if (_additionalDualInput1.Text != _loadedDualInput1 && int.TryParse(_additionalDualInput1.Text, out int travelStart))
-                selectedBlock.SecondaryStartLight = travelStart;
-            if (_additionalDualInput2.Text != _loadedDualInput2 && int.TryParse(_additionalDualInput2.Text, out int travelEnd))
-                selectedBlock.SecondaryEndLight = travelEnd;
-            if (_additionalSingleInput1.Text != _loadedSingleInput1 && int.TryParse(_additionalSingleInput1.Text, out int single1))
+            if (_window.AdditionalSingleInput1TextBox.Text != _loadedSingleInput1 && int.TryParse(_window.AdditionalSingleInput1TextBox.Text, out int single1))
                 selectedBlock.AdditionalIndividualInput1 = single1;
-            if (_additionalSingleInput2.Text != _loadedSingleInput2 && int.TryParse(_additionalSingleInput2.Text, out int single2))
+            if (_window.AdditionalSingleInput2TextBox.Text != _loadedSingleInput2 && int.TryParse(_window.AdditionalSingleInput2TextBox.Text, out int single2))
                 selectedBlock.AdditionalIndividualInput2 = single2;
 
             // null = indeterminate = user didn't touch it = don't change
-            ApplyEffect(selectedBlock, LightBlock.Effect.FadeIn,      _effectFadeIn.IsChecked);
-            ApplyEffect(selectedBlock, LightBlock.Effect.FadeOut,     _effectFadeOut.IsChecked);
-            ApplyEffect(selectedBlock, LightBlock.Effect.Strobe,      _effectStrobe.IsChecked);
-            ApplyEffect(selectedBlock, LightBlock.Effect.Travel,      _effectTravel.IsChecked);
-            ApplyEffect(selectedBlock, LightBlock.Effect.Combine,     _effectCombine.IsChecked);
-            ApplyEffect(selectedBlock, LightBlock.Effect.Seperate,    _effectSeperate.IsChecked);
-            ApplyEffect(selectedBlock, LightBlock.Effect.Repeat,      _effectRepeat.IsChecked);
-            ApplyEffect(selectedBlock, LightBlock.Effect.ChangeColor, _effectChangeColor.IsChecked);
-            ApplyEffect(selectedBlock, LightBlock.Effect.Twinkle,     _effectTwinkle.IsChecked);
+            ApplyEffect(selectedBlock, LightBlock.Effect.FadeIn,      _window.Effect_FadeIn.IsChecked);
+            ApplyEffect(selectedBlock, LightBlock.Effect.FadeOut,     _window.Effect_FadeOut.IsChecked);
+            ApplyEffect(selectedBlock, LightBlock.Effect.Strobe,      _window.Effect_FadeStrobe.IsChecked);
+            ApplyEffect(selectedBlock, LightBlock.Effect.Travel,      _window.Effect_Travel.IsChecked);
+            ApplyEffect(selectedBlock, LightBlock.Effect.Combine,     _window.Effect_Combine.IsChecked);
+            ApplyEffect(selectedBlock, LightBlock.Effect.Seperate,    _window.Effect_Seperate.IsChecked);
+            ApplyEffect(selectedBlock, LightBlock.Effect.Repeat,      _window.Effect_Repeat.IsChecked);
+            ApplyEffect(selectedBlock, LightBlock.Effect.ChangeColor, _window.Effect_ChangeColor.IsChecked);
+            ApplyEffect(selectedBlock, LightBlock.Effect.Twinkle,     _window.Effect_Twinkle.IsChecked);
         }
     }
 
@@ -255,59 +176,60 @@ public class BlockEditorPanel
     }
 
     /// <summary>
-    /// Updates the visibility of the lightblock effect variables to ensure proper light effect combinations
+    /// Shows the correct range slider panel and optional extra inputs based on active effects.
+    ///   No dual-range effects → LightRange (single slider)
+    ///   Travel / Combine / Separate → LightRange2 (two sliders)
+    ///   Combine / Separate also show the combined-width input
+    ///   Repeat shows the repeat-count input
     /// </summary>
     public void UpdateEffectSettingVisibility()
     {
-        var travelEffectActive = _effectTravel?.IsChecked == true;
-        var combineEffectActive = _effectCombine?.IsChecked == true;
-        var seperateEffectActive = _effectSeperate?.IsChecked == true;
-        var repeatEffectActive = _effectRepeat?.IsChecked == true;
+        var travelEffectActive = _window.Effect_Travel?.IsChecked == true;
+        var combineEffectActive = _window.Effect_Combine?.IsChecked == true;
+        var seperateEffectActive = _window.Effect_Seperate?.IsChecked == true;
+        var repeatEffectActive = _window.Effect_Repeat?.IsChecked == true;
+        var changeColorEffectActive = _window.Effect_ChangeColor?.IsChecked == true;
 
-        if (!(travelEffectActive || combineEffectActive || seperateEffectActive))
-        {
-            _additionalDualInputsPanel.IsVisible = false;
-            _additionalDualInput1.Text = "";
-            _additionalDualInput2.Text = "";
-            _additionalSingleInputLabel1.Text = "";
-            _additionalSingleInput1.Text = "";
-            _additionalSingleInputPanel1.IsVisible = false;
-        }
+        bool needsDualRange = travelEffectActive || combineEffectActive || seperateEffectActive;
+        // Show the appropriate light range slider panel
+        _window.LightRange.IsVisible  = !needsDualRange;
+        _window.LightRange2.IsVisible = needsDualRange;
 
-        if (travelEffectActive)
-        {
-            _additionalDualInputsPanel.IsVisible = true;
-            _additionalDualInput1Label.Text = "Final Start Light (0-1000)";
-            _additionalDualInput2Label.Text = "Final End Light (0-1000)";
-            _additionalSingleInputLabel1.Text = "";
-            _additionalSingleInput1.Text = "";
-            _additionalSingleInputPanel1.IsVisible = false;
-        }
+        _window.SecondColorPanel.IsVisible = changeColorEffectActive;
 
+        // Combined-width input — only for Combine / Separate
         if (combineEffectActive || seperateEffectActive)
         {
-            _additionalDualInputsPanel.IsVisible = true;
-            _additionalDualInput1Label.Text = "Second Start Light (0-1000)";
-            _additionalDualInput2Label.Text = "Second End Light (0-1000)";
-            _additionalSingleInputPanel1.IsVisible = true;
-            _additionalSingleInputLabel1.Text = "Combined Width (0-1000)";
-        }
-
-        if (repeatEffectActive)
-        {
-            _additionalSingleInputLabel2.Text = "Repeat Number";
-            _additionalSingleInputPanel2.IsVisible = true;
+            _window.RangeSlider1Text.Text = "Lightspan 1";
+            _window.RangeSlider2Text.Text = "Lightspan 2";
+            _window.AdditionalSingleInputPanel1.IsVisible = true;
+            _window.AdditionalSingleInputLabel1.Text = "Combined Width (0-1000)";
         }
         else
         {
-            _additionalSingleInputLabel2.Text = "";
-            _additionalSingleInput2.Text = "";
-            _additionalSingleInputPanel2.IsVisible = false;
+            _window.RangeSlider1Text.Text = "Start Lightspan";
+            _window.RangeSlider2Text.Text = "End Lightspan";
+            _window.AdditionalSingleInputLabel1.Text      = "";
+            _window.AdditionalSingleInput1TextBox.Text    = "";
+            _window.AdditionalSingleInputPanel1.IsVisible = false;
+        }
+
+        // Repeat-count input
+        if (repeatEffectActive)
+        {
+            _window.AdditionalSingleInputLabel2.Text      = "Repeat Number";
+            _window.AdditionalSingleInputPanel2.IsVisible = true;
+        }
+        else
+        {
+            _window.AdditionalSingleInputLabel2.Text      = "";
+            _window.AdditionalSingleInput2TextBox.Text    = "";
+            _window.AdditionalSingleInputPanel2.IsVisible = false;
         }
     }
 
     /// <summary>
     /// Hide the block editor sidebar
     /// </summary>
-    public void Hide() => _blockEditorBorder.IsVisible = false;
+    public void Hide() => _window.BlockEditorScrollViewer.IsVisible = false;
 }

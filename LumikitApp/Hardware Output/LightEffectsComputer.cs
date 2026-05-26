@@ -6,7 +6,16 @@ namespace LumikitApp;
 
 public class LightEffectsComputer
 {
-    public static Color[] ComputeBlockEffects(LightBlock block, double relPos, double brightnessScale)
+    /// <param name="containerWidth">Pre-captured container width. Pass when calling off the UI thread (e.g. Task.Run).
+    /// Defaults to -1, which causes the method to read block.Container.Width directly (UI thread only).</param>
+    /// <param name="containerLeft">Pre-captured Canvas.GetLeft value. Same threading rule as containerWidth.</param>
+    /// <param name="elapsedMs">Milliseconds elapsed since the start of this block. When provided, time-based effects
+    /// (Strobe) use real time instead of deriving it from pixel width. Always pass this for correct strobe timing.</param>
+    /// <param name="serialIntervalMs">The serial hardware update interval in ms (matches ColorUpdateIntervalMs).
+    /// Strobe half-periods are snapped to this boundary so UI and hardware always show the same on/off state.</param>
+    public static Color[] ComputeBlockEffects(LightBlock block, double relPos, double brightnessScale,
+        double containerWidth = -1, double containerLeft = -1, double elapsedMs = -1,
+        double serialIntervalMs = 50.0)
     {
         int lightcount = 1000;
         Color[] stripColorsIndividual = new Color[lightcount];
@@ -28,14 +37,28 @@ public class LightEffectsComputer
 
         if (hasStrobe)
         {
-            double flashesPerSecond = 10.0;
-            double pixelsPerSecond = 100.0; // whatever your timeline uses
+            double flashesPerSecond = serialIntervalMs;
 
-            double blockDurationSeconds = block.Container.Width / pixelsPerSecond;
-            double elapsedSeconds = relPos * blockDurationSeconds;
-            double phase = (elapsedSeconds * flashesPerSecond) % 1.0;
+            // Use real elapsed time when provided (always accurate).
+            // Fall back to pixel-based estimate only if elapsedMs wasn't passed.
+            double elapsedMsLocal;
+            if (elapsedMs >= 0)
+            {
+                elapsedMsLocal = elapsedMs;
+            }
+            else
+            {
+                double width = containerWidth >= 0 ? containerWidth : block.Container.Width;
+                elapsedMsLocal = relPos * (width / 100.0) * 1000.0;
+            }
 
-            if (phase >= 0.5)
+            // Snap half-period to the nearest serialIntervalMs multiple so UI and hardware always agree.
+            double snappedHalfPeriodMs = Math.Max(
+                serialIntervalMs,
+                Math.Round(1000.0 / (flashesPerSecond * 2.0) / serialIntervalMs) * serialIntervalMs);
+
+            long halfPeriods = (long)(elapsedMsLocal / snappedHalfPeriodMs);
+            if (halfPeriods % 2L == 1L)
                 return null;
         }
         if (hasFadeOut)
@@ -189,7 +212,8 @@ else if (hasCombineOrSeperate)
 }
         if (hasTwinkle)
         {
-            uint seed = (uint)(Canvas.GetLeft(block.Container) * 1000.0) ^
+            double left = containerLeft >= 0 ? containerLeft : Canvas.GetLeft(block.Container);
+            uint seed = (uint)(left * 1000.0) ^
                         (uint)(block.StartLight * 2654435761u) ^
                         (uint)(block.EndLight * 1597334677u) ^
                         (uint)((int)(relPos * 100000.0));

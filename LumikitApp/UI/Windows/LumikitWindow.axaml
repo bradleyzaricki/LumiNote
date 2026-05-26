@@ -1,5 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:LumikitApp.Controls"
+        xmlns:rs="clr-namespace:RangeSlider.Avalonia.Controls;assembly=RangeSlider.Avalonia"
         xmlns:models="clr-namespace:LumikitApp.Models"
         x:Class="LumikitApp.LumikitWindow"
         Width="1600" Height="900"
@@ -78,7 +80,7 @@
         </Flyout>
     </Window.Resources>
 
-    <Grid ColumnDefinitions="*, 300" RowDefinitions="Auto,Auto,*,Auto" Margin="10">
+    <Grid x:Name="MainGrid" ColumnDefinitions="*, Auto" RowDefinitions="Auto,Auto,*,Auto" Margin="10">
 
         <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Horizontal" Spacing="10">
             <Button Name="PauseTrackButton" Content="Pause" Width="80"/>
@@ -154,97 +156,102 @@
             <Border Grid.Row="4" Height="1" Background="#333" Margin="0,20,0,10"/>
             
 
-            <TabControl Grid.Row="6">
+            <TabControl x:Name="MainTabControl" Grid.Row="6">
+                <TabItem Header="Tracks" Margin="0,10,0,0">
+                    <TabControl>
+                        <TabItem Header="Local Tracks" Margin="0,10,0,0">
+                        <Grid Margin="0,0,0,0" RowDefinitions="Auto,*">
+
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBox x:Name="LocalTrackSearchBox"
+                                         Width="320"
+                                         Watermark="Search tracks by name or ID..."
+                                         HorizontalAlignment="Left"
+                                         TextChanged="LocalTrackSearchBox_TextChanged"/>
+
+                                <Button Content="Refresh"
+                                        Width="100"
+                                        HorizontalAlignment="Left"
+                                        Click="RefreshLocalTracks_Click"/>
+                            </StackPanel>
+
+                            <Border Grid.Row="1"
+                                    Background="#1b1b1b"
+                                    CornerRadius="6"
+                                    Padding="10">
+
+                                <ListBox x:Name="LocalTracksListBox"
+                                         ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.Styles>
+                                        <Style Selector="ListBoxItem">
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Margin" Value="0"/>
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                        </Style>
+                                    </ListBox.Styles>
+
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="models:TrackItemUI">
+                                            <Border Background="{Binding Color, Converter={StaticResource DarkenConverter}}"
+                                                    CornerRadius="6"
+                                                    Padding="12"
+                                                    Margin="0,0,0,0"
+                                                    Height="64"
+                                                    BorderThickness="1.5"
+                                                    BorderBrush="{Binding Color}">
+                                                <Grid ColumnDefinitions="*,Auto,Auto, Auto"
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Stretch">
+
+                                                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding TrackName}"
+                                                                   Foreground="White"
+                                                                   FontSize="15"
+                                                                   FontWeight="SemiBold"/>
+                                                        <TextBlock Text="{Binding Subtitle}"
+                                                                   Foreground="#9a9a9a"
+                                                                   FontSize="12"/>
+                                                    </StackPanel>
+                                                    <Button Content="+"
+                                                            Grid.Column="2"
+                                                            Width="40"
+                                                            Height="32"
+                                                            VerticalAlignment="Center"
+                                                            HorizontalAlignment="Right"
+                                                            Click="LocalTrack_Upload_Click"/>
+                                                    <Button Content="▶"
+                                                            Grid.Column="1"
+                                                            Width="40"
+                                                            Height="32"
+                                                            Margin="12,0,8,0"
+                                                            VerticalAlignment="Center"
+                                                            HorizontalAlignment="Right"
+                                                            Click="LocalTrack_Play_Click"/>
+
+                                                    <Button Content="🗑"
+                                                            Grid.Column="3"
+                                                            Width="40"
+                                                            Height="32"
+                                                            VerticalAlignment="Center"
+                                                            HorizontalAlignment="Right"
+                                                            Click="LocalTrack_Delete_Click"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+
+                            </Border>
+
+                        </Grid>
+                    </TabItem>
+                        
+
 
         <!-- Downloaded Local Tracks -->
-            <TabItem Header="Local Tracks" Margin="0,10,0,0">
-                <Grid Margin="0,10,0,0" RowDefinitions="Auto,*">
-
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBox x:Name="LocalTrackSearchBox"
-                                 Width="320"
-                                 Watermark="Search tracks by name or ID..."
-                                 HorizontalAlignment="Left"
-                                 TextChanged="LocalTrackSearchBox_TextChanged"/>
-
-                        <Button Content="Refresh"
-                                Width="100"
-                                HorizontalAlignment="Left"
-                                Click="RefreshLocalTracks_Click"/>
-                    </StackPanel>
-
-                    <Border Grid.Row="1"
-                            Background="#1b1b1b"
-                            CornerRadius="6"
-                            Padding="10">
-
-                        <ListBox x:Name="LocalTracksListBox"
-                                 ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                            <ListBox.Styles>
-                                <Style Selector="ListBoxItem">
-                                    <Setter Property="Padding" Value="0"/>
-                                    <Setter Property="Margin" Value="0"/>
-                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
-                                </Style>
-                            </ListBox.Styles>
-
-                            <ListBox.ItemTemplate>
-                                <DataTemplate x:DataType="models:TrackItemUI">
-                                    <Border Background="{Binding Color, Converter={StaticResource DarkenConverter}}"
-                                            CornerRadius="6"
-                                            Padding="12"
-                                            Margin="0,0,0,0"
-                                            Height="64"
-                                            BorderThickness="1.5"
-                                            BorderBrush="{Binding Color}">
-                                        <Grid ColumnDefinitions="*,Auto,Auto, Auto"
-                                              VerticalAlignment="Center"
-                                              HorizontalAlignment="Stretch">
-
-                                            <StackPanel Spacing="2" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding TrackName}"
-                                                           Foreground="White"
-                                                           FontSize="15"
-                                                           FontWeight="SemiBold"/>
-                                                <TextBlock Text="{Binding Subtitle}"
-                                                           Foreground="#9a9a9a"
-                                                           FontSize="12"/>
-                                            </StackPanel>
-                                            <Button Content="+"
-                                                    Grid.Column="2"
-                                                    Width="40"
-                                                    Height="32"
-                                                    VerticalAlignment="Center"
-                                                    HorizontalAlignment="Right"
-                                                    Click="LocalTrack_Upload_Click"/>
-                                            <Button Content="▶"
-                                                    Grid.Column="1"
-                                                    Width="40"
-                                                    Height="32"
-                                                    Margin="12,0,8,0"
-                                                    VerticalAlignment="Center"
-                                                    HorizontalAlignment="Right"
-                                                    Click="LocalTrack_Play_Click"/>
-
-                                            <Button Content="🗑"
-                                                    Grid.Column="3"
-                                                    Width="40"
-                                                    Height="32"
-                                                    VerticalAlignment="Center"
-                                                    HorizontalAlignment="Right"
-                                                    Click="LocalTrack_Delete_Click"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-
-                    </Border>
-
-                </Grid>
-            </TabItem>
+            
 
 
             <!-- QUEUE -->
@@ -340,76 +347,185 @@
                 </Grid>
             </TabItem>
             </TabControl>
-        </Grid>
+            </TabItem>
+                <TabItem Header="Light Preview" Margin="0,10,0,0">
 
-        <ScrollViewer Grid.Column="1" Grid.Row="0" Grid.RowSpan="3">
+                    <Grid RowDefinitions="Auto,*,Auto">
+
+                        <!-- Top controls -->
+                        <StackPanel Grid.Row="0"
+                                    Orientation="Horizontal"
+                                    Margin="10"
+                                    Spacing="10">
+
+                            <Button Content="Play Preview"
+                                    Click="PlayPreview_Click"/>
+
+                            <Button Content="Stop Preview"
+                                    Click="StopPreview_Click"/>
+
+                            <TextBlock Text="Selected Block Simulator"
+                                       Foreground="White"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <Grid Grid.Row="1" Margin="10" Background="#222">
+
+                                <!-- LED BACKGROUND -->
+                                <local:LedStripPreview
+                                    x:Name="LedPreview"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"/>
+
+                                <!-- LIGHTBLOCK SETTINGS -->
+                                <Grid HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Top"
+                                      Margin="30,25"
+                                      ZIndex="10"
+                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" Row="0">
+                                    <!-- LIGHTSPAN -->
+                                    
+                                    <StackPanel  Name="LightRange" Grid.Row="0" Margin="0,10" IsVisible="False">
+                                        <StackPanel Orientation="Horizontal" Spacing="16">
+                                            <TextBlock Text="LightSpan"/>
+                                            <TextBlock Text="{Binding #LightRangeSlider.LowerSelectedValue, StringFormat='Start: {0:0}'}" Foreground="#AAA"/>
+                                            <TextBlock Text="{Binding #LightRangeSlider.UpperSelectedValue, StringFormat='End: {0:0}'}"   Foreground="#AAA"/>
+                                        </StackPanel>
+                                        <rs:RangeSlider x:Name="LightRangeSlider"
+                                                        Minimum="0" Maximum="1000"
+                                                        LowerSelectedValue="100" UpperSelectedValue="200">
+                                            <rs:RangeSlider.Resources>
+                                                <SolidColorBrush x:Key="SliderTrackValueFill" Color="BlueViolet"/>
+                                                <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="BlueViolet"/>
+                                                <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="BlueViolet"/>
+                                            </rs:RangeSlider.Resources>
+                                        </rs:RangeSlider>
+                                    </StackPanel>
+                                    
+                                    <!-- LIGHTSPAN 2In1 -->
+
+                                    <StackPanel Name="LightRange2" Grid.Row="1" Margin="0,10" Spacing="6" IsVisible="False">
+
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Bottom" Margin="0,0,10,0" Spacing="2">
+                                                <TextBlock Name="RangeSlider1Text" Text="Start Lightspan" TextAlignment="Center"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{Binding #LightRange2Slider1.LowerSelectedValue, StringFormat='S:{0:0}'}" Foreground="#AAA" FontSize="11"/>
+                                                    <TextBlock Text="{Binding #LightRange2Slider1.UpperSelectedValue, StringFormat='E:{0:0}'}"   Foreground="#AAA" FontSize="11"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <rs:RangeSlider x:Name="LightRange2Slider1"
+                                                            Grid.Column="1"
+                                                            Minimum="0" Maximum="1000"
+                                                            LowerSelectedValue="100" UpperSelectedValue="200">
+                                                <rs:RangeSlider.Resources>
+                                                    <SolidColorBrush x:Key="SliderTrackValueFill" Color="BlueViolet"/>
+                                                    <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="BlueViolet"/>
+                                                    <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="BlueViolet"/>
+                                                </rs:RangeSlider.Resources>
+                                            </rs:RangeSlider>
+                                        </Grid>
+
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0" Spacing="2">
+                                                <TextBlock Name="RangeSlider2Text" Text="End Lightspan" TextAlignment="Center"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{Binding #LightRange2Slider2.LowerSelectedValue, StringFormat='S:{0:0}'}" Foreground="#AAA" FontSize="11"/>
+                                                    <TextBlock Text="{Binding #LightRange2Slider2.UpperSelectedValue, StringFormat='E:{0:0}'}"   Foreground="#AAA" FontSize="11"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <rs:RangeSlider x:Name="LightRange2Slider2"
+                                                            Grid.Column="1"
+                                                            Minimum="0" Maximum="1000"
+                                                            LowerSelectedValue="100" UpperSelectedValue="200">
+                                                <rs:RangeSlider.Resources>
+                                                    <SolidColorBrush x:Key="SliderTrackValueFill" Color="BlueViolet"/>
+                                                    <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="BlueViolet"/>
+                                                    <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="BlueViolet"/>
+                                                </rs:RangeSlider.Resources>
+                                            </rs:RangeSlider>
+                                        </Grid>
+                                    </StackPanel>
+                                    
+                                    <!-- Block Color -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Margin="0,10">
+                                        <TextBlock Text="Block Color:" Foreground="White" VerticalAlignment="Center" Margin="0,10,8,10"/>
+
+                                        <Border Width="200"
+                                                Height="40"
+                                                CornerRadius="8"
+                                                BorderBrush="Black"
+                                                BorderThickness="6"
+                                                ClipToBounds="True"
+                                                HorizontalAlignment="Left">
+                                            <Border CornerRadius="8" Background="BlueViolet">
+                                                <Canvas Name="ColorDropBox"/>
+                                            </Border>
+                                        </Border>
+                                    </StackPanel>
+                                    
+                                    
+                                    <StackPanel Name="SecondColorPanel" Grid.Row="3" Orientation="Horizontal" Margin="0,10" IsVisible="False">
+                                    <TextBlock Name="SecondColorHeader" Text="Second Color:" Foreground="White" VerticalAlignment="Center" Margin="0,10,8,10"/>
+                                    <Border Name="SecondColorFrame"
+                                            Width="200"
+                                            Height="40"
+                                            CornerRadius="8"
+                                            BorderBrush="Black"
+                                            BorderThickness="6"
+                                            ClipToBounds="True"
+                                            HorizontalAlignment="Left"
+                                            IsVisible="True">
+                                        <Border CornerRadius="8" Background="Transparent">
+                                            <Canvas Name="SecondColorDropBox"/>
+                                        </Border>
+                                    </Border>
+                                    </StackPanel>
+                                    
+                                    
+                                    <StackPanel Grid.Row="4" >
+                                        <TextBlock Text="Intensity (0-255)" Foreground="White"/>
+                                        <TextBox Name="IntensityInput" Width="200"  HorizontalAlignment="Left"/>
+
+                                        <StackPanel Name="AdditionalSingleInputPanel1">
+                                            <TextBlock Name="AdditionalSingleInputLabel1" Text="SECONDARYSINGLEINPUT" Foreground="White" />
+                                            <TextBox Name="AdditionalSingleInput1TextBox" Width="200" HorizontalAlignment="Left"/>
+                                        </StackPanel>
+
+                                        <StackPanel Name="AdditionalSingleInputPanel2">
+                                            <TextBlock Name="AdditionalSingleInputLabel2" Text="" Foreground="White"/>
+                                            <TextBox Name="AdditionalSingleInput2TextBox"  Width="200"  HorizontalAlignment="Left"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    
+                                    <Button Grid.Row="5" Name="ApplyBlockChangesButton"
+                                            Content="Apply"
+                                            Margin="0,10,0,0"/>
+                                </Grid>
+                                
+                            </Grid>
+                        </Grid>
+ 
+                </TabItem>
+            </TabControl>
+
+        </Grid>
+        <ScrollViewer x:Name="BlockEditorScrollViewer"
+                      Grid.Column="1" Grid.Row="0" Grid.RowSpan="3"
+                      Width="300"
+                      IsVisible="False">
             <Border Name="BlockEditor"
                     Background="#222"
                     Padding="10"
                     CornerRadius="6"
                     Margin="10,0,0,0">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Block Editor"
+                    <TextBlock Text="Block Effects Selection"
                                Foreground="White"
                                FontWeight="Bold"
                                Margin="0,0,0,6"/>
 
-                    <TextBlock Text="Block Color:" Foreground="White"/>
-                    <Border Width="200"
-                            Height="40"
-                            CornerRadius="8"
-                            BorderBrush="Black"
-                            BorderThickness="6"
-                            ClipToBounds="True"
-                            HorizontalAlignment="Left">
-                        <Border CornerRadius="8" Background="BlueViolet">
-                            <Canvas Name="ColorDropBox"/>
-                        </Border>
-                    </Border>
-
                     <Border Height="1" Background="#333" Margin="0,10,0,10"/>
-
-                    <TextBlock Text="Start Light (0-1000)" Foreground="White"/>
-                    <TextBox Name="StartLightInput"/>
-
-                    <TextBlock Text="End Light (0-1000)" Foreground="White"/>
-                    <TextBox Name="EndLightInput"/>
-
-                    <TextBlock Text="Intensity (0-255)" Foreground="White"/>
-                    <TextBox Name="IntensityInput"/>
-
-                    <StackPanel Name="AdditionalDualInputsPanel">
-                        <TextBlock Name="AdditionalDualInput1Label" Text="SECONDARYDUALINPUT1" Foreground="White"/>
-                        <TextBox Name="AdditionalDualInput1TextBox"/>
-
-                        <TextBlock Name="AdditionalDualInput2Label" Text="SECONDARYDUALINPUT2" Foreground="White"/>
-                        <TextBox Name="AdditionalDualInput2TextBox"/>
-                    </StackPanel>
-
-                    <StackPanel Name="AdditionalSingleInputPanel1">
-                        <TextBlock Name="AdditionalSingleInputLabel1" Text="SECONDARYSINGLEINPUT" Foreground="White"/>
-                        <TextBox Name="AdditionalSingleInput1TextBox"/>
-                    </StackPanel>
-
-                    <StackPanel Name="AdditionalSingleInputPanel2">
-                        <TextBlock Name="AdditionalSingleInputLabel2" Text="" Foreground="White"/>
-                        <TextBox Name="AdditionalSingleInput2TextBox"/>
-                    </StackPanel>
-
-                    <TextBlock Name="SecondColorHeader" Text="Second Color:" Foreground="White" IsVisible="True"/>
-                    <Border Name="SecondColorFrame"
-                            Width="200"
-                            Height="40"
-                            CornerRadius="8"
-                            BorderBrush="Black"
-                            BorderThickness="6"
-                            ClipToBounds="True"
-                            HorizontalAlignment="Left"
-                            IsVisible="True">
-                        <Border CornerRadius="8" Background="Transparent">
-                            <Canvas Name="SecondColorDropBox"/>
-                        </Border>
-                    </Border>
 
                     <TextBlock Text="Effect" Foreground="White" Margin="0,10,0,0"/>
                     <StackPanel>
@@ -448,10 +564,6 @@
                                   Checked="Effect_OnChanged"
                                   Unchecked="Effect_OnChanged"/>
                     </StackPanel>
-
-                    <Button Name="ApplyBlockChangesButton"
-                            Content="Apply"
-                            Margin="0,10,0,0"/>
                 </StackPanel>
             </Border>
         </ScrollViewer>

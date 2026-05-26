@@ -104,6 +104,10 @@
             Border? _activeSwatch;
             private BlockEditorPanel _blockEditor;
 
+            public LumikitWindow()  // designer uses this
+            {
+                InitializeComponent();
+            }
             public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess)
             {
                 _musicProvider = provider;
@@ -1116,7 +1120,7 @@
                     {
                         double currentMs = _previewWatch.Elapsed.TotalMilliseconds;
                         Dispatcher.UIThread.Post(() => RenderPreviewFrame(currentMs));
-                        await Task.Delay(10);
+                        await Task.Delay(ColorUpdateIntervalMs);
                     }
                 });
             }
@@ -1131,6 +1135,7 @@
             {
                 if (_timeline._selectedBlocks.Count == 0) return;
 
+                //create custom list with selected block data
                 var blocks = _timeline._selectedBlocks
                     .Select(b => new
                     {
@@ -1138,7 +1143,6 @@
                         Left  = Canvas.GetLeft(b.Container),
                         Width = b.Container.Width
                     })
-                    .OrderBy(b => b.Left)
                     .ToList();
 
                 if (blocks.Count == 0) return;

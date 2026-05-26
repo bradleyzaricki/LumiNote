@@ -56,38 +56,35 @@ public class BlockEditorPanel
         // Primary light range — shared between both slider panels so either shows correct values
         _window.LightRangeSlider.LowerSelectedValue   = block.StartLight;
         _window.LightRangeSlider.UpperSelectedValue   = block.EndLight;
+        
+        // Secondary light range — only used in dual-range mode (Travel / Combine / Separate)
         _window.LightRange2Slider1.LowerSelectedValue = block.StartLight;
         _window.LightRange2Slider1.UpperSelectedValue = block.EndLight;
-
-        // Secondary light range — only used in dual-range mode (Travel / Combine / Separate)
         _window.LightRange2Slider2.LowerSelectedValue = block.SecondaryStartLight;
         _window.LightRange2Slider2.UpperSelectedValue = block.SecondaryEndLight;
 
-        // Text box inputs (still change-detected)
+        _window.ColorDropBox.Background       = new SolidColorBrush(block.BlockColor);
+        _window.SecondColorDropBox.Background = new SolidColorBrush(block.SecondBlockColor);
+        // For effects: checked = all blocks have it, unchecked = none, indeterminate = mixed
+        SetEffectCheckbox(_window.Effect_FadeIn, selectedBlocks, LightBlock.Effect.FadeIn);
+        SetEffectCheckbox(_window.Effect_FadeOut, selectedBlocks, LightBlock.Effect.FadeOut);
+        SetEffectCheckbox(_window.Effect_FadeStrobe, selectedBlocks, LightBlock.Effect.Strobe);
+        SetEffectCheckbox(_window.Effect_Travel, selectedBlocks, LightBlock.Effect.Travel);
+        SetEffectCheckbox(_window.Effect_Combine, selectedBlocks, LightBlock.Effect.Combine);
+        SetEffectCheckbox(_window.Effect_Seperate, selectedBlocks, LightBlock.Effect.Seperate);
+        SetEffectCheckbox(_window.Effect_Repeat, selectedBlocks, LightBlock.Effect.Repeat);
+        SetEffectCheckbox(_window.Effect_ChangeColor, selectedBlocks, LightBlock.Effect.ChangeColor);
+        SetEffectCheckbox(_window.Effect_Twinkle, selectedBlocks, LightBlock.Effect.Twinkle);
+
+        UpdateEffectSettingVisibility();
+        
         _window.IntensityInput.Text                = block.Intensity.ToString();
         _window.AdditionalSingleInput1TextBox.Text = block.AdditionalIndividualInput1.ToString();
         _window.AdditionalSingleInput2TextBox.Text = block.AdditionalIndividualInput2.ToString();
 
-        _window.ColorDropBox.Background       = new SolidColorBrush(block.BlockColor);
-        _window.SecondColorDropBox.Background = new SolidColorBrush(block.SecondBlockColor);
-
-        // Snapshot text-box values for change detection
         _loadedIntensity    = _window.IntensityInput.Text;
         _loadedSingleInput1 = _window.AdditionalSingleInput1TextBox.Text;
         _loadedSingleInput2 = _window.AdditionalSingleInput2TextBox.Text;
-
-        // For effects: checked = all blocks have it, unchecked = none, indeterminate = mixed
-        SetEffectCheckbox(_window.Effect_FadeIn,      selectedBlocks, LightBlock.Effect.FadeIn);
-        SetEffectCheckbox(_window.Effect_FadeOut,     selectedBlocks, LightBlock.Effect.FadeOut);
-        SetEffectCheckbox(_window.Effect_FadeStrobe,  selectedBlocks, LightBlock.Effect.Strobe);
-        SetEffectCheckbox(_window.Effect_Travel,      selectedBlocks, LightBlock.Effect.Travel);
-        SetEffectCheckbox(_window.Effect_Combine,     selectedBlocks, LightBlock.Effect.Combine);
-        SetEffectCheckbox(_window.Effect_Seperate,    selectedBlocks, LightBlock.Effect.Seperate);
-        SetEffectCheckbox(_window.Effect_Repeat,      selectedBlocks, LightBlock.Effect.Repeat);
-        SetEffectCheckbox(_window.Effect_ChangeColor, selectedBlocks, LightBlock.Effect.ChangeColor);
-        SetEffectCheckbox(_window.Effect_Twinkle,     selectedBlocks, LightBlock.Effect.Twinkle);
-
-        UpdateEffectSettingVisibility();
     }
 
     /// <summary>
@@ -187,25 +184,31 @@ public class BlockEditorPanel
     /// </summary>
     public void UpdateEffectSettingVisibility()
     {
-        var travelEffectActive   = _window.Effect_Travel?.IsChecked   == true;
-        var combineEffectActive  = _window.Effect_Combine?.IsChecked  == true;
+        var travelEffectActive = _window.Effect_Travel?.IsChecked == true;
+        var combineEffectActive = _window.Effect_Combine?.IsChecked == true;
         var seperateEffectActive = _window.Effect_Seperate?.IsChecked == true;
-        var repeatEffectActive   = _window.Effect_Repeat?.IsChecked   == true;
+        var repeatEffectActive = _window.Effect_Repeat?.IsChecked == true;
+        var changeColorEffectActive = _window.Effect_ChangeColor?.IsChecked == true;
 
         bool needsDualRange = travelEffectActive || combineEffectActive || seperateEffectActive;
-
         // Show the appropriate light range slider panel
         _window.LightRange.IsVisible  = !needsDualRange;
         _window.LightRange2.IsVisible = needsDualRange;
 
+        _window.SecondColorPanel.IsVisible = changeColorEffectActive;
+
         // Combined-width input — only for Combine / Separate
         if (combineEffectActive || seperateEffectActive)
         {
+            _window.RangeSlider1Text.Text = "Lightspan 1";
+            _window.RangeSlider2Text.Text = "Lightspan 2";
             _window.AdditionalSingleInputPanel1.IsVisible = true;
-            _window.AdditionalSingleInputLabel1.Text      = "Combined Width (0-1000)";
+            _window.AdditionalSingleInputLabel1.Text = "Combined Width (0-1000)";
         }
         else
         {
+            _window.RangeSlider1Text.Text = "Start Lightspan";
+            _window.RangeSlider2Text.Text = "End Lightspan";
             _window.AdditionalSingleInputLabel1.Text      = "";
             _window.AdditionalSingleInput1TextBox.Text    = "";
             _window.AdditionalSingleInputPanel1.IsVisible = false;

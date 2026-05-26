@@ -371,47 +371,27 @@
 
                         <Grid Grid.Row="1" Margin="10" Background="#222">
 
-                            <!-- LED BACKGROUND -->
-                            <local:LedStripPreview
-                                x:Name="LedPreview"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Stretch"/>
+                                <!-- LED BACKGROUND -->
+                                <local:LedStripPreview
+                                    x:Name="LedPreview"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"/>
 
-                            <!-- LIGHTBLOCK SETTINGS -->
-                            <Grid HorizontalAlignment="Stretch"
-                                  VerticalAlignment="Top"
-                                  Margin="30,25"
-                                  Height="300"
-                                  ZIndex="10"
-                                  RowDefinitions="Auto,Auto,Auto,Auto,Auto">
-                                
-                                <!-- LIGHTSPAN -->
-                                
-                                <StackPanel  Name="LightRange" Grid.Row="0" Margin="0,10" IsVisible="False">
-                                    <TextBlock Text="LightSpan"/>
-                                    <rs:RangeSlider x:Name="LightRangeSlider"
-                                                    Minimum="0" Maximum="1000"
-                                                    LowerSelectedValue="100" UpperSelectedValue="200">
-                                        <rs:RangeSlider.Resources>
-                                            <SolidColorBrush x:Key="SliderTrackValueFill" Color="BlueViolet"/>
-                                            <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="BlueViolet"/>
-                                            <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="BlueViolet"/>
-                                        </rs:RangeSlider.Resources>
-                                    </rs:RangeSlider>
-                                </StackPanel>
-                                
-                                <!-- LIGHTSPAN 2In1 -->
-
-                                <StackPanel Name="LightRange2" Grid.Row="1" Margin="0,10" Spacing="6" IsVisible="False">
-
-                                    <Grid ColumnDefinitions="Auto,*">
-                                        <TextBlock Grid.Column="0"
-                                                   TextAlignment="Center"
-                                                   Text="Start Lightspan"
-                                                   VerticalAlignment="Bottom"
-                                                   Margin="0,0,10,0"/>
-                                        <rs:RangeSlider x:Name="LightRange2Slider1"
-                                                        Grid.Column="1"
+                                <!-- LIGHTBLOCK SETTINGS -->
+                                <Grid HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Top"
+                                      Margin="30,25"
+                                      ZIndex="10"
+                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" Row="0">
+                                    <!-- LIGHTSPAN -->
+                                    
+                                    <StackPanel  Name="LightRange" Grid.Row="0" Margin="0,10" IsVisible="False">
+                                        <StackPanel Orientation="Horizontal" Spacing="16">
+                                            <TextBlock Text="LightSpan"/>
+                                            <TextBlock Text="{Binding #LightRangeSlider.LowerSelectedValue, StringFormat='Start: {0:0}'}" Foreground="#AAA"/>
+                                            <TextBlock Text="{Binding #LightRangeSlider.UpperSelectedValue, StringFormat='End: {0:0}'}"   Foreground="#AAA"/>
+                                        </StackPanel>
+                                        <rs:RangeSlider x:Name="LightRangeSlider"
                                                         Minimum="0" Maximum="1000"
                                                         LowerSelectedValue="100" UpperSelectedValue="200">
                                             <rs:RangeSlider.Resources>
@@ -420,67 +400,111 @@
                                                 <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="BlueViolet"/>
                                             </rs:RangeSlider.Resources>
                                         </rs:RangeSlider>
-                                    </Grid>
+                                    </StackPanel>
+                                    
+                                    <!-- LIGHTSPAN 2In1 -->
 
-                                    <Grid ColumnDefinitions="Auto,*">
-                                        <TextBlock Grid.Column="0"
-                                                   Padding="0,10,0,0"
-                                                   TextAlignment="Center"
-                                                   Text="End Lightspan"
-                                                   VerticalAlignment="Center"
-                                                   Margin="0,0,10,0"/>
-                                        <rs:RangeSlider x:Name="LightRange2Slider2"
-                                                        Grid.Column="1"
-                                                        Minimum="0" Maximum="1000"
-                                                        LowerSelectedValue="100" UpperSelectedValue="200">
-                                            <rs:RangeSlider.Resources>
-                                                <SolidColorBrush x:Key="SliderTrackValueFill" Color="BlueViolet"/>
-                                                <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="BlueViolet"/>
-                                                <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="BlueViolet"/>
-                                            </rs:RangeSlider.Resources>
-                                        </rs:RangeSlider>
-                                    </Grid>
-                                </StackPanel>
-                                
-                                <!-- Block Color -->
-                                <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Margin="0,10">
-                                    <TextBlock Text="Block Color:" Foreground="White" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <StackPanel Name="LightRange2" Grid.Row="1" Margin="0,10" Spacing="6" IsVisible="False">
 
-                                    <Border Width="200"
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Bottom" Margin="0,0,10,0" Spacing="2">
+                                                <TextBlock Name="RangeSlider1Text" Text="Start Lightspan" TextAlignment="Center"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{Binding #LightRange2Slider1.LowerSelectedValue, StringFormat='S:{0:0}'}" Foreground="#AAA" FontSize="11"/>
+                                                    <TextBlock Text="{Binding #LightRange2Slider1.UpperSelectedValue, StringFormat='E:{0:0}'}"   Foreground="#AAA" FontSize="11"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <rs:RangeSlider x:Name="LightRange2Slider1"
+                                                            Grid.Column="1"
+                                                            Minimum="0" Maximum="1000"
+                                                            LowerSelectedValue="100" UpperSelectedValue="200">
+                                                <rs:RangeSlider.Resources>
+                                                    <SolidColorBrush x:Key="SliderTrackValueFill" Color="BlueViolet"/>
+                                                    <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="BlueViolet"/>
+                                                    <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="BlueViolet"/>
+                                                </rs:RangeSlider.Resources>
+                                            </rs:RangeSlider>
+                                        </Grid>
+
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0" Spacing="2">
+                                                <TextBlock Name="RangeSlider2Text" Text="End Lightspan" TextAlignment="Center"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{Binding #LightRange2Slider2.LowerSelectedValue, StringFormat='S:{0:0}'}" Foreground="#AAA" FontSize="11"/>
+                                                    <TextBlock Text="{Binding #LightRange2Slider2.UpperSelectedValue, StringFormat='E:{0:0}'}"   Foreground="#AAA" FontSize="11"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <rs:RangeSlider x:Name="LightRange2Slider2"
+                                                            Grid.Column="1"
+                                                            Minimum="0" Maximum="1000"
+                                                            LowerSelectedValue="100" UpperSelectedValue="200">
+                                                <rs:RangeSlider.Resources>
+                                                    <SolidColorBrush x:Key="SliderTrackValueFill" Color="BlueViolet"/>
+                                                    <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="BlueViolet"/>
+                                                    <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="BlueViolet"/>
+                                                </rs:RangeSlider.Resources>
+                                            </rs:RangeSlider>
+                                        </Grid>
+                                    </StackPanel>
+                                    
+                                    <!-- Block Color -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Margin="0,10">
+                                        <TextBlock Text="Block Color:" Foreground="White" VerticalAlignment="Center" Margin="0,10,8,10"/>
+
+                                        <Border Width="200"
+                                                Height="40"
+                                                CornerRadius="8"
+                                                BorderBrush="Black"
+                                                BorderThickness="6"
+                                                ClipToBounds="True"
+                                                HorizontalAlignment="Left">
+                                            <Border CornerRadius="8" Background="BlueViolet">
+                                                <Canvas Name="ColorDropBox"/>
+                                            </Border>
+                                        </Border>
+                                    </StackPanel>
+                                    
+                                    
+                                    <StackPanel Name="SecondColorPanel" Grid.Row="3" Orientation="Horizontal" Margin="0,10" IsVisible="False">
+                                    <TextBlock Name="SecondColorHeader" Text="Second Color:" Foreground="White" VerticalAlignment="Center" Margin="0,10,8,10"/>
+                                    <Border Name="SecondColorFrame"
+                                            Width="200"
                                             Height="40"
                                             CornerRadius="8"
                                             BorderBrush="Black"
                                             BorderThickness="6"
                                             ClipToBounds="True"
-                                            HorizontalAlignment="Left">
-                                        <Border CornerRadius="8" Background="BlueViolet">
-                                            <Canvas Name="ColorDropBox"/>
+                                            HorizontalAlignment="Left"
+                                            IsVisible="True">
+                                        <Border CornerRadius="8" Background="Transparent">
+                                            <Canvas Name="SecondColorDropBox"/>
                                         </Border>
                                     </Border>
-                                </StackPanel>
-                                <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,10">
+                                    </StackPanel>
                                     
-                                    <!-- Secondary Color  -->
-                                <TextBlock Name="SecondColorHeader" Text="Second Color:" Foreground="White" IsVisible="True"/>
-                                <Border Name="SecondColorFrame"
-                                        Width="200"
-                                        Height="40"
-                                        CornerRadius="8"
-                                        BorderBrush="Black"
-                                        BorderThickness="6"
-                                        ClipToBounds="True"
-                                        HorizontalAlignment="Left"
-                                        IsVisible="True">
-                                    <Border CornerRadius="8" Background="Transparent">
-                                        <Canvas Name="SecondColorDropBox"/>
-                                    </Border>
-                                </Border>
-                                </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="4" >
+                                        <TextBlock Text="Intensity (0-255)" Foreground="White"/>
+                                        <TextBox Name="IntensityInput" Width="200"  HorizontalAlignment="Left"/>
 
+                                        <StackPanel Name="AdditionalSingleInputPanel1">
+                                            <TextBlock Name="AdditionalSingleInputLabel1" Text="SECONDARYSINGLEINPUT" Foreground="White" />
+                                            <TextBox Name="AdditionalSingleInput1TextBox" Width="200" HorizontalAlignment="Left"/>
+                                        </StackPanel>
+
+                                        <StackPanel Name="AdditionalSingleInputPanel2">
+                                            <TextBlock Name="AdditionalSingleInputLabel2" Text="" Foreground="White"/>
+                                            <TextBox Name="AdditionalSingleInput2TextBox"  Width="200"  HorizontalAlignment="Left"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    
+                                    <Button Grid.Row="5" Name="ApplyBlockChangesButton"
+                                            Content="Apply"
+                                            Margin="0,10,0,0"/>
+                                </Grid>
+                                
                             </Grid>
-
                         </Grid>
-                    </Grid>
  
                 </TabItem>
             </TabControl>
@@ -496,29 +520,12 @@
                     CornerRadius="6"
                     Margin="10,0,0,0">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Block Editor"
+                    <TextBlock Text="Block Effects Selection"
                                Foreground="White"
                                FontWeight="Bold"
                                Margin="0,0,0,6"/>
 
-                   
-
                     <Border Height="1" Background="#333" Margin="0,10,0,10"/>
-
-                    <TextBlock Text="Intensity (0-255)" Foreground="White"/>
-                    <TextBox Name="IntensityInput"/>
-
-                    <StackPanel Name="AdditionalSingleInputPanel1">
-                        <TextBlock Name="AdditionalSingleInputLabel1" Text="SECONDARYSINGLEINPUT" Foreground="White"/>
-                        <TextBox Name="AdditionalSingleInput1TextBox"/>
-                    </StackPanel>
-
-                    <StackPanel Name="AdditionalSingleInputPanel2">
-                        <TextBlock Name="AdditionalSingleInputLabel2" Text="" Foreground="White"/>
-                        <TextBox Name="AdditionalSingleInput2TextBox"/>
-                    </StackPanel>
-
-                   
 
                     <TextBlock Text="Effect" Foreground="White" Margin="0,10,0,0"/>
                     <StackPanel>
@@ -557,10 +564,6 @@
                                   Checked="Effect_OnChanged"
                                   Unchecked="Effect_OnChanged"/>
                     </StackPanel>
-
-                    <Button Name="ApplyBlockChangesButton"
-                            Content="Apply"
-                            Margin="0,10,0,0"/>
                 </StackPanel>
             </Border>
         </ScrollViewer>

@@ -85,6 +85,11 @@ public class BlockEditorPanel
         _loadedIntensity    = _window.IntensityInput.Text;
         _loadedSingleInput1 = _window.AdditionalSingleInput1TextBox.Text;
         _loadedSingleInput2 = _window.AdditionalSingleInput2TextBox.Text;
+
+        // Restart preview for the newly loaded block, but only when the main music timer is idle
+        _window.StopPreview();
+        if (!_window.IsPlaybackActive)
+            _window.PlayPreview();
     }
 
     /// <summary>

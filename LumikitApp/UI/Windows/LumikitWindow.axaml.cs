@@ -34,27 +34,10 @@
             /// </summary>
             private Point _lastPointerPos;
 
-            //Hardware Adjusted Variables for specific systems
-            
-            /// <summary>
-            /// The active LED count (determined by the number of LEDs connected to the system)
-            /// </summary>
-            private int ActiveLedCount = 0;
-            
             /// <summary>
             /// Color update interval (determined by the max update interval with current light config)
             /// </summary>
             private const int ColorUpdateIntervalMs = 50;
-            
-            /// <summary>
-            /// Current supplied by the power supply (in amps)
-            /// </summary>
-            private int HardwareCurrent = 0; 
-            
-            /// <summary>
-            /// Brightness scale determined by the input current, and number of lights
-            /// </summary>
-            private double BrightnessScale = 1;
             
             /// <summary>
             /// The source responsible for playing/pausing/locating a point in a music file
@@ -70,7 +53,7 @@
             private TimelineController _timeline;
 
             /// <summary> The serial output for lighting communications  </summary>
-            private SerialHandler SerialHandler;
+            private SerialPanel _serialPanel;
             
             /// <summary> Possible color blocks for lightshow editing, can be redefined by the user </summary>
             private readonly List<Color> BlockColors = new()
@@ -126,6 +109,7 @@
                 _blockColorDropBox = this.FindControl<Canvas>("ColorDropBox");
                 _secondColorDropBox = this.FindControl<Canvas>("SecondColorDropBox");
                 _blockEditor = new BlockEditorPanel(this, _timeline);
+                _serialPanel = new SerialPanel(UpdateErrorText, UpdateHardwareConnectionText);
 
                 _bpmInput = this.FindControl<TextBox>("BpmInput");
                 
@@ -169,16 +153,7 @@
     
                     var pos = e.GetPosition(seekBar);
                     int ms = _timeline.CanvasXToMs(pos.X);
-
-                    bool wasPlaying = await _musicProvider.IsPlayingAsync();
-
-                    await _playbackHandler.PauseAsync();
-                     ms = (ms / 1000) * 1000;
-                    _musicProvider.SeekToPlaybackTime(ms);
-                    await Task.Delay(500);
-                                _playbackHandler.StartTimer(ms);
-                                await _playbackHandler.ResumeAsync();
-
+                    await _playbackHandler.SeekToPlaybackTime(ms);
                 };
                 this.KeyDown += OnKeyDown;
                 this.KeyUp += OnKeyUp;
@@ -301,6 +276,7 @@
                 _timeline.LightBlocks.Add(block);
                 _timeline.ReorderLightBlocks();
                 block.Container.PointerPressed += OnBlockPointerPressed;
+                block.Container.PointerReleased += (_, _) => _timeline.ReorderLightBlocks();
 
                 return block;
             }
@@ -417,6 +393,9 @@
                 {
                     Dispatcher.UIThread.Post(async () =>
                     {
+                        // Kill any running block preview the moment real playback ticks.
+                        if (_previewRunning && _playbackHandler.IsTimerRunning) StopPreview();
+
                         StopwatchLabel.Text = ms.ToString();
 
                         // Reset serial throttle if ms went backwards (new track / seek / restart)
@@ -424,7 +403,7 @@
 
                         // Tick at 10 ms so visuals and strobe match the preview frame rate.
                         // Serial sends are throttled separately to avoid overwhelming the bus.
-                        Color[]? colors = _timeline.Tick(ms, 10, BrightnessScale, ColorUpdateIntervalMs);
+                        Color[]? colors = _timeline.Tick(ms, 10, _serialPanel.BrightnessScale, ColorUpdateIntervalMs);
 
                         if (colors == null)
                         {
@@ -435,7 +414,7 @@
                             if (ms - _lastSerialSendMs >= ColorUpdateIntervalMs)
                             {
                                 _lastSerialSendMs = ms;
-                                await TrySendFrameAsync(colors);
+                                await _serialPanel.TrySendFrameAsync(colors);
                             }
                             return;
                         }
@@ -456,10 +435,18 @@
                         if (ms - _lastSerialSendMs >= ColorUpdateIntervalMs)
                         {
                             _lastSerialSendMs = ms;
-                            await TrySendFrameAsync(colors);
+                            await _serialPanel.TrySendFrameAsync(colors);
                         }
                     });
                 };
+                _playbackHandler.PlaybackStopped += () =>
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                            PlayPreview();
+                    });
+                };
+
                     this.FindControl<Button>("PauseTrackButton").Click +=
                         async (_, _) => await _playbackHandler.PauseAsync();
                     this.FindControl<Button>("ResumeTrackButton").Click +=
@@ -563,26 +550,6 @@
                 if (_hardwareConnectionText == null) return; //lost cause at this point
                 
                 _hardwareConnectionText.Text = updatedText;
-            }
-            private async Task TrySendFrameAsync(Color[]? colors)
-            {
-                try
-                {
-                    if (SerialHandler == null)
-                        return;
-
-                    await Task.Run(() => SerialHandler.SendFrame(colors));
-                }
-                catch
-                {
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        UpdateErrorText("Serial Communication Disconnected, please reconnect");
-                        UpdateHardwareConnectionText("Serial Disconnected");
-                    });
-
-                    SerialHandler = null;
-                }
             }
             /// <summary>
             /// Create color pallet and dragndrop functionality via avalonia swatches
@@ -867,36 +834,10 @@
             
             private void SaveHardwareSettings(object? sender, RoutedEventArgs e)
             {
-                if (SerialHandler != null)
-                {
-                    try
-                    {
-                        SerialHandler.ClosePort();
-                        UpdateHardwareConnectionText("Serial Disconnected");
-                    }
-                    catch (Exception ex)
-                    {
-                        //ClosePort threw error, abort hardware saving
-                        UpdateErrorText("Failed to close previous port, please retry");
-                        return;
-                    }
-                }
-                ActiveLedCount = Int32.Parse(ActiveLightsTextBox.Text);
-                HardwareCurrent = (int)(HardwareCurrentSlider.Value);
-                BrightnessScale = HardwareCurrent / (ActiveLedCount * 0.06);
-                try
-                {
-                    SerialHandler = new SerialHandler(ActiveLedCount,
-                        new SerialPort(PortComboBox.SelectedItem as string, 460800, Parity.None, 8, StopBits.One));
-                    UpdateHardwareConnectionText($"Connected to {PortComboBox.SelectedItem as string}");
-                }
-                catch (Exception exception)
-                {
-                    UpdateErrorText("Failed to create port connection, please retry");
-                    Console.WriteLine(exception);
-                    return;
-                }
-
+                _serialPanel.Connect(
+                    port: PortComboBox.SelectedItem as string,
+                    ledCount: Int32.Parse(ActiveLightsTextBox.Text),
+                    hardwareCurrent: (int)HardwareCurrentSlider.Value);
             }
             
             /// <summary>
@@ -1104,7 +1045,10 @@
 
             }
             
-            private void PlayPreview_Click(object? sender, RoutedEventArgs e)
+            /// <summary>True while the main music timer is ticking.</summary>
+            internal bool IsPlaybackActive => _playbackHandler?.IsTimerRunning == true;
+
+            internal void PlayPreview()
             {
                 if (_timeline._selectedBlocks.Count == 0) return;
 
@@ -1112,56 +1056,73 @@
                 _previewWatch.Restart();
                 _previewRunning = true;
 
-                // Mirror LocalFilesPlaybackHandler: tight 10 ms background loop posts
-                // accurate Stopwatch time to the UI thread — no DispatcherTimer jitter.
                 _ = Task.Run(async () =>
                 {
                     while (_previewRunning)
                     {
                         double currentMs = _previewWatch.Elapsed.TotalMilliseconds;
-                        Dispatcher.UIThread.Post(() => RenderPreviewFrame(currentMs));
+
+                        // Snapshot only the Avalonia-bound values on the UI thread — fast reads
+                        double slotWidth = 0;
+                        var blocks = new List<(LightBlock Block, double Left, double Width)>();
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            slotWidth = _timeline._slotWidth;
+                            foreach (var b in _timeline._selectedBlocks)
+                                blocks.Add((b, Canvas.GetLeft(b.Container), b.Container.Width));
+                        });
+
+                        if (blocks.Count == 0)
+                        {
+                            await Task.Delay(ColorUpdateIntervalMs);
+                            continue;
+                        }
+
+                        // Heavy computation stays on the background thread
+                        Color[] finalLeds = ComputePreviewFrame(currentMs, blocks, slotWidth);
+
+                        // Loop back when the last block finishes
+                        double last = blocks.Max(b => b.Left + b.Width);
+                        if (currentMs > (last - blocks[0].Left) * TimelineController.MsPerSlot / slotWidth)
+                            _previewWatch.Restart();
+
+                        // Push the finished frame to the UI — just a SetColors call
+                        Dispatcher.UIThread.Post(() => LedPreview.SetColors(finalLeds));
+
                         await Task.Delay(ColorUpdateIntervalMs);
                     }
                 });
             }
 
-            private void StopPreview_Click(object? sender, RoutedEventArgs e)
+            internal void StopPreview()
             {
                 _previewRunning = false;
                 _previewWatch.Stop();
             }
 
-            private void RenderPreviewFrame(double currentMs)
+            /// <summary>
+            /// Pure computation — no Avalonia calls. Safe to run on any thread.
+            /// </summary>
+            private static Color[] ComputePreviewFrame(
+                double currentMs,
+                List<(LightBlock Block, double Left, double Width)> blocks,
+                double slotWidth)
             {
-                if (_timeline._selectedBlocks.Count == 0) return;
+                double slotMs = TimelineController.MsPerSlot;
+                var finalLeds = new Color[1000];
 
-                //create custom list with selected block data
-                var blocks = _timeline._selectedBlocks
-                    .Select(b => new
-                    {
-                        Block = b,
-                        Left  = Canvas.GetLeft(b.Container),
-                        Width = b.Container.Width
-                    })
-                    .ToList();
-
-                if (blocks.Count == 0) return;
-
-                double slotMs    = TimelineController.MsPerSlot;
-                Color[] finalLeds = new Color[1000];
-
-                foreach (var b in blocks)
+                foreach (var (block, left, width) in blocks)
                 {
-                    double blockTimeOffset = (b.Left - blocks[0].Left) * slotMs / _timeline._slotWidth;
+                    double blockTimeOffset = (left - blocks[0].Left) * slotMs / slotWidth;
                     double localTime       = currentMs - blockTimeOffset;
-                    double relPos          = Math.Clamp(localTime / (b.Width * slotMs / _timeline._slotWidth), 0.0, 1.0);
-
                     if (localTime < 0) continue;
 
+                    double relPos = Math.Clamp(localTime / (width * slotMs / slotWidth), 0.0, 1.0);
+
                     Color[] blockLeds = LightEffectsComputer.ComputeBlockEffects(
-                        b.Block, relPos, 100,
-                        containerWidth:  b.Width,
-                        containerLeft:   b.Left,
+                        block, relPos, 100,
+                        containerWidth:  width,
+                        containerLeft:   left,
                         elapsedMs:       localTime,
                         serialIntervalMs: ColorUpdateIntervalMs);
 
@@ -1171,12 +1132,7 @@
                         finalLeds[i] = blockLeds[i];
                 }
 
-                LedPreview.SetColors(finalLeds);
-
-                // Loop back when the last block finishes
-                double last = blocks.Max(b => b.Left + b.Width);
-                if (currentMs > (last - blocks[0].Left) * slotMs / _timeline._slotWidth)
-                    _previewWatch.Restart();
+                return finalLeds;
             }
         }
     }

@@ -12,8 +12,10 @@ namespace LumikitApp
         private int _progressMs;
 
         public int CurrentProgressMs => _progressMs;
+        public bool IsTimerRunning => _timerRunning;
 
         public event Action<int> ProgressUpdated;
+        public event Action PlaybackStopped;
 
         public SpotifyPlaybackHandler(IMusicProvider provider)
         {
@@ -85,6 +87,16 @@ namespace LumikitApp
             await Task.Delay(500);
             await ResumeAsync();
         }
+        
+        public async Task SeekToPlaybackTime(int ms)
+        {
+            await PauseAsync();
+            ms = (ms / 1000) * 1000;
+            _musicProvider.SeekToPlaybackTime(ms);
+            await Task.Delay(500);
+            StartTimer(ms);
+            await ResumeAsync();
+        }
 
         /// <summary>
         /// Method to start the timer with initial progress if applicable
@@ -113,6 +125,7 @@ namespace LumikitApp
         {
             _timerRunning = false;
             _syncStopwatch.Stop();
+            PlaybackStopped?.Invoke();
         }
     }
 }

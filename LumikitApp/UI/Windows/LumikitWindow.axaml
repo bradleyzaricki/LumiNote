@@ -358,12 +358,6 @@
                                     Margin="10"
                                     Spacing="10">
 
-                            <Button Content="Play Preview"
-                                    Click="PlayPreview_Click"/>
-
-                            <Button Content="Stop Preview"
-                                    Click="StopPreview_Click"/>
-
                             <TextBlock Text="Selected Block Simulator"
                                        Foreground="White"
                                        VerticalAlignment="Center"/>

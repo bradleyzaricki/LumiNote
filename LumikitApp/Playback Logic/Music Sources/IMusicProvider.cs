@@ -74,7 +74,7 @@ public interface IMusicProvider
     /// </summary>
     /// <param name="ms"></param>
     /// <returns></returns>
-    Task SeekToPlaybackTime(int ms);
+    internal Task SeekToPlaybackTime(int ms);
     public Task PlayTrackAsync();
     Task<TrackPOCO> GetCurrentlyPlayingTrackAsync();
     string GetCurrentlyPlayingTrackIdAsync();

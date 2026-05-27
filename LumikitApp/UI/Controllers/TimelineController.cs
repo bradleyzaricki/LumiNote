@@ -429,6 +429,7 @@ public class TimelineController
 
             //Assign light block keybinds (Lclick edit, Rclick delete)
             block.Container.PointerPressed += (_, e) => onBlockPressed(block, e);
+            block.Container.PointerReleased += (_, _) => ReorderLightBlocks();
             
         }
     }

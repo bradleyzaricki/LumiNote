@@ -15,6 +15,7 @@
     using System.Threading.Tasks;
     using System.IO.Ports;
     using LumikitApp.Models;
+    using LumikitApp.ViewModels;
 
     namespace LumikitApp
     {
@@ -86,19 +87,22 @@
             //Live "Piano Roll" Block Painting Variables
             Border? _activeSwatch;
             private BlockEditorPanel _blockEditor;
+            private BlockEditorViewModel _viewModel;
 
             public LumikitWindow()  // designer uses this
             {
                 InitializeComponent();
             }
-            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess)
+            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel)
             {
                 _musicProvider = provider;
                 _playbackHandler = playbackHandler;
                 _jsonDataHandler = jsonDataHandler;
                 _databaseAccess = databaseAccess;
+                _viewModel = blockEditorViewModel;
 
                 InitializeComponent();
+                DataContext = _viewModel;
 
                 _timeline = new TimelineController(
                     this.FindControl<Canvas>("TimelineCanvas"),
@@ -108,8 +112,14 @@
                 _hardwareConnectionText = this.FindControl<TextBlock>("HardwareConnectionText");
                 _blockColorDropBox = this.FindControl<Canvas>("ColorDropBox");
                 _secondColorDropBox = this.FindControl<Canvas>("SecondColorDropBox");
-                _blockEditor = new BlockEditorPanel(this, _timeline);
+                _blockEditor = new BlockEditorPanel(_viewModel, _timeline);
                 _serialPanel = new SerialPanel(UpdateErrorText, UpdateHardwareConnectionText);
+
+                _viewModel.PreviewRequested += () =>
+                {
+                    StopPreview();
+                    if (!IsPlaybackActive) PlayPreview();
+                };
 
                 _bpmInput = this.FindControl<TextBox>("BpmInput");
                 
@@ -166,40 +176,6 @@
             }
             
 
-            /// Activate and Adjust Settings when travel is checked
-            private void Effect_Travel_Checked(object? sender, RoutedEventArgs e)
-            {
-                Effect_Seperate.IsChecked = false;
-                Effect_Combine.IsChecked = false;
-                _blockEditor.UpdateEffectSettingVisibility();
-
-            }
-
-            /// Activate and Adjust Settings when combine is checked
-            private void Effect_Combine_OnChecked(object? sender, RoutedEventArgs e)
-            {
-                Effect_Seperate.IsChecked = false;
-                Effect_Travel.IsChecked = false;
-                _blockEditor.UpdateEffectSettingVisibility();
-
-            }
-            
-            /// Activate and Adjust Settings when seperate is checked
-            private void Effect_Seperate_OnChecked(object? sender, RoutedEventArgs e)
-            {
-                Effect_Combine.IsChecked = false;
-                Effect_Travel.IsChecked = false;
-                _blockEditor.UpdateEffectSettingVisibility();
-
-            }
-            //Effects Changed
-            private void Effect_OnChanged(object? sender, RoutedEventArgs e)
-            {
-                _blockEditor.UpdateEffectSettingVisibility();
-
-            }
-            
-                       
              /// <summary>
             /// All key down logic
             /// </summary>
@@ -689,24 +665,16 @@
                 if (ReferenceEquals(sender, _blockColorDropBox))
                 {
                     foreach (var block in _timeline._selectedBlocks)
-                    {
                         block.UpdateColor(color);
-                        _blockColorDropBox.Background = new SolidColorBrush(color);
-                        _blockColorDropBox.ClipToBounds = true;
-                    }
-
+                    _viewModel.BlockColorBrush = new SolidColorBrush(color);
                     return;
                 }
 
                 if (ReferenceEquals(sender, _secondColorDropBox))
                 {
                     foreach (var block in _timeline._selectedBlocks)
-                    {
                         block.SecondBlockColor = color;
-                        _secondColorDropBox.Background = new SolidColorBrush(color);
-                        _secondColorDropBox.ClipToBounds = true;
-                    }
-
+                    _viewModel.SecondBlockColorBrush = new SolidColorBrush(color);
                     return;
                 }
             }
@@ -1079,7 +1047,7 @@
                         }
 
                         // Heavy computation stays on the background thread
-                        Color[] finalLeds = ComputePreviewFrame(currentMs, blocks, slotWidth);
+                        Color[] finalLeds = LightEffectsComputer.ComputePreviewFrame(currentMs, blocks, slotWidth, ColorUpdateIntervalMs);
 
                         // Loop back when the last block finishes
                         double last = blocks.Max(b => b.Left + b.Width);
@@ -1100,39 +1068,5 @@
                 _previewWatch.Stop();
             }
 
-            /// <summary>
-            /// Pure computation — no Avalonia calls. Safe to run on any thread.
-            /// </summary>
-            private static Color[] ComputePreviewFrame(
-                double currentMs,
-                List<(LightBlock Block, double Left, double Width)> blocks,
-                double slotWidth)
-            {
-                double slotMs = TimelineController.MsPerSlot;
-                var finalLeds = new Color[1000];
-
-                foreach (var (block, left, width) in blocks)
-                {
-                    double blockTimeOffset = (left - blocks[0].Left) * slotMs / slotWidth;
-                    double localTime       = currentMs - blockTimeOffset;
-                    if (localTime < 0) continue;
-
-                    double relPos = Math.Clamp(localTime / (width * slotMs / slotWidth), 0.0, 1.0);
-
-                    Color[] blockLeds = LightEffectsComputer.ComputeBlockEffects(
-                        block, relPos, 100,
-                        containerWidth:  width,
-                        containerLeft:   left,
-                        elapsedMs:       localTime,
-                        serialIntervalMs: ColorUpdateIntervalMs);
-
-                    if (blockLeds == null) continue; // strobe off-phase — leave LEDs dark
-
-                    for (int i = 0; i < finalLeds.Length; i++)
-                        finalLeds[i] = blockLeds[i];
-                }
-
-                return finalLeds;
-            }
         }
     }

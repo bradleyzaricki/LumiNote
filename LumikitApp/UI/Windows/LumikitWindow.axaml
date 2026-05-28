@@ -156,7 +156,7 @@
             <Border Grid.Row="4" Height="1" Background="#333" Margin="0,20,0,10"/>
             
 
-            <TabControl x:Name="MainTabControl" Grid.Row="6">
+            <TabControl x:Name="MainTabControl" Grid.Row="6" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
                 <TabItem Header="Tracks" Margin="0,10,0,0">
                     <TabControl>
                         <TabItem Header="Local Tracks" Margin="0,10,0,0">
@@ -379,7 +379,7 @@
                                       RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" Row="0">
                                     <!-- LIGHTSPAN -->
                                     
-                                    <StackPanel  Name="LightRange" Grid.Row="0" Margin="0,10" IsVisible="False">
+                                    <StackPanel  Name="LightRange" Grid.Row="0" Margin="0,10" IsVisible="{Binding LightRangeVisible}">
                                         <StackPanel Orientation="Horizontal" Spacing="16">
                                             <TextBlock Text="LightSpan"/>
                                             <TextBlock Text="{Binding #LightRangeSlider.LowerSelectedValue, StringFormat='Start: {0:0}'}" Foreground="#AAA"/>
@@ -387,7 +387,8 @@
                                         </StackPanel>
                                         <rs:RangeSlider x:Name="LightRangeSlider"
                                                         Minimum="0" Maximum="1000"
-                                                        LowerSelectedValue="100" UpperSelectedValue="200">
+                                                        LowerSelectedValue="{Binding LightRangeLower, Mode=TwoWay}"
+                                                        UpperSelectedValue="{Binding LightRangeUpper, Mode=TwoWay}">
                                             <rs:RangeSlider.Resources>
                                                 <SolidColorBrush x:Key="SliderTrackValueFill" Color="BlueViolet"/>
                                                 <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="BlueViolet"/>
@@ -398,11 +399,11 @@
                                     
                                     <!-- LIGHTSPAN 2In1 -->
 
-                                    <StackPanel Name="LightRange2" Grid.Row="1" Margin="0,10" Spacing="6" IsVisible="False">
+                                    <StackPanel Name="LightRange2" Grid.Row="1" Margin="0,10" Spacing="6" IsVisible="{Binding LightRange2Visible}">
 
                                         <Grid ColumnDefinitions="Auto,*">
                                             <StackPanel Grid.Column="0" VerticalAlignment="Bottom" Margin="0,0,10,0" Spacing="2">
-                                                <TextBlock Name="RangeSlider1Text" Text="Start Lightspan" TextAlignment="Center"/>
+                                                <TextBlock Name="RangeSlider1Text" Text="{Binding RangeSlider1Label}" TextAlignment="Center"/>
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                                     <TextBlock Text="{Binding #LightRange2Slider1.LowerSelectedValue, StringFormat='S:{0:0}'}" Foreground="#AAA" FontSize="11"/>
                                                     <TextBlock Text="{Binding #LightRange2Slider1.UpperSelectedValue, StringFormat='E:{0:0}'}"   Foreground="#AAA" FontSize="11"/>
@@ -411,7 +412,8 @@
                                             <rs:RangeSlider x:Name="LightRange2Slider1"
                                                             Grid.Column="1"
                                                             Minimum="0" Maximum="1000"
-                                                            LowerSelectedValue="100" UpperSelectedValue="200">
+                                                            LowerSelectedValue="{Binding Range2Slider1Lower, Mode=TwoWay}"
+                                                            UpperSelectedValue="{Binding Range2Slider1Upper, Mode=TwoWay}">
                                                 <rs:RangeSlider.Resources>
                                                     <SolidColorBrush x:Key="SliderTrackValueFill" Color="BlueViolet"/>
                                                     <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="BlueViolet"/>
@@ -422,7 +424,7 @@
 
                                         <Grid ColumnDefinitions="Auto,*">
                                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0" Spacing="2">
-                                                <TextBlock Name="RangeSlider2Text" Text="End Lightspan" TextAlignment="Center"/>
+                                                <TextBlock Name="RangeSlider2Text" Text="{Binding RangeSlider2Label}" TextAlignment="Center"/>
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                                     <TextBlock Text="{Binding #LightRange2Slider2.LowerSelectedValue, StringFormat='S:{0:0}'}" Foreground="#AAA" FontSize="11"/>
                                                     <TextBlock Text="{Binding #LightRange2Slider2.UpperSelectedValue, StringFormat='E:{0:0}'}"   Foreground="#AAA" FontSize="11"/>
@@ -431,7 +433,8 @@
                                             <rs:RangeSlider x:Name="LightRange2Slider2"
                                                             Grid.Column="1"
                                                             Minimum="0" Maximum="1000"
-                                                            LowerSelectedValue="100" UpperSelectedValue="200">
+                                                            LowerSelectedValue="{Binding Range2Slider2Lower, Mode=TwoWay}"
+                                                            UpperSelectedValue="{Binding Range2Slider2Upper, Mode=TwoWay}">
                                                 <rs:RangeSlider.Resources>
                                                     <SolidColorBrush x:Key="SliderTrackValueFill" Color="BlueViolet"/>
                                                     <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="BlueViolet"/>
@@ -453,13 +456,13 @@
                                                 ClipToBounds="True"
                                                 HorizontalAlignment="Left">
                                             <Border CornerRadius="8" Background="BlueViolet">
-                                                <Canvas Name="ColorDropBox"/>
+                                                <Canvas Name="ColorDropBox" Background="{Binding BlockColorBrush}"/>
                                             </Border>
                                         </Border>
                                     </StackPanel>
                                     
                                     
-                                    <StackPanel Name="SecondColorPanel" Grid.Row="3" Orientation="Horizontal" Margin="0,10" IsVisible="False">
+                                    <StackPanel Name="SecondColorPanel" Grid.Row="3" Orientation="Horizontal" Margin="0,10" IsVisible="{Binding SecondColorPanelVisible}">
                                     <TextBlock Name="SecondColorHeader" Text="Second Color:" Foreground="White" VerticalAlignment="Center" Margin="0,10,8,10"/>
                                     <Border Name="SecondColorFrame"
                                             Width="200"
@@ -471,7 +474,7 @@
                                             HorizontalAlignment="Left"
                                             IsVisible="True">
                                         <Border CornerRadius="8" Background="Transparent">
-                                            <Canvas Name="SecondColorDropBox"/>
+                                            <Canvas Name="SecondColorDropBox" Background="{Binding SecondBlockColorBrush}"/>
                                         </Border>
                                     </Border>
                                     </StackPanel>
@@ -479,16 +482,21 @@
                                     
                                     <StackPanel Grid.Row="4" >
                                         <TextBlock Text="Intensity (0-255)" Foreground="White"/>
-                                        <TextBox Name="IntensityInput" Width="200"  HorizontalAlignment="Left"/>
+                                        <TextBox Name="IntensityInput" Width="200" HorizontalAlignment="Left"
+                                                 Text="{Binding IntensityText, Mode=TwoWay}"/>
 
-                                        <StackPanel Name="AdditionalSingleInputPanel1">
-                                            <TextBlock Name="AdditionalSingleInputLabel1" Text="SECONDARYSINGLEINPUT" Foreground="White" />
-                                            <TextBox Name="AdditionalSingleInput1TextBox" Width="200" HorizontalAlignment="Left"/>
+                                        <StackPanel Name="AdditionalSingleInputPanel1" IsVisible="{Binding AdditionalInput1PanelVisible}">
+                                            <TextBlock Name="AdditionalSingleInputLabel1" Foreground="White"
+                                                       Text="{Binding AdditionalInput1Label}"/>
+                                            <TextBox Name="AdditionalSingleInput1TextBox" Width="200" HorizontalAlignment="Left"
+                                                     Text="{Binding AdditionalInput1Text, Mode=TwoWay}"/>
                                         </StackPanel>
 
-                                        <StackPanel Name="AdditionalSingleInputPanel2">
-                                            <TextBlock Name="AdditionalSingleInputLabel2" Text="" Foreground="White"/>
-                                            <TextBox Name="AdditionalSingleInput2TextBox"  Width="200"  HorizontalAlignment="Left"/>
+                                        <StackPanel Name="AdditionalSingleInputPanel2" IsVisible="{Binding AdditionalInput2PanelVisible}">
+                                            <TextBlock Name="AdditionalSingleInputLabel2" Foreground="White"
+                                                       Text="{Binding AdditionalInput2Label}"/>
+                                            <TextBox Name="AdditionalSingleInput2TextBox" Width="200" HorizontalAlignment="Left"
+                                                     Text="{Binding AdditionalInput2Text, Mode=TwoWay}"/>
                                         </StackPanel>
                                     </StackPanel>
                                     
@@ -507,7 +515,7 @@
         <ScrollViewer x:Name="BlockEditorScrollViewer"
                       Grid.Column="1" Grid.Row="0" Grid.RowSpan="3"
                       Width="300"
-                      IsVisible="False">
+                      IsVisible="{Binding EditorVisible}">
             <Border Name="BlockEditor"
                     Background="#222"
                     Padding="10"
@@ -523,40 +531,15 @@
 
                     <TextBlock Text="Effect" Foreground="White" Margin="0,10,0,0"/>
                     <StackPanel>
-                        <CheckBox Name="Effect_FadeIn" Content="Fade In" Foreground="White"/>
-                        <CheckBox Name="Effect_FadeOut" Content="Fade Out" Foreground="White"/>
-                        <CheckBox Name="Effect_FadeStrobe" Content="Strobe" Foreground="White"/>
-                        <CheckBox Name="Effect_Travel"
-                                  Content="Travel"
-                                  Foreground="White"
-                                  Checked="Effect_Travel_Checked"
-                                  Unchecked="Effect_OnChanged"/>
-                        <CheckBox Name="Effect_Combine"
-                                  Content="Combine"
-                                  Foreground="White"
-                                  Checked="Effect_Combine_OnChecked"
-                                  Unchecked="Effect_OnChanged"/>
-                        <CheckBox Name="Effect_Seperate"
-                                  Content="Seperate"
-                                  Foreground="White"
-                                  Checked="Effect_Seperate_OnChecked"
-                                  Unchecked="Effect_OnChanged"/>
-                        <CheckBox Name="Effect_Repeat"
-                                  Content="Repeat"
-                                  Foreground="White"
-                                  Checked="Effect_OnChanged"
-                                  Unchecked="Effect_OnChanged"/>
-                        <CheckBox Name="Effect_ChangeColor"
-                                  Content="Color Change"
-                                  Foreground="White"
-                                  Checked="Effect_OnChanged"
-                                  Unchecked="Effect_OnChanged"/>
-
-                        <CheckBox Name="Effect_Twinkle"
-                                  Content="Twinkle"
-                                  Foreground="White"
-                                  Checked="Effect_OnChanged"
-                                  Unchecked="Effect_OnChanged"/>
+                        <CheckBox Content="Fade In"      Foreground="White" IsThreeState="True" IsChecked="{Binding FadeIn,       Mode=TwoWay}"/>
+                        <CheckBox Content="Fade Out"     Foreground="White" IsThreeState="True" IsChecked="{Binding FadeOut,      Mode=TwoWay}"/>
+                        <CheckBox Content="Strobe"       Foreground="White" IsThreeState="True" IsChecked="{Binding Strobe,       Mode=TwoWay}"/>
+                        <CheckBox Content="Travel"       Foreground="White" IsThreeState="True" IsChecked="{Binding Travel,       Mode=TwoWay}"/>
+                        <CheckBox Content="Combine"      Foreground="White" IsThreeState="True" IsChecked="{Binding Combine,      Mode=TwoWay}"/>
+                        <CheckBox Content="Seperate"     Foreground="White" IsThreeState="True" IsChecked="{Binding Separate,     Mode=TwoWay}"/>
+                        <CheckBox Content="Repeat"       Foreground="White" IsThreeState="True" IsChecked="{Binding Repeat,       Mode=TwoWay}"/>
+                        <CheckBox Content="Color Change" Foreground="White" IsThreeState="True" IsChecked="{Binding ChangeColor,  Mode=TwoWay}"/>
+                        <CheckBox Content="Twinkle"      Foreground="White" IsThreeState="True" IsChecked="{Binding Twinkle,      Mode=TwoWay}"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

@@ -19,10 +19,10 @@ namespace LumikitApp
         private readonly IMusicProvider _provider;
 
 
-        public static string TrackFilePath(string trackId) =>
+        public string TrackFilePath(string trackId) =>
             Path.Combine(TrackInfoDir, SafeFileName(trackId) + ".json");
 
-        public static TrackData GetTrack(string trackID)
+        public TrackData GetTrack(string trackID)
         {
             if (string.IsNullOrWhiteSpace(trackID)) return null;
 
@@ -73,7 +73,7 @@ namespace LumikitApp
             return listFront;
         }
 
-        public static void SaveTrack(TrackData track)
+        public void SaveTrack(TrackData track)
         {
             if (track == null) return;
 
@@ -85,7 +85,7 @@ namespace LumikitApp
             File.WriteAllText(path, json);
         }
 
-        public static void DeleteTrack(string trackID)
+        public void DeleteTrack(string trackID)
         {
             if (string.IsNullOrWhiteSpace(trackID)) return;
 
@@ -93,7 +93,7 @@ namespace LumikitApp
             if (File.Exists(path)) File.Delete(path);
         }
 
-        public static string ImportAudioToAppStorage(string sourcePath)
+        public string ImportAudioToAppStorage(string sourcePath)
         {
             var appRoot = DirectoryPaths.AudioDir;
 

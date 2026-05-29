@@ -1,18 +1,18 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Media;
+using System.Collections.Generic;
+using LumikitApp.Controls;
 
 namespace LumikitApp;
 
 public class LightEffectsComputer
 {
-    /// <param name="containerWidth">Pre-captured container width. Pass when calling off the UI thread (e.g. Task.Run).
-    /// Defaults to -1, which causes the method to read block.Container.Width directly (UI thread only).</param>
-    /// <param name="containerLeft">Pre-captured Canvas.GetLeft value. Same threading rule as containerWidth.</param>
-    /// <param name="elapsedMs">Milliseconds elapsed since the start of this block. When provided, time-based effects
-    /// (Strobe) use real time instead of deriving it from pixel width. Always pass this for correct strobe timing.</param>
-    /// <param name="serialIntervalMs">The serial hardware update interval in ms (matches ColorUpdateIntervalMs).
-    /// Strobe half-periods are snapped to this boundary so UI and hardware always show the same on/off state.</param>
+    
+    /// <param name="containerWidth">Pre-captured container width.</param>
+    /// <param name="containerLeft">Pre-captured Canvas.GetLeft value.</param>
+    /// <param name="elapsedMs">Milliseconds elapsed since the start of this block. </param>
+    /// <param name="serialIntervalMs">The serial hardware update interval in ms (matches ColorUpdateIntervalMs).</param>
     public static Color[] ComputeBlockEffects(LightBlock block, double relPos, double brightnessScale,
         double containerWidth = -1, double containerLeft = -1, double elapsedMs = -1,
         double serialIntervalMs = 50.0)
@@ -272,5 +272,41 @@ else if (hasCombineOrSeperate)
         }
 
         return stripColorsIndividual;
+    }
+    
+    
+    /// <summary>
+    /// Pure computation — no Avalonia calls. Safe to run on any thread.
+    /// </summary>
+    public static Color[] ComputePreviewFrame(
+        double currentMs,
+        List<(LightBlock Block, double Left, double Width)> blocks,
+        double slotWidth, double serialIntervalMs = 50.0)
+    {
+        double slotMs = TimelineView.MsPerSlot;
+        var finalLeds = new Color[1000];
+
+        foreach (var (block, left, width) in blocks)
+        {
+            double blockTimeOffset = (left - blocks[0].Left) * slotMs / slotWidth;
+            double localTime       = currentMs - blockTimeOffset;
+            if (localTime < 0) continue;
+
+            double relPos = Math.Clamp(localTime / (width * slotMs / slotWidth), 0.0, 1.0);
+
+            Color[] blockLeds = ComputeBlockEffects(
+                block, relPos, 100,
+                containerWidth:   width,
+                containerLeft:    left,
+                elapsedMs:        localTime,
+                serialIntervalMs: serialIntervalMs);
+
+            if (blockLeds == null) continue; // strobe off-phase — leave LEDs dark
+
+            for (int i = 0; i < finalLeds.Length; i++)
+                finalLeds[i] = blockLeds[i];
+        }
+
+        return finalLeds;
     }
 }

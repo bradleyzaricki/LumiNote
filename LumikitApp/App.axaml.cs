@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using LumikitApp.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LumikitApp
@@ -35,6 +36,8 @@ namespace LumikitApp
             services.AddSingleton(playbackHandler);
             services.AddSingleton<JsonDataHandler>();
             services.AddSingleton<DatabaseAccess>();
+            services.AddTransient<BlockEditorViewModel>();
+            services.AddSingleton<ISerialPanel, SerialPanel>();
             services.AddTransient<LumikitWindow>();
             return services.BuildServiceProvider();
         }

@@ -37,6 +37,7 @@ namespace LumikitApp
             services.AddSingleton<JsonDataHandler>();
             services.AddSingleton<DatabaseAccess>();
             services.AddTransient<BlockEditorViewModel>();
+            services.AddSingleton<ISerialPanel, SerialPanel>();
             services.AddTransient<LumikitWindow>();
             return services.BuildServiceProvider();
         }

@@ -36,7 +36,7 @@ public class DatabaseAccess
     /// <param name="track"></param>
     /// <exception cref="Exception"></exception>
 
-    public static async Task SaveTrackAsync(string trackId, TrackData track)
+    public async Task SaveTrackAsync(string trackId, TrackData track)
     {
         var fileEnd = Path.GetExtension(track.filePath).ToLowerInvariant();
         if (fileEnd == ".wav" || fileEnd == ".mp3")
@@ -62,7 +62,7 @@ public class DatabaseAccess
     /// <param name="trackId"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public static async Task<TrackData?> LoadTrackAsync(string trackId)
+    public async Task<TrackData?> LoadTrackAsync(string trackId)
     {
         var url = new Uri($"{BaseUrl}/tracks/{Uri.EscapeDataString(trackId)}");
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
@@ -173,7 +173,7 @@ public class DatabaseAccess
         public string track_name { get; set; }
     }
 
-    public static async Task<List<TrackSummary>> GetAllTracksAsync()
+    public async Task<List<TrackSummary>> GetAllTracksAsync()
     {
         var url = new Uri($"{BaseUrl}/tracks");
 

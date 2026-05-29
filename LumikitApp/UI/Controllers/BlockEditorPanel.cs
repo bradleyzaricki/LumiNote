@@ -3,6 +3,7 @@ using Avalonia.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LumikitApp.Controls;
 using LumikitApp.ViewModels;
 
 /// <summary>
@@ -13,14 +14,13 @@ using LumikitApp.ViewModels;
 public class BlockEditorPanel
 {
     private readonly BlockEditorViewModel _viewModel;
-    private readonly TimelineController _timeline;
+    private readonly TimelineView _timeline;
 
-    // Snapshots of text-box values at load time — used to detect what the user changed.
     private string _loadedIntensity    = "";
     private string _loadedSingleInput1 = "";
     private string _loadedSingleInput2 = "";
 
-    public BlockEditorPanel(BlockEditorViewModel viewModel, TimelineController timeline)
+    public BlockEditorPanel(BlockEditorViewModel viewModel, TimelineView timeline)
     {
         _viewModel = viewModel;
         _timeline  = timeline;
@@ -93,13 +93,13 @@ public class BlockEditorPanel
     /// </summary>
     public void ApplyBlockChanges()
     {
-        if (_timeline._selectedBlocks == null) return;
+        if (_timeline.SelectedBlocks == null) return;
 
         bool dualRange = _viewModel.Travel  == true
                       || _viewModel.Combine == true
                       || _viewModel.Separate == true;
 
-        foreach (var block in _timeline._selectedBlocks)
+        foreach (var block in _timeline.SelectedBlocks)
         {
             if (dualRange)
             {
@@ -152,8 +152,8 @@ public class BlockEditorPanel
     /// </summary>
     public void UpdateSelectedColorsBackground()
     {
-        if (_timeline._selectedBlocks == null) return;
-        foreach (var block in _timeline._selectedBlocks)
+        if (_timeline.SelectedBlocks == null) return;
+        foreach (var block in _timeline.SelectedBlocks)
         {
             var color  = block.BlockColor;
             var dimmed = new Color((byte)(color.A * 0.5), color.R, color.G, color.B);

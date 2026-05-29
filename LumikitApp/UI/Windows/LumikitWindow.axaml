@@ -133,17 +133,7 @@
 
             <Border Grid.Row="0" Name="TopColorBar" Height="5" Background="Gray"/>
 
-            <ScrollViewer Grid.Row="1"
-                          Name="TimelineScrollViewer"
-                          HorizontalScrollBarVisibility="Visible"
-                          VerticalScrollBarVisibility="Disabled"
-                          Height="130">
-                <Grid>
-                    <Canvas Name="TimelineCanvas" Height="80" Margin="0,20,0,0"/>
-                    <Canvas Name="BpmCanvas" Height="80" Margin="0,20,0,0" IsHitTestVisible="False"/>
-                    <Canvas Name="SeekBarCanvas" Height="20" VerticalAlignment="Top" Background="#337F77DD"/>
-                </Grid>
-            </ScrollViewer>
+            <local:TimelineView x:Name="Timeline" Grid.Row="1" Height="130"/>
 
             <Border Grid.Row="2" Name="BottomColorBar" Height="5" Background="Gray"/>
 

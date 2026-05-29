@@ -1,9 +1,8 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Media;
-
 using System.Collections.Generic;
-
+using LumikitApp.Controls;
 
 namespace LumikitApp;
 
@@ -284,7 +283,7 @@ else if (hasCombineOrSeperate)
         List<(LightBlock Block, double Left, double Width)> blocks,
         double slotWidth, double serialIntervalMs = 50.0)
     {
-        double slotMs = TimelineController.MsPerSlot;
+        double slotMs = TimelineView.MsPerSlot;
         var finalLeds = new Color[1000];
 
         foreach (var (block, left, width) in blocks)

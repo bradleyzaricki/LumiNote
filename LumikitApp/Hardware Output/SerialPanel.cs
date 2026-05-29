@@ -11,41 +11,30 @@ namespace LumikitApp;
 /// UI control reads (port name, LED count, current) are supplied by the caller so
 /// this class stays free of Avalonia control references.
 /// </summary>
-public class SerialPanel
+public class SerialPanel : ISerialPanel
 {
     private SerialHandler? _serialHandler;
 
-    /// <summary>
-    /// Brightness scale derived from hardware current and LED count.
-    /// Read by the playback coordinator when ticking the timeline.
-    /// </summary>
     public double BrightnessScale { get; private set; } = 1;
 
-    private readonly Action<string> _onError;
-    private readonly Action<string> _onConnectionStatus;
-
-    public SerialPanel(Action<string> onError, Action<string> onConnectionStatus)
-    {
-        _onError = onError;
-        _onConnectionStatus = onConnectionStatus;
-    }
+    public event Action<string>? ErrorOccurred;
+    public event Action<string>? ConnectionStatusChanged;
 
     /// <summary>
-    /// Opens a new serial connection.
-    /// Closes any existing connection first.
+    /// Opens a new serial connection, closing any existing one first.
     /// </summary>
-    public void Connect(string port, int ledCount, int hardwareCurrent)
+    public void Connect(string? port, int ledCount, int hardwareCurrent)
     {
         if (_serialHandler != null)
         {
             try
             {
                 _serialHandler.ClosePort();
-                _onConnectionStatus("Serial Disconnected");
+                ConnectionStatusChanged?.Invoke("Serial Disconnected");
             }
             catch
             {
-                _onError("Failed to close previous port, please retry");
+                ErrorOccurred?.Invoke("Failed to close previous port, please retry");
                 return;
             }
         }
@@ -56,11 +45,11 @@ public class SerialPanel
         {
             _serialHandler = new SerialHandler(ledCount,
                 new SerialPort(port, 460800, Parity.None, 8, StopBits.One));
-            _onConnectionStatus($"Connected to {port}");
+            ConnectionStatusChanged?.Invoke($"Connected to {port}");
         }
         catch (Exception ex)
         {
-            _onError("Failed to create port connection, please retry");
+            ErrorOccurred?.Invoke("Failed to create port connection, please retry");
             Console.WriteLine(ex);
         }
     }
@@ -79,8 +68,8 @@ public class SerialPanel
         {
             Dispatcher.UIThread.Post(() =>
             {
-                _onError("Serial Communication Disconnected, please reconnect");
-                _onConnectionStatus("Serial Disconnected");
+                ErrorOccurred?.Invoke("Serial Communication Disconnected, please reconnect");
+                ConnectionStatusChanged?.Invoke("Serial Disconnected");
             });
             _serialHandler = null;
         }

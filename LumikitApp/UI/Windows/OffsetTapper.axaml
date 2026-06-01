@@ -1,0 +1,17 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="300"
+        x:Class="LumikitApp.UI.Windows.OffsetTapper"
+        Title="OffsetTapper">
+    <StackPanel Margin="16" Spacing="16">
+        <TextBlock FontSize="20" Text="Tap the button to the audio beat to correctly synchronize audio.                                      (flashing lights should match audio)" TextAlignment="Center" TextWrapping="WrapWithOverflow" HorizontalAlignment="Center"></TextBlock>
+        <Grid ColumnSpacing="10"  RowDefinitions="*" ColumnDefinitions="*,*,*" Margin="0,40">
+            <TextBlock Grid.Column="0" Text="LIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERELIGHTLIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERE" TextWrapping="Wrap" HorizontalAlignment="Center"></TextBlock>
+            <Button Grid.Column="1"  Content="Tap Here" HorizontalAlignment="Center" VerticalAlignment="Center"></Button>
+            <TextBlock Grid.Column="2" Text="LIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERELIGHTLIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERE" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Bottom"></TextBlock>
+        </Grid>
+    </StackPanel>
+
+</Window>

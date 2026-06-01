@@ -641,7 +641,7 @@
             /// <param name="e"></param>
             private void OpenAudioFileButton_OnClick(object? sender, RoutedEventArgs e)
             {
-                if (_musicProvider.IsProviderLocal) //if track retrieval method is through local files, open file manager
+                if (_musicProvider.providerName == "LocalFiles") //if track retrieval method is through local files, open file manager
                 {
                     if (sender is Button b && this.Resources["OpenAudioFlyout"] is Flyout f) 
                         f.ShowAt(b);

@@ -9,6 +9,7 @@
     <None Remove="StartupWindow.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <AvaloniaResource Include="ping.wav" />
     <AvaloniaResource Include="Icons\spotify_green_logo_full.png" />
     <AvaloniaResource Include="Icons/file_icon.png" />
     <AvaloniaResource Include="Icons/spotify_icon_black.png" />

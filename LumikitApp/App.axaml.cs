@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using LumikitApp.UI.Windows;
 using LumikitApp.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -39,6 +40,8 @@ namespace LumikitApp
             services.AddTransient<BlockEditorViewModel>();
             services.AddSingleton<ISerialPanel, SerialPanel>();
             services.AddTransient<LumikitWindow>();
+            services.AddTransient<ProviderPickerWindow>();
+            services.AddSingleton<OffsetTapper>();
             return services.BuildServiceProvider();
         }
 

@@ -7,10 +7,10 @@
         Title="OffsetTapper">
     <StackPanel Margin="16" Spacing="16">
         <TextBlock FontSize="20" Text="Tap the button to the audio beat to correctly synchronize audio.                                      (flashing lights should match audio)" TextAlignment="Center" TextWrapping="WrapWithOverflow" HorizontalAlignment="Center"></TextBlock>
-        <Grid ColumnSpacing="10"  RowDefinitions="*" ColumnDefinitions="*,*,*" Margin="0,40">
-            <TextBlock Grid.Column="0" Text="LIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERELIGHTLIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERE" TextWrapping="Wrap" HorizontalAlignment="Center"></TextBlock>
-            <Button Grid.Column="1"  Content="Tap Here" HorizontalAlignment="Center" VerticalAlignment="Center"></Button>
-            <TextBlock Grid.Column="2" Text="LIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERELIGHTLIGHT_HERELIGHT_HERELIGHT_HERELIGHT_HERE" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Bottom"></TextBlock>
+        <Grid ColumnSpacing="10"  RowDefinitions="*" ColumnDefinitions="*,*,*" Margin="0,10">
+            <Rectangle Width="150" Height="150" HorizontalAlignment="Center" Fill="MediumPurple" Margin="20,0,0,0"></Rectangle>
+            <Button Grid.Column="1"  Content="Click Here" Height="80" VerticalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"></Button>
+            <Rectangle Grid.Column="2" Width="150" Height="150" HorizontalAlignment="Center" Fill="MediumPurple" Margin="0,0,20,0"></Rectangle>
         </Grid>
     </StackPanel>
 

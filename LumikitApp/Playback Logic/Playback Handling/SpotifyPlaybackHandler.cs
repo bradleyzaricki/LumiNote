@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using ManagedBass;
 
 namespace LumikitApp
 {
@@ -105,6 +106,8 @@ namespace LumikitApp
         public void StartTimer(int initialProgressMs)
         {
             if (_timerRunning) return;
+
+            Bass.Init();
 
             _progressMs = initialProgressMs;
             _syncStopwatch.Restart();

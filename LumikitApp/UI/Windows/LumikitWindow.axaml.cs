@@ -16,6 +16,7 @@
     using System.IO.Ports;
     using LumikitApp.Controls;
     using LumikitApp.Models;
+    using LumikitApp.UI.Windows;
     using LumikitApp.ViewModels;
 
     namespace LumikitApp
@@ -79,19 +80,19 @@
             Border? _activeSwatch;
             private BlockEditorPanel _blockEditor;
             private BlockEditorViewModel _viewModel;
-
+            private OffsetTapper _offsetTapper;
             public LumikitWindow()  // designer uses this
             {
                 InitializeComponent();
             }
-            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel, ISerialPanel serialPanel)
+            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel, ISerialPanel serialPanel, OffsetTapper offsetTapper)
             {
                 _musicProvider = provider;
                 _playbackHandler = playbackHandler;
                 _jsonDataHandler = jsonDataHandler;
                 _databaseAccess = databaseAccess;
                 _viewModel = blockEditorViewModel;
-
+                _offsetTapper = offsetTapper;
                 InitializeComponent();
                 DataContext = _viewModel;
 
@@ -192,6 +193,7 @@
             public void InitializeWindow()
             {
                 _blockEditor.Hide();
+                _offsetTapper.Show();
                 
                 this.FindControl<Button>("SaveTrackDataButton").Click += async (_, _) =>
                 {

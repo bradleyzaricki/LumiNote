@@ -81,6 +81,7 @@
             private BlockEditorPanel _blockEditor;
             private BlockEditorViewModel _viewModel;
             private OffsetTapper _offsetTapper;
+            public int AudioOffsetMs { get; set; }
             public LumikitWindow()  // designer uses this
             {
                 InitializeComponent();
@@ -193,7 +194,6 @@
             public void InitializeWindow()
             {
                 _blockEditor.Hide();
-                _offsetTapper.Show();
                 
                 this.FindControl<Button>("SaveTrackDataButton").Click += async (_, _) =>
                 {
@@ -263,7 +263,7 @@
                         // Reset serial throttle if ms went backwards (new track / seek / restart)
                         if (ms < _lastSerialSendMs) _lastSerialSendMs = 0;
 
-                        Color[]? colors = Timeline.Tick(ms, 10, _serialPanel.BrightnessScale, ColorUpdateIntervalMs);
+                        Color[]? colors = Timeline.Tick(ms + AudioOffsetMs, 10, _serialPanel.BrightnessScale, ColorUpdateIntervalMs);
 
                         if (colors == null)
                         {

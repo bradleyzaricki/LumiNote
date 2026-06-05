@@ -1,18 +1,30 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using ManagedBass;
 
 namespace LumikitApp.UI.Windows;
 
 public partial class OffsetTapper : Window
 {
+    private readonly TaskCompletionSource _completedTcs = new();
+    public Task Completed => _completedTcs.Task;
+
+    public int ComputedOffsetMs { get; private set; }
+
     private readonly Stopwatch _offsetStopwatch = new();
     private readonly CancellationTokenSource _cts = new();
+    private readonly List<int> _tapOffsets = new();
+    private long _lastTickMs;
     private string _tempWavPath;
 
     public OffsetTapper()
@@ -55,7 +67,9 @@ public partial class OffsetTapper : Window
 
             if (ct.IsCancellationRequested) break;
 
+            _lastTickMs = _offsetStopwatch.ElapsedMilliseconds;
             PlayTick();
+            FlashAfterOffset(ct);
             nextTick += 1000;
         }
     }
@@ -67,10 +81,69 @@ public partial class OffsetTapper : Window
         Bass.ChannelPlay(stream);
     }
 
+    private void FlashAfterOffset(CancellationToken ct)
+    {
+        int delayMs = ComputedOffsetMs;
+        Task.Run(async () =>
+        {
+            if (delayMs > 0)
+            {
+                try { await Task.Delay(delayMs, ct); }
+                catch (OperationCanceledException) { return; }
+            }
+            FlashRectangles();
+        }, ct);
+    }
+
+    private void FlashRectangles()
+    {
+        Dispatcher.UIThread.Post(async () =>
+        {
+            LeftFlash.Fill = Brushes.White;
+            RightFlash.Fill = Brushes.White;
+            await Task.Delay(80);
+            LeftFlash.Fill = Brushes.MediumPurple;
+            RightFlash.Fill = Brushes.MediumPurple;
+        });
+    }
+
+    private void TapButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        long tapMs = _offsetStopwatch.ElapsedMilliseconds;
+        int offsetFromTick = (int)(tapMs - _lastTickMs);
+
+        // Only record taps within a reasonable latency window (< 500 ms)
+        if (offsetFromTick is >= 0 and < 500)
+        {
+            _tapOffsets.Add(offsetFromTick);
+            int avg = (int)_tapOffsets.Average();
+            ComputedOffsetMs = avg;
+            OffsetLabel.Text = $"Offset: {avg} ms  ({_tapOffsets.Count} taps)";
+        }
+    }
+
+    private void DoneButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Finish();
+
+    private void Window_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            e.Handled = true;
+            Finish();
+        }
+    }
+
+    private void Finish()
+    {
+        if (_completedTcs.Task.IsCompleted) return;
+        _completedTcs.TrySetResult();
+    }
+
     protected override void OnClosed(EventArgs e)
     {
         _cts.Cancel();
         Bass.Free();
+        _completedTcs.TrySetResult();
         base.OnClosed(e);
     }
 }

@@ -1,0 +1,37 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="520" d:DesignHeight="320"
+        x:Class="LumikitApp.UI.Windows.OffsetTapper"
+        Title="Audio Offset Tapper"
+        Width="520"
+        Height="320"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        KeyDown="Window_KeyDown">
+    <StackPanel Margin="16" Spacing="12">
+        <TextBlock FontSize="14"
+                   Text="Tap the button in sync with the beat to calibrate audio offset. Press Esc or Done when finished."
+                   TextAlignment="Center"
+                   TextWrapping="WrapWithOverflow"
+                   HorizontalAlignment="Center"/>
+        <Grid ColumnSpacing="10" RowDefinitions="*" ColumnDefinitions="*,*,*" Margin="0,4">
+            <Rectangle x:Name="LeftFlash" Width="120" Height="120" HorizontalAlignment="Center" Fill="MediumPurple" Margin="10,0,0,0"/>
+            <Button x:Name="TapButton" Grid.Column="1" Content="Tap" Height="72"
+                    VerticalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Click="TapButton_Click"/>
+            <Rectangle x:Name="RightFlash" Grid.Column="2" Width="120" Height="120" HorizontalAlignment="Center" Fill="MediumPurple" Margin="0,0,10,0"/>
+        </Grid>
+        <TextBlock x:Name="OffsetLabel"
+                   Text="Offset: —"
+                   FontSize="16"
+                   HorizontalAlignment="Center"
+                   Foreground="White"/>
+        <Button x:Name="DoneButton"
+                Content="Done"
+                HorizontalAlignment="Center"
+                Width="120"
+                Click="DoneButton_Click"/>
+    </StackPanel>
+</Window>

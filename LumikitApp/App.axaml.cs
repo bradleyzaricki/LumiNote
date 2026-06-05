@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using LumikitApp.UI.Windows;
 using LumikitApp.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -39,6 +40,8 @@ namespace LumikitApp
             services.AddTransient<BlockEditorViewModel>();
             services.AddSingleton<ISerialPanel, SerialPanel>();
             services.AddTransient<LumikitWindow>();
+            services.AddTransient<ProviderPickerWindow>();
+            services.AddSingleton<OffsetTapper>();
             return services.BuildServiceProvider();
         }
 
@@ -50,23 +53,31 @@ namespace LumikitApp
                 var picker = new ProviderPickerWindow();
                 desktop.MainWindow = picker;
                 picker.Show();
-
+                
                 await picker.Choice;
-
+                
                 //Build DI constructor implementations based on provider choice
                 Services = BuildServices(picker.UseSpotify);
-                var mainWindow = Services.GetRequiredService<LumikitWindow>();
-                
+
+                //Show offset tapper before main window
+                var offsetTapper = Services.GetRequiredService<OffsetTapper>();
+                desktop.MainWindow = offsetTapper;
+
+                offsetTapper.Show();
+                await offsetTapper.Completed;
+
                 //await login
                 var musicProvider = Services.GetRequiredService<IMusicProvider>();
                 await musicProvider.InitializeClient();
 
-                //run main window
+                //run main window with computed audio offset
+                var mainWindow = Services.GetRequiredService<LumikitWindow>();
+                mainWindow.AudioOffsetMs = offsetTapper.ComputedOffsetMs;
                 desktop.MainWindow = mainWindow;
                 mainWindow.Show();
+                offsetTapper.Close();
                 mainWindow.InitializeWindow();
                 mainWindow.Activate();
-                picker.Close();
             }
 
             base.OnFrameworkInitializationCompleted();

@@ -16,6 +16,7 @@
     using System.IO.Ports;
     using LumikitApp.Controls;
     using LumikitApp.Models;
+    using LumikitApp.UI.Windows;
     using LumikitApp.ViewModels;
 
     namespace LumikitApp
@@ -79,19 +80,20 @@
             Border? _activeSwatch;
             private BlockEditorPanel _blockEditor;
             private BlockEditorViewModel _viewModel;
-
+            private OffsetTapper _offsetTapper;
+            public int AudioOffsetMs { get; set; }
             public LumikitWindow()  // designer uses this
             {
                 InitializeComponent();
             }
-            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel, ISerialPanel serialPanel)
+            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel, ISerialPanel serialPanel, OffsetTapper offsetTapper)
             {
                 _musicProvider = provider;
                 _playbackHandler = playbackHandler;
                 _jsonDataHandler = jsonDataHandler;
                 _databaseAccess = databaseAccess;
                 _viewModel = blockEditorViewModel;
-
+                _offsetTapper = offsetTapper;
                 InitializeComponent();
                 DataContext = _viewModel;
 
@@ -261,7 +263,7 @@
                         // Reset serial throttle if ms went backwards (new track / seek / restart)
                         if (ms < _lastSerialSendMs) _lastSerialSendMs = 0;
 
-                        Color[]? colors = Timeline.Tick(ms, 10, _serialPanel.BrightnessScale, ColorUpdateIntervalMs);
+                        Color[]? colors = Timeline.Tick(ms + AudioOffsetMs, 10, _serialPanel.BrightnessScale, ColorUpdateIntervalMs);
 
                         if (colors == null)
                         {
@@ -641,7 +643,7 @@
             /// <param name="e"></param>
             private void OpenAudioFileButton_OnClick(object? sender, RoutedEventArgs e)
             {
-                if (_musicProvider.IsProviderLocal) //if track retrieval method is through local files, open file manager
+                if (_musicProvider.providerName == "LocalFiles") //if track retrieval method is through local files, open file manager
                 {
                     if (sender is Button b && this.Resources["OpenAudioFlyout"] is Flyout f) 
                         f.ShowAt(b);

@@ -156,11 +156,11 @@ namespace LumikitApp
             if (isResizingLeft)
             {
                 double newLeft = originalLeft + (current.X - dragStartCanvas.X);
-                double snappedLeft = Math.Round(newLeft / _slotWidth) * _slotWidth;
+                double snappedLeft = Math.Round(newLeft);
                 double delta = originalLeft - snappedLeft;
                 double newWidth = originalWidth + delta;
 
-                if (newWidth >= _slotWidth && snappedLeft >= 0 && !Collides(snappedLeft, newWidth))
+                if (newWidth >= 1 && snappedLeft >= 0 && !Collides(snappedLeft, newWidth))
                 {
                     Canvas.SetLeft(Container, snappedLeft);
                     Container.Width = newWidth;
@@ -170,9 +170,9 @@ namespace LumikitApp
             else if (isResizingRight)
             {
                 double newWidth = originalWidth + (current.X - dragStartCanvas.X);
-                double snappedWidth = Math.Round(newWidth / _slotWidth) * _slotWidth;
+                double snappedWidth = Math.Round(newWidth);
                 double rightEdge = originalLeft + snappedWidth;
-                if (snappedWidth >= _slotWidth && rightEdge <= canvasWidth && !Collides(originalLeft, snappedWidth))
+                if (snappedWidth >= 1 && rightEdge <= canvasWidth && !Collides(originalLeft, snappedWidth))
                 {
                     Container.Width = snappedWidth;
                     ScrollIfNeeded(rightEdge);
@@ -216,7 +216,7 @@ namespace LumikitApp
             var canvas = (Canvas?)Container.Parent;
             var canvasWidth = canvas.Bounds.Width;
             double newLeft = originalLeft + (current.X - dragStart.X);
-            double snappedLeft = Math.Round(newLeft / _slotWidth) * _slotWidth;
+            double snappedLeft = Math.Round(newLeft);
             if (snappedLeft >= 0 && snappedLeft + Container.Width <= canvasWidth &&
                 !Collides(snappedLeft, Container.Width))
             {

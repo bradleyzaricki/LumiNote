@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -19,22 +20,35 @@ namespace LumikitApp
             AvaloniaXamlLoader.Load(this);
         }
 
-        private static IServiceProvider BuildServices(bool useSpotify)
+        private static IServiceProvider BuildServices(IReadOnlyList<string> selectedProviders)
         {
             var services = new ServiceCollection();
 
             string clientId = "7a3be16d49114bcb8317330636aa2647";
             string redirectUri = "http://127.0.0.1:5000/callback";
 
-            IMusicProvider provider = useSpotify
-                ? new SpotifyProvider(clientId, redirectUri)
-                : new MusicFileProvider();
-            IPlaybackHandler playbackHandler = useSpotify
-                ? new SpotifyPlaybackHandler(provider)
-                : new LocalFilesPlaybackHandler(provider);
-            //Adds IMusicProvider and IPlaybackHandler constructor connections to any connected class
-            services.AddSingleton(provider);
-            services.AddSingleton(playbackHandler);
+            // Build a concrete provider/handler pair for each source the user enabled.
+            var pairs = new List<(IMusicProvider provider, IPlaybackHandler handler)>();
+            foreach (var name in selectedProviders)
+            {
+                switch (name)
+                {
+                    case "Spotify":
+                        var sp = new SpotifyProvider(clientId, redirectUri);
+                        pairs.Add((sp, new SpotifyPlaybackHandler(sp)));
+                        break;
+                    case "LocalFiles":
+                        var lf = new MusicFileProvider();
+                        pairs.Add((lf, new LocalFilesPlaybackHandler(lf)));
+                        break;
+                }
+            }
+
+            // The router exposes both surfaces and switches between the enabled pairs at runtime.
+            var router = new RoutingMusicSession(pairs);
+            services.AddSingleton(router);
+            services.AddSingleton<IMusicProvider>(router);
+            services.AddSingleton<IPlaybackHandler>(router);
             services.AddSingleton<JsonDataHandler>();
             services.AddSingleton<DatabaseAccess>();
             services.AddTransient<BlockEditorViewModel>();
@@ -55,9 +69,9 @@ namespace LumikitApp
                 picker.Show();
                 
                 await picker.Choice;
-                
-                //Build DI constructor implementations based on provider choice
-                Services = BuildServices(picker.UseSpotify);
+
+                //Build DI constructor implementations based on provider choices
+                Services = BuildServices(picker.SelectedProviders);
 
                 //Show offset tapper before main window
                 var offsetTapper = Services.GetRequiredService<OffsetTapper>();

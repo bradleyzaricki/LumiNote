@@ -31,6 +31,16 @@ public partial class TimelineView : UserControl
     public List<LightBlock>? SelectedBlocks => _selectedBlocks;
     private List<LightBlock> _selectedBlocks = new();
 
+    // ── Undo history ──────────────────────────────────────────────────────────
+    // Each entry is a full snapshot of the timeline taken immediately before a mutation.
+    private readonly List<List<LightBlockData>> _undoStack = new();
+    private const int MaxUndo = 100;
+
+    // Snapshot captured at the start of a pointer interaction (move/resize); only
+    // committed to the undo stack on release if the block geometry actually changed.
+    private List<LightBlockData>? _pendingInteractionSnapshot;
+    private List<(double X, double W)>? _pendingGeometry;
+
     private TextBlock? _playheadCaret;
     private Point _lastPointerPos;
 
@@ -65,6 +75,98 @@ public partial class TimelineView : UserControl
             TimelineCanvas.Children.Remove(block.Container);
         LightBlocks.Clear();
         _selectedBlocks.Clear();
+    }
+
+    /// <summary>
+    /// Captures the current timeline (all light blocks) as a serializable snapshot.
+    /// Effects are deep-copied so later edits don't mutate the stored history.
+    /// </summary>
+    public List<LightBlockData> CaptureState()
+    {
+        return LightBlocks.Select(b => new LightBlockData
+        {
+            X = Canvas.GetLeft(b.Container) / _slotWidth,
+            Width = b.Container.Width / _slotWidth,
+            Color = b.BlockColor.ToString(),
+            SecondColor = b.SecondBlockColor.ToString(),
+            StartLight = b.StartLight,
+            EndLight = b.EndLight,
+            SecondaryDualInput1 = b.SecondaryStartLight,
+            SecondaryDualInput2 = b.SecondaryEndLight,
+            BlockEffects = b.BlockEffects.Select(e => e.DeepCopy()).ToList(),
+            LightIntensity = b.Intensity
+        }).ToList();
+    }
+
+    /// <summary>Pushes a snapshot of the current state onto the undo history.</summary>
+    public void PushUndo() => PushUndo(CaptureState());
+
+    /// <summary>Pushes a previously-captured snapshot onto the undo history.</summary>
+    public void PushUndo(List<LightBlockData> snapshot)
+    {
+        _undoStack.Add(snapshot);
+        if (_undoStack.Count > MaxUndo)
+            _undoStack.RemoveAt(0);
+    }
+
+    /// <summary>
+    /// Reverts the timeline to the most recent snapshot. Returns false if there's
+    /// nothing to undo.
+    /// </summary>
+    public bool Undo()
+    {
+        if (_undoStack.Count == 0) return false;
+
+        var snapshot = _undoStack[^1];
+        _undoStack.RemoveAt(_undoStack.Count - 1);
+
+        ClearBlocks();
+        BuildBlocks(snapshot);
+        return true;
+    }
+
+    /// <summary>Wires the shared pointer + undo hooks onto a block's container.</summary>
+    private void WireBlockEvents(LightBlock block)
+    {
+        block.Container.PointerPressed += (_, e) =>
+        {
+            BeginInteraction();
+            BlockPressed?.Invoke(block, e);
+        };
+        block.Container.PointerReleased += (_, _) =>
+        {
+            CommitInteractionIfChanged();
+            ReorderLightBlocks();
+        };
+    }
+
+    // Snapshot before a potential drag; committed only if geometry changes on release.
+    private void BeginInteraction()
+    {
+        _pendingInteractionSnapshot = CaptureState();
+        _pendingGeometry = LightBlocks
+            .Select(b => (Canvas.GetLeft(b.Container), b.Container.Width))
+            .ToList();
+    }
+
+    private void CommitInteractionIfChanged()
+    {
+        if (_pendingInteractionSnapshot == null || _pendingGeometry == null) return;
+
+        var now = LightBlocks
+            .Select(b => (X: Canvas.GetLeft(b.Container), W: b.Container.Width))
+            .ToList();
+
+        bool changed = now.Count != _pendingGeometry.Count
+            || now.Where((t, i) =>
+                   Math.Abs(t.X - _pendingGeometry[i].X) > 0.001
+                || Math.Abs(t.W - _pendingGeometry[i].W) > 0.001).Any();
+
+        if (changed)
+            PushUndo(_pendingInteractionSnapshot);
+
+        _pendingInteractionSnapshot = null;
+        _pendingGeometry = null;
     }
 
     public void DrawTimelineSlots()
@@ -344,9 +446,11 @@ public partial class TimelineView : UserControl
         return _selectedBlocks;
     }
 
-    public void LoadFromTrackData(TrackData trackData)
+    public void LoadFromTrackData(TrackData trackData) => BuildBlocks(trackData._lightBlocks);
+
+    private void BuildBlocks(List<LightBlockData> blocks)
     {
-        foreach (var data in trackData._lightBlocks)
+        foreach (var data in blocks)
         {
             if (!Color.TryParse(data.Color, out var color)) continue;
 
@@ -355,12 +459,25 @@ public partial class TimelineView : UserControl
             block.SecondBlockColor = Color.TryParse(data.SecondColor, out var color2) ? color2 : new Color();
             block.StartLight = data.StartLight;
             block.EndLight = data.EndLight;
-            block.BlockEffects = data.BlockEffects;
+            block.BlockEffects = data.BlockEffects ?? new List<EffectData> { new EffectData { Type = LightBlock.Effect.None } };
             block.Intensity = data.LightIntensity;
             block.SecondaryStartLight = data.SecondaryDualInput1;
             block.SecondaryEndLight = data.SecondaryDualInput2;
-            block.AdditionalIndividualInput1 = data.SecondarySingleInput1;
-            block.AdditionalIndividualInput2 = data.SecondarySingleInput2;
+
+            // Migrate old flat fields into effect params if the effect has no params yet
+            if (data.SecondarySingleInput1 != 0)
+            {
+                var ce = block.BlockEffects.FirstOrDefault(e =>
+                    e.Type == LightBlock.Effect.Combine || e.Type == LightBlock.Effect.Seperate);
+                if (ce != null && !ce.Params.ContainsKey("TargetWidth"))
+                    ce.Params["TargetWidth"] = data.SecondarySingleInput1;
+            }
+            if (data.SecondarySingleInput2 != 0)
+            {
+                var re = block.BlockEffects.FirstOrDefault(e => e.Type == LightBlock.Effect.Repeat);
+                if (re != null && !re.Params.ContainsKey("Count"))
+                    re.Params["Count"] = data.SecondarySingleInput2;
+            }
             block.Container.Width = data.Width * _slotWidth;
             Canvas.SetLeft(block.Container, data.X * _slotWidth);
             Canvas.SetTop(block.Container, 0);
@@ -368,8 +485,7 @@ public partial class TimelineView : UserControl
             TimelineCanvas.Children.Add(block.Container);
             LightBlocks.Add(block);
 
-            block.Container.PointerPressed += (_, e) => BlockPressed?.Invoke(block, e);
-            block.Container.PointerReleased += (_, _) => ReorderLightBlocks();
+            WireBlockEvents(block);
         }
     }
 
@@ -389,14 +505,16 @@ public partial class TimelineView : UserControl
         TimelineCanvas.Children.Add(block.Container);
         LightBlocks.Add(block);
         ReorderLightBlocks();
-        block.Container.PointerPressed += (_, e) => BlockPressed?.Invoke(block, e);
-        block.Container.PointerReleased += (_, _) => ReorderLightBlocks();
+        WireBlockEvents(block);
 
         return block;
     }
 
     public void DeleteSelectedBlocks()
     {
+        if (_selectedBlocks.Count == 0) return;
+        PushUndo();
+
         foreach (var block in _selectedBlocks.ToList())
         {
             block.isSelected = false;
@@ -408,6 +526,7 @@ public partial class TimelineView : UserControl
 
     public void StartLiveBlock(Color color, int currentMs)
     {
+        PushUndo();
         _isLiveInputActive = true;
         double caretX = (currentMs / MsPerSlot) * _slotWidth ;
         double snappedX = Math.Round(caretX);
@@ -423,6 +542,7 @@ public partial class TimelineView : UserControl
     public void Paste()
     {
         if (_selectedBlocks.Count == 0) return;
+        PushUndo();
 
         double leftmostX = _selectedBlocks.Min(b => Canvas.GetLeft(b.Container));
         foreach (var source in _selectedBlocks)
@@ -468,6 +588,7 @@ public partial class TimelineView : UserControl
         var (resolvedX, finalWidth) = ResolveDropPosition(snappedX);
         if (finalWidth < _slotWidth) return;
 
+        PushUndo();
         var block = CreateAndPlaceBlock(color, resolvedX, finalWidth);
         block.Intensity = 255;
         block.EndLight = 1000;

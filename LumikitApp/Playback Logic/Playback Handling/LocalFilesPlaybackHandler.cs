@@ -46,16 +46,13 @@ namespace LumikitApp
 
         public async Task ResumeAsync()
         {
-            var seconds = await _musicProvider.GetPlaybackProgressMsAsync() / 1000;
-            _progressMs = 0;
+            var posMs = await _musicProvider.GetPlaybackProgressMsAsync();
 
-                if (!await _musicProvider.IsPlayingAsync())
-                {
-                    await _musicProvider.ResumePlaybackAsync();
-                    _syncStopwatch.Restart();
-                    StartTimer(_progressMs + seconds*1000);
-                }
-
+            if (!await _musicProvider.IsPlayingAsync())
+            {
+                await _musicProvider.ResumePlaybackAsync();
+                StartTimer(posMs);
+            }
         }
 
         public async Task PlayAsync()
@@ -84,12 +81,15 @@ namespace LumikitApp
 
         public async Task SeekToPlaybackTime(int ms)
         {
-            await PauseAsync();
-            ms = (ms / 1000) * 1000;
-            _musicProvider.SeekToPlaybackTime(ms);
+            // Stop timer silently — seeking is not a stop, so don't fire PlaybackStopped
+            _timerRunning = false;
+            _syncStopwatch.Stop();
+
+            await _musicProvider.PausePlaybackAsync();
+            await _musicProvider.SeekToPlaybackTime(ms);
             await Task.Delay(10);
+            await _musicProvider.ResumePlaybackAsync();
             StartTimer(ms);
-            await ResumeAsync();
         }
 
         public void StartTimer(int initialProgressMs)

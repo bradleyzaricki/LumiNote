@@ -30,7 +30,9 @@ namespace LumikitApp
 
             if (!File.Exists(path)) return null;
             var json = File.ReadAllText(path);
-            return JsonSerializer.Deserialize<TrackData>(json);
+            var track = JsonSerializer.Deserialize<TrackData>(json);
+            track?.MigrateLegacyFields();
+            return track;
         }
 
         public JsonDataHandler(IMusicProvider provider)
@@ -51,19 +53,12 @@ namespace LumikitApp
                     //O(n) sort by provider type
                     var json = File.ReadAllText(file);
                     var track = JsonSerializer.Deserialize<TrackData>(json);
-                    if (_provider.providerName == null)
-                    {
+                    if (track == null) continue;
+                    track.MigrateLegacyFields();
+                    if (_provider.providerName == null || track.Sources.ContainsKey(_provider.providerName))
                         listFront.Add(track);
-                        continue;
-                    }
-                    if (track.provider.Equals(_provider.providerName))
-                    {
-                        listFront.Add(track);
-                    }
                     else
-                    {
                         listBack.Add(track);
-                    }
                 }
                 catch
                 {
@@ -148,7 +143,7 @@ namespace LumikitApp
                     TrackName = t._trackName ?? "",
                     Subtitle = t.author ?? "",
 
-                    Color = _provider.providerName != null && t.provider == _provider.providerName
+                    Color = _provider.providerName != null && t.Sources.ContainsKey(_provider.providerName)
                         ? new SolidColorBrush(_provider.ProviderColor)
                         : Brushes.Gray
                 })

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Media;
 using System.Collections.Generic;
@@ -23,17 +24,19 @@ public class LightEffectsComputer
         safeBlockIntensity = Math.Clamp(safeBlockIntensity, 0, 255);
         byte entireIntensity = (byte)safeBlockIntensity;
 
-        bool hasTravel = block.BlockEffects != null &&
-                         block.BlockEffects.Contains(LightBlock.Effect.Travel);
-        bool hasCombineOrSeperate = block.BlockEffects != null &&
-                                   (block.BlockEffects.Contains(LightBlock.Effect.Combine) ||
-                                    block.BlockEffects.Contains(LightBlock.Effect.Seperate));
-        bool hasStrobe = block.BlockEffects != null && block.BlockEffects.Contains(LightBlock.Effect.Strobe);
-        bool hasFadeOut = block.BlockEffects != null && block.BlockEffects.Contains(LightBlock.Effect.FadeOut);
-        bool hasFadeIn = block.BlockEffects != null && block.BlockEffects.Contains(LightBlock.Effect.FadeIn);
-        bool hasRepeat = block.BlockEffects != null && block.BlockEffects.Contains(LightBlock.Effect.Repeat);
-        bool hasChangeColor = block.BlockEffects != null && block.BlockEffects.Contains(LightBlock.Effect.ChangeColor);
-        bool hasTwinkle = block.BlockEffects != null && block.BlockEffects.Contains(LightBlock.Effect.Twinkle);
+        static bool Has(LightBlock b, LightBlock.Effect e) =>
+            b.BlockEffects != null && b.BlockEffects.Any(x => x.Type == e);
+        static EffectData? Get(LightBlock b, LightBlock.Effect e) =>
+            b.BlockEffects?.FirstOrDefault(x => x.Type == e);
+
+        bool hasTravel           = Has(block, LightBlock.Effect.Travel);
+        bool hasCombineOrSeperate= Has(block, LightBlock.Effect.Combine) || Has(block, LightBlock.Effect.Seperate);
+        bool hasStrobe           = Has(block, LightBlock.Effect.Strobe);
+        bool hasFadeOut          = Has(block, LightBlock.Effect.FadeOut);
+        bool hasFadeIn           = Has(block, LightBlock.Effect.FadeIn);
+        bool hasRepeat           = Has(block, LightBlock.Effect.Repeat);
+        bool hasChangeColor      = Has(block, LightBlock.Effect.ChangeColor);
+        bool hasTwinkle          = Has(block, LightBlock.Effect.Twinkle);
 
         if (hasStrobe)
         {
@@ -132,7 +135,7 @@ else if (hasCombineOrSeperate)
     }
 
     double t = Math.Clamp(relPos, 0.0, 1.0);
-    bool isSeparate = block.BlockEffects.Contains(LightBlock.Effect.Seperate);
+    bool isSeparate = Has(block, LightBlock.Effect.Seperate);
 
     // Input 1 = left side, Input 2 = right side
     var left0 = Normalize(block.StartLight, block.EndLight);
@@ -160,7 +163,10 @@ else if (hasCombineOrSeperate)
     double meet = (leftEnd0 + rightStart0) * 0.5;
 
     // Third field = desired final TOTAL width
-    double targetTotalWidth = Math.Max(0.0, block.AdditionalIndividualInput1);
+    double targetTotalWidth = Math.Max(0.0,
+        Get(block, LightBlock.Effect.Combine)?.Params.GetValueOrDefault("TargetWidth", 0)
+        ?? Get(block, LightBlock.Effect.Seperate)?.Params.GetValueOrDefault("TargetWidth", 0)
+        ?? 0);
 
     double totalInitialWidth = leftWidth0 + rightWidth0;
 
@@ -243,9 +249,10 @@ else if (hasCombineOrSeperate)
             }
         }
 
-        if (hasRepeat && block.AdditionalIndividualInput2 > 1)
+        int repeatCount = (int)(Get(block, LightBlock.Effect.Repeat)?.Params.GetValueOrDefault("Count", 1) ?? 1);
+        if (hasRepeat && repeatCount > 1)
         {
-            int repeats = (int)block.AdditionalIndividualInput2;
+            int repeats = repeatCount;
             repeats = Math.Clamp(repeats, 1, lightcount);
 
             int segmentSize = lightcount / repeats;

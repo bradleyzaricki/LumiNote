@@ -41,7 +41,13 @@
             /// The source responsible for playing/pausing/locating a point in a music file
             /// </summary>
             private IMusicProvider _musicProvider;
-            
+
+            /// <summary>
+            /// Routes between the enabled providers and lets us switch source at runtime.
+            /// Same instance as <see cref="_musicProvider"/> / <see cref="_playbackHandler"/>.
+            /// </summary>
+            private readonly RoutingMusicSession _musicRouter;
+
             private JsonDataHandler _jsonDataHandler;
             
             private DatabaseAccess _databaseAccess;
@@ -86,10 +92,11 @@
             {
                 InitializeComponent();
             }
-            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel, ISerialPanel serialPanel, OffsetTapper offsetTapper)
+            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel, ISerialPanel serialPanel, OffsetTapper offsetTapper, RoutingMusicSession musicRouter)
             {
                 _musicProvider = provider;
                 _playbackHandler = playbackHandler;
+                _musicRouter = musicRouter;
                 _jsonDataHandler = jsonDataHandler;
                 _databaseAccess = databaseAccess;
                 _viewModel = blockEditorViewModel;
@@ -146,8 +153,6 @@
                 this.KeyDown += OnKeyDown;
                 this.KeyUp += OnKeyUp;
 
-                var applyBtn = this.FindControl<Button>("ApplyBlockChangesButton");
-                if (applyBtn != null) applyBtn.Click += (_, _) => _blockEditor.ApplyBlockChanges();
                 InitializeColorPalette();
                 Timeline.DrawTimelineSlots();
             }
@@ -167,6 +172,15 @@
                 }
                 else if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.V)
                     Timeline.Paste();
+                else if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.Z && !focused)
+                {
+                    if (Timeline.Undo())
+                    {
+                        StopPreview();
+                        _blockEditor.Hide();
+                    }
+                    e.Handled = true;
+                }
             }
 
             private void HandleBlockPressed(LightBlock block, PointerPressedEventArgs e)
@@ -214,6 +228,11 @@
                         }
                         Console.WriteLine("Saving " + title +" lightmap with filepath: " + _musicProvider.currentlyPlayingPath);
                         Timeline.ReorderLightBlocks();
+                        // Preserve any previously linked sources (e.g. a Spotify link added to a local track)
+                        var existingSources = _jsonDataHandler.GetTrack(currentGUID)?.Sources
+                                             ?? new Dictionary<string, string>();
+                        existingSources[_musicProvider.providerName] = _musicProvider.currentlyPlayingPath;
+
                         var trackData = new TrackData
                         {
                             filePath = _musicProvider.currentlyPlayingPath,
@@ -221,6 +240,7 @@
                             author = authors,
                             trackGUID = Guid.Parse(currentGUID),
                             provider = _musicProvider.providerName,
+                            Sources = existingSources,
                             _BPM = double.Parse(_bpmInput.Text),
                             _lightBlocks = Timeline.LightBlocks
                                 .Select(b => new LightBlockData
@@ -233,8 +253,6 @@
                                     EndLight = b.EndLight,
                                     SecondaryDualInput2 = b.SecondaryEndLight,
                                     SecondaryDualInput1 = b.SecondaryStartLight,
-                                    SecondarySingleInput1 = b.AdditionalIndividualInput1,
-                                    SecondarySingleInput2 = b.AdditionalIndividualInput2,
                                     BlockEffects = b.BlockEffects,
                                     LightIntensity = b.Intensity
                                 })
@@ -322,6 +340,17 @@
                     };
                     this.FindControl<Button>("RestartTrackButton").Click +=
                         async (_, _) => _playbackHandler.RestartAsync();
+
+                    // Re-theme and recolor the track list whenever the active source changes.
+                    _musicRouter.ProviderSwitched += () =>
+                    {
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            ChangeAppTheme();
+                            _allLocalTrackItems = _jsonDataHandler.GetAllTrackItems();
+                            LocalTracksListBox.ItemsSource = _allLocalTrackItems;
+                        });
+                    };
 
                     ChangeAppTheme(); //Changes app colors to match provider (required by spotify TOS)
                     _allLocalTrackItems = _jsonDataHandler.GetAllTrackItems();
@@ -520,6 +549,9 @@
                 var colorString = e.Data.Get("block-color")?.ToString();
                 if (colorString == null || !Color.TryParse(colorString, out var color)) return;
 
+                if ((Timeline.SelectedBlocks?.Count ?? 0) > 0)
+                    Timeline.PushUndo();
+
                 if (ReferenceEquals(sender, _blockColorDropBox))
                 {
                     foreach (var block in Timeline.SelectedBlocks ?? new List<LightBlock>())
@@ -643,13 +675,12 @@
             /// <param name="e"></param>
             private void OpenAudioFileButton_OnClick(object? sender, RoutedEventArgs e)
             {
-                if (_musicProvider.providerName == "LocalFiles") //if track retrieval method is through local files, open file manager
+                if (_musicRouter.HasProvider("LocalFiles")) //local import available — open file manager
                 {
-                    if (sender is Button b && this.Resources["OpenAudioFlyout"] is Flyout f) 
+                    if (sender is Button b && this.Resources["OpenAudioFlyout"] is Flyout f)
                         f.ShowAt(b);
                 }
-
-                if (!_musicProvider.IsProviderLocal) //set current track to currently playing track
+                else if (!_musicProvider.IsProviderLocal) //set current track to currently playing track
                 {
                     var path = _musicProvider.GetCurrentlyPlayingTrackIdAsync();
                     _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
@@ -666,7 +697,7 @@
             /// <param name="e"></param>
             private async void BrowseAudioFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
             {
-                if (_musicProvider.providerName == "LocalFiles")
+                if (_musicRouter.HasProvider("LocalFiles"))
                 {
                     var dlg = new OpenFileDialog
                     {
@@ -698,14 +729,17 @@
             /// Update playback with locally selected audio file
             /// </summary>
             /// <param name="path"></param>
-            private void OnAudioFileSelected(string path)
+            private async void OnAudioFileSelected(string path)
             {
-            
+                // A local file was chosen — make sure the LocalFiles source is active.
+                if (_musicProvider.providerName != "LocalFiles")
+                    await _musicRouter.SwitchToAsync("LocalFiles");
+
                 _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
                 _musicProvider.currentlyPlayingPath = path;
-                _playbackHandler.PlayAsync();
+                await _playbackHandler.PlayAsync();
                 UpdateCurrentTrack(true, trackGUID: Guid.Empty); // refresh on next track
-                
+
             }
             
             /// <summary>
@@ -763,9 +797,29 @@
                 if (c.DataContext is not TrackItemUI item) return;
                 
                 //Insert and play from top of queue
-                _trackQueue.Insert(0,item.TrackId.ToString());
+                _trackQueue.Insert(0, item.TrackId.ToString());
                 var track = _jsonDataHandler.GetTrack(_trackQueue.First());
-                _musicProvider.currentlyPlayingPath = track.filePath;
+
+                // Pick a source the track has that is also an enabled provider.
+                // Prefer the currently active provider so we don't switch unnecessarily.
+                string? targetProvider = null;
+                if (track.Sources.ContainsKey(_musicProvider.providerName))
+                    targetProvider = _musicProvider.providerName;
+                else
+                    targetProvider = _musicRouter.AvailableProviders
+                        .FirstOrDefault(name => track.Sources.ContainsKey(name));
+
+                if (targetProvider == null)
+                {
+                    UpdateErrorText($"No enabled source linked for \"{track._trackName}\". Use the link buttons to add one.");
+                    return;
+                }
+
+                // Switch source if needed (router pauses the current source before swapping).
+                if (targetProvider != _musicProvider.providerName)
+                    await _musicRouter.SwitchToAsync(targetProvider);
+
+                _musicProvider.currentlyPlayingPath = track.Sources[targetProvider];
                 //Set visual information for track that is stored in json
                 _musicProvider.currentTrack = new TrackPOCO(track.trackGUID, track._trackName, track.author, null);
                 await _playbackHandler.PlayAsync();
@@ -792,6 +846,75 @@
                 
             }
             
+            /// <summary>
+            /// Links the currently playing Spotify track to the selected lightmap.
+            /// Requires the active provider to be Spotify and a track to be playing.
+            /// </summary>
+            private void LocalTrack_LinkSpotify_Click(object? sender, RoutedEventArgs e)
+            {
+                if (sender is not Control c) return;
+                if (c.DataContext is not TrackItemUI item) return;
+
+                if (_musicProvider.providerName != "Spotify")
+                {
+                    UpdateErrorText("Switch to the Spotify provider to link a Spotify track.");
+                    return;
+                }
+
+                var spotifyId = _musicProvider.GetCurrentlyPlayingTrackIdAsync();
+                if (string.IsNullOrEmpty(spotifyId))
+                {
+                    UpdateErrorText("No track currently playing on Spotify.");
+                    return;
+                }
+
+                var track = _jsonDataHandler.GetTrack(item.TrackId.ToString());
+                if (track == null) return;
+
+                track.Sources["Spotify"] = spotifyId;
+                _jsonDataHandler.SaveTrack(track);
+
+                _allLocalTrackItems = _jsonDataHandler.GetAllTrackItems();
+                LocalTracksListBox.ItemsSource = _allLocalTrackItems;
+            }
+
+            /// <summary>
+            /// Opens a file browser and links the chosen audio file to the selected lightmap
+            /// as its LocalFiles source.
+            /// </summary>
+            private async void LocalTrack_LinkFile_Click(object? sender, RoutedEventArgs e)
+            {
+                if (sender is not Control c) return;
+                if (c.DataContext is not TrackItemUI item) return;
+
+                var dialog = new OpenFileDialog
+                {
+                    AllowMultiple = false,
+                    Filters = new List<FileDialogFilter>
+                    {
+                        new FileDialogFilter
+                        {
+                            Name       = "Audio Files",
+                            Extensions = new List<string> { "mp3", "wav", "flac" }
+                        }
+                    }
+                };
+
+                var result = await dialog.ShowAsync(this);
+                if (result == null || result.Length == 0) return;
+
+                var importedPath = _jsonDataHandler.ImportAudioToAppStorage(result[0]);
+
+                var track = _jsonDataHandler.GetTrack(item.TrackId.ToString());
+                if (track == null) return;
+
+                track.Sources["LocalFiles"] = importedPath;
+                _jsonDataHandler.SaveTrack(track);
+
+                _allLocalTrackItems = _jsonDataHandler.GetAllTrackItems();
+                LocalTracksListBox.ItemsSource = _allLocalTrackItems;
+            }
+
             /// <summary>
             /// Refresh Database Track List
             /// </summary>

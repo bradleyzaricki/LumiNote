@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LumikitApp
 {
@@ -15,13 +16,10 @@ namespace LumikitApp
         public int EndLight { get; set; }
         public int SecondaryStartLight { get; set; }
         public int SecondaryEndLight { get; set; }
-        public int AdditionalIndividualInput1 {get; set;}
-        public int AdditionalIndividualInput2 {get; set;}
-        
         public Color SecondBlockColor {get; set;}
         public int Intensity { get; set; }
         public Color BlockColor { get; set; }
-        public List<Effect> BlockEffects { get; set; } = new List<Effect>(){Effect.None};
+        public List<EffectData> BlockEffects { get; set; } = new List<EffectData> { new EffectData { Type = Effect.None } };
         public enum Effect
         {
             None,
@@ -57,11 +55,9 @@ namespace LumikitApp
             Intensity = blockToMimic.Intensity;
             BlockColor = blockToMimic.BlockColor;
             SecondBlockColor = blockToMimic.SecondBlockColor;
-            BlockEffects = new List<Effect>(blockToMimic.BlockEffects);
+            BlockEffects = blockToMimic.BlockEffects.Select(e => e.DeepCopy()).ToList();
             SecondaryStartLight = blockToMimic.SecondaryStartLight;
             SecondaryEndLight = blockToMimic.SecondaryEndLight;
-            AdditionalIndividualInput1 = blockToMimic.AdditionalIndividualInput1;
-            AdditionalIndividualInput2 = blockToMimic.AdditionalIndividualInput2;
             
             Container.Width = blockToMimic.Container.Width;
         }

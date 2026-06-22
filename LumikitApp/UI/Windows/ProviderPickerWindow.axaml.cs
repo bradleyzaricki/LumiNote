@@ -1,39 +1,54 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+
 namespace LumikitApp
 {
     public partial class ProviderPickerWindow : Window
     {
         private readonly TaskCompletionSource _chosen = new();
-        public bool UseSpotify { get; private set; }
+
+        /// <summary>Provider names the user enabled, e.g. "Spotify", "LocalFiles".</summary>
+        public List<string> SelectedProviders { get; } = new();
+
         public Task Choice => _chosen.Task;
-        public event EventHandler? ProviderChosen;
+
         public ProviderPickerWindow()
         {
             InitializeComponent();
-            //When providerchoses is invoked, give the choice a result of complete to advance the lumanite startup
-            ProviderChosen += (_, _) => _chosen.TrySetResult();
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            
         }
 
-        private void Spotify_Click(object? sender, RoutedEventArgs e)
+        // Enable Continue only once at least one source is selected.
+        private void Toggle_Changed(object? sender, RoutedEventArgs e)
         {
-            UseSpotify = true;
-            ProviderChosen?.Invoke(this, EventArgs.Empty);
+            var continueButton = this.FindControl<Button>("ContinueButton");
+            if (continueButton == null) return;
+
+            bool any = (this.FindControl<ToggleButton>("SpotifyToggle")?.IsChecked == true)
+                    || (this.FindControl<ToggleButton>("LocalToggle")?.IsChecked == true);
+            continueButton.IsEnabled = any;
         }
 
-        private void Local_Click(object? sender, RoutedEventArgs e)
+        private void Continue_Click(object? sender, RoutedEventArgs e)
         {
-            UseSpotify = false;
-            ProviderChosen?.Invoke(this, EventArgs.Empty);
+            SelectedProviders.Clear();
+            if (this.FindControl<ToggleButton>("SpotifyToggle")?.IsChecked == true)
+                SelectedProviders.Add("Spotify");
+            if (this.FindControl<ToggleButton>("LocalToggle")?.IsChecked == true)
+                SelectedProviders.Add("LocalFiles");
+
+            if (SelectedProviders.Count == 0) return;
+
+            _chosen.TrySetResult();
         }
     }
 }

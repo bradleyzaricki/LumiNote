@@ -38,13 +38,28 @@ public class DatabaseAccess
 
     public async Task SaveTrackAsync(string trackId, TrackData track)
     {
-        var fileEnd = Path.GetExtension(track.filePath).ToLowerInvariant();
-        if (fileEnd == ".wav" || fileEnd == ".mp3")
+        var localAudioPath = track.GetSource(ProviderType.LocalFiles) ?? track.filePath;
+
+        string? audioBase64 = null;
+        var fileName = track.filePath;
+        if (!string.IsNullOrEmpty(localAudioPath) && File.Exists(localAudioPath))
         {
-            track.filePath = Path.GetFileName(track.filePath);
+            audioBase64 = Convert.ToBase64String(await File.ReadAllBytesAsync(localAudioPath));
+            fileName = Path.GetFileName(localAudioPath);
         }
+
+        var payload = new
+        {
+            _BPM = track._BPM,
+            _trackName = track._trackName,
+            provider = track.provider,
+            filePath = fileName,
+            _lightBlocks = track._lightBlocks,
+            audioBase64
+        };
+
         var url = new Uri($"{BaseUrl}/tracks/{Uri.EscapeDataString(trackId)}");
-        var json = JsonSerializer.Serialize(track, JsonOptions);
+        var json = JsonSerializer.Serialize(payload, JsonOptions);
 
         using var req = new HttpRequestMessage(HttpMethod.Put, url);
         req.Headers.Add("x-api-key", ApiKey);
@@ -94,6 +109,25 @@ public class DatabaseAccess
     }
 
     /// <summary>
+    /// Download a track's stored audio file, or null if the track has none stored.
+    /// </summary>
+    public async Task<byte[]?> DownloadTrackAudioAsync(string trackId)
+    {
+        var url = new Uri($"{BaseUrl}/tracks/{Uri.EscapeDataString(trackId)}/audio");
+        using var req = new HttpRequestMessage(HttpMethod.Get, url);
+        req.Headers.Add("x-api-key", ApiKey);
+
+        using var resp = await Http.SendAsync(req);
+        if (resp.StatusCode == HttpStatusCode.NotFound)
+            return null;
+
+        if (!resp.IsSuccessStatusCode)
+            throw new Exception($"Worker returned {(int)resp.StatusCode} {resp.ReasonPhrase}");
+
+        return await resp.Content.ReadAsByteArrayAsync();
+    }
+
+    /// <summary>
     /// List all database tracks
     /// </summary>
     /// <param name="provider">optional parameter to filter for tracks by provider</param>
@@ -135,20 +169,18 @@ public class DatabaseAccess
                 TrackName = trackName,
                 Subtitle = $"{p} • {bpm} BPM",
                 Provider = p,
-                Color = _provider.providerName != null && p == _provider.providerName
+                Color = p == _provider.providerName.ToString()
                 ? new SolidColorBrush(_provider.ProviderColor)
-                : Brushes.Gray
-            };              
-            if (_provider.providerName != null)
+                : Brushes.Gray,
+                SourceBadges = TrackItemUI.BuildBadges(pt => pt.ToString() == p)
+            };
+            if (p == _provider.providerName.ToString())
             {
-                if (p == _provider.providerName)
-                {
-                    listStart.Add(trackItem);
-                }
-                else if (addUnusableTracks)
-                {
-                    listEnd.Add(trackItem);
-                }
+                listStart.Add(trackItem);
+            }
+            else if (addUnusableTracks)
+            {
+                listEnd.Add(trackItem);
             }
 
         }

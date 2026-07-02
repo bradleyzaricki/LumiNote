@@ -40,7 +40,7 @@ public class BlockEditorPanel
         nameof(BlockEditorViewModel.Strobe),    nameof(BlockEditorViewModel.Travel),
         nameof(BlockEditorViewModel.Combine),   nameof(BlockEditorViewModel.Separate),
         nameof(BlockEditorViewModel.Repeat),    nameof(BlockEditorViewModel.ChangeColor),
-        nameof(BlockEditorViewModel.Twinkle),
+        nameof(BlockEditorViewModel.Twinkle),   nameof(BlockEditorViewModel.FillColor),
         nameof(BlockEditorViewModel.LightRangeLower),    nameof(BlockEditorViewModel.LightRangeUpper),
         nameof(BlockEditorViewModel.Range2Slider1Lower), nameof(BlockEditorViewModel.Range2Slider1Upper),
         nameof(BlockEditorViewModel.Range2Slider2Lower), nameof(BlockEditorViewModel.Range2Slider2Upper),
@@ -105,6 +105,7 @@ public class BlockEditorPanel
 
         _viewModel.BlockColorBrush       = new SolidColorBrush(block.BlockColor);
         _viewModel.SecondBlockColorBrush = new SolidColorBrush(block.SecondBlockColor);
+        _viewModel.FillColorBrush        = new SolidColorBrush(block.FillColor);
 
         // Load all effect states at once — bypasses mutual-exclusion so saved data is
         // restored exactly as stored rather than triggering side-effect clears.
@@ -117,7 +118,8 @@ public class BlockEditorPanel
             separate:    EffectState(selectedBlocks, LightBlock.Effect.Seperate),
             repeat:      EffectState(selectedBlocks, LightBlock.Effect.Repeat),
             changeColor: EffectState(selectedBlocks, LightBlock.Effect.ChangeColor),
-            twinkle:     EffectState(selectedBlocks, LightBlock.Effect.Twinkle)
+            twinkle:     EffectState(selectedBlocks, LightBlock.Effect.Twinkle),
+            fillColor:   EffectState(selectedBlocks, LightBlock.Effect.FillColor)
         );
 
         var combineEffect = block.BlockEffects.FirstOrDefault(e => e.Type == LightBlock.Effect.Combine)
@@ -201,6 +203,7 @@ public class BlockEditorPanel
             ApplyEffect(block, LightBlock.Effect.Repeat,      _viewModel.Repeat);
             ApplyEffect(block, LightBlock.Effect.ChangeColor, _viewModel.ChangeColor);
             ApplyEffect(block, LightBlock.Effect.Twinkle,     _viewModel.Twinkle);
+            ApplyEffect(block, LightBlock.Effect.FillColor,   _viewModel.FillColor);
 
             // Write params into effect entries after presence is applied
             if (_viewModel.AdditionalInput1Text != _loadedSingleInput1

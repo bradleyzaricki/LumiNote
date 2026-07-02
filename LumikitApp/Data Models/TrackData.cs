@@ -39,6 +39,10 @@ namespace LumikitApp
                 Sources[provider] = filePath;
         }
 
+        public bool HasSource(ProviderType provider) => Sources.ContainsKey(provider.ToString());
+        public string? GetSource(ProviderType provider) => Sources.GetValueOrDefault(provider.ToString());
+        public void SetSource(ProviderType provider, string value) => Sources[provider.ToString()] = value;
+
 
     }
     public class LightBlockData
@@ -47,7 +51,9 @@ namespace LumikitApp
         public double Width { get; set; }//Width of block on timeline
         public string Color { get; set; }//Saved color
         
-        public string SecondColor { get; set; } 
+        public string SecondColor { get; set; }
+
+        public string FillColor { get; set; }
         [System.Text.Json.Serialization.JsonConverter(typeof(EffectDataListConverter))]
         public List<EffectData> BlockEffects { get; set; }
         

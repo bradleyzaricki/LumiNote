@@ -41,9 +41,9 @@ public interface IMusicProvider
     string currentlyPlayingPath {get; set;}
     
     /// <summary>
-    /// The name of the music provider
+    /// The type of the music provider
     /// </summary>
-    string providerName { get; }
+    ProviderType providerName { get; }
     
     /// <summary>
     /// Is track currently playing and not paused

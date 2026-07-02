@@ -89,6 +89,7 @@ public partial class TimelineView : UserControl
             Width = b.Container.Width / _slotWidth,
             Color = b.BlockColor.ToString(),
             SecondColor = b.SecondBlockColor.ToString(),
+            FillColor = b.FillColor.ToString(),
             StartLight = b.StartLight,
             EndLight = b.EndLight,
             SecondaryDualInput1 = b.SecondaryStartLight,
@@ -457,6 +458,7 @@ public partial class TimelineView : UserControl
             var block = new LightBlock(LightBlocks, TimelineScrollViewer, _slotWidth);
             block.UpdateColor(color);
             block.SecondBlockColor = Color.TryParse(data.SecondColor, out var color2) ? color2 : new Color();
+            block.FillColor = Color.TryParse(data.FillColor, out var color3) ? color3 : new Color();
             block.StartLight = data.StartLight;
             block.EndLight = data.EndLight;
             block.BlockEffects = data.BlockEffects ?? new List<EffectData> { new EffectData { Type = LightBlock.Effect.None } };

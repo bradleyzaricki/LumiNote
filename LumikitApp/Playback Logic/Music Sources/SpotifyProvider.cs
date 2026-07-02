@@ -23,7 +23,7 @@ namespace LumikitApp
 
         public bool IsProviderLocal { get; set; }
 
-        public string providerName => "Spotify";
+        public ProviderType providerName => ProviderType.Spotify;
         private readonly string _clientId;
         private readonly string _redirectUri;
         private SpotifyClient _spotify;

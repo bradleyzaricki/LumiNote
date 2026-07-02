@@ -7,12 +7,11 @@ namespace LumikitApp
     /// <summary>
     /// Drives the lightshow clock for Spotify playback.
     ///
-    /// Spotify is remote-controlled over the network and exposes no per-frame position,
-    /// so we don't poll it every frame. Instead we anchor a local <see cref="Stopwatch"/>
-    /// to an RTT-corrected position reading and extrapolate from there (zero per-frame
-    /// latency), while a background loop periodically re-reads the real position and gently
-    /// nudges the anchor to cancel drift — snapping only when something large knocks us out
-    /// of sync (e.g. the user paused on another device).
+    /// Spotify's Web API only honours whole-second seeks, so every (re)start floors the target
+    /// to the previous second and runs PAUSE → SEEK → PLAY, then anchors a local
+    /// <see cref="Stopwatch"/> that carries the clock from there. A small fixed
+    /// <see cref="PlayLatencyMs"/> delay sits between issuing PLAY and starting the clock, so the
+    /// clock begins when audio actually starts rather than when the command is sent.
     /// </summary>
     public class SpotifyPlaybackHandler : IPlaybackHandler
     {
@@ -21,16 +20,17 @@ namespace LumikitApp
         private bool _timerRunning;
         private int _progressMs;
 
-        // Playback position that corresponds to _syncStopwatch == 0. The reported progress
-        // is always _anchorMs + elapsed; re-syncing simply shifts this anchor.
+        // Playback position that corresponds to _syncStopwatch == 0; reported progress is
+        // always _anchorMs + elapsed.
         private int _anchorMs;
 
-        // How often the background loop re-reads Spotify's real position.
-        private const int ResyncIntervalMs = 1500;
-        // Per-correction cap so routine drift is absorbed invisibly (sub-frame at 50ms).
-        private const int MaxNudgeMs = 40;
-        // Above this error we snap instead of nudging (big external desync / seek miss).
-        private const int SnapThresholdMs = 400;
+        // Identifies the current timer loop. Bumped on every fresh start so a stale loop left
+        // over from a prior start exits instead of running in parallel.
+        private int _loopGen;
+
+        // Delay between issuing PLAY and starting the clock, to account for the lag before audio
+        // actually starts. Bump this up if the lights run ahead of the music.
+        private const int PlayLatencyMs = 150;
 
         public int CurrentProgressMs => _progressMs;
         public bool IsTimerRunning => _timerRunning;
@@ -47,11 +47,10 @@ namespace LumikitApp
         {
             try
             {
+                // _progressMs already holds our precise clock value; keep it (don't overwrite
+                // with Spotify's coarse, stale reading).
                 StopTimer();
                 await _musicProvider.PausePlaybackAsync();
-
-                // Anchor the display to the real position after pausing.
-                _progressMs = await _musicProvider.GetPlaybackProgressMsAsync();
                 ProgressUpdated?.Invoke(_progressMs);
             }
             catch (Exception ex)
@@ -60,86 +59,63 @@ namespace LumikitApp
             }
         }
 
-        public async Task ResumeAsync()
-        {
-            try
-            {
-                if (!await _musicProvider.IsPlayingAsync())
-                    await _musicProvider.ResumePlaybackAsync();
+        /// <summary>Resumes from our own clock position (not Spotify's coarse readback).</summary>
+        public async Task ResumeAsync() => await ReanchorAndPlay(_progressMs, loadTrack: false);
 
-                // Anchor to the true position (corrected for network round-trip), full ms.
-                int anchor = await GetAnchoredPositionMsAsync();
-                StartTimer(anchor);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Resume failed: " + ex);
-            }
-        }
+        /// <summary>Loads and starts the current track from the beginning.</summary>
+        public async Task PlayAsync() => await ReanchorAndPlay(0, loadTrack: true);
 
-        public async Task PlayAsync()
-        {
-            try
-            {
-                StopTimer();
-                await _musicProvider.PlayTrackAsync();
-                await RestartAsync();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Play Track failed: " + ex);
-            }
-        }
+        /// <summary>Restarts the (already-loaded) track from the start.</summary>
+        public async Task RestartAsync() => await ReanchorAndPlay(0, loadTrack: false);
+
+        /// <summary>Seeks (jumps) to a new position on the already-loaded track.</summary>
+        public async Task SeekToPlaybackTime(int ms) => await ReanchorAndPlay(ms, loadTrack: false);
 
         /// <summary>
-        /// Restarts the track from the start. A fresh track genuinely needs a moment to load
-        /// on Spotify's side before the position read is meaningful.
+        /// Shared (re)start routine for play, resume, restart and seek. Spotify only honours
+        /// whole-second seeks, so the target is floored to the previous second. For a fresh play
+        /// the track URI is loaded first; then PAUSE parks playback, SEEK moves to the target
+        /// while parked, PLAY resumes, and after a small <see cref="PlayLatencyMs"/> wait (for
+        /// audio to actually start) the local clock is anchored at that second.
         /// </summary>
-        public async Task RestartAsync()
-        {
-            await PauseAsync();
-            await _musicProvider.SeekToPlaybackTime(0);
-            _progressMs = 0;
-            await Task.Delay(400);
-            await ResumeAsync();
-        }
-
-        /// <summary>
-        /// Seeks during playback without a pause/stop cycle. Spotify's SeekTo works while
-        /// playing, so we seek, re-anchor optimistically to the requested time, and let the
-        /// re-sync loop absorb any residual error — no full-second rounding, no fixed delay.
-        /// </summary>
-        public async Task SeekToPlaybackTime(int ms)
+        private async Task ReanchorAndPlay(int ms, bool loadTrack)
         {
             try
             {
-                await _musicProvider.SeekToPlaybackTime(ms);
+                if (ms < 0) ms = 0;
+                int floored = (ms / 1000) * 1000;
 
-                if (!await _musicProvider.IsPlayingAsync())
-                    await _musicProvider.ResumePlaybackAsync();
+                StopClockSilently();                           // halt our clock without firing PlaybackStopped
 
-                StartTimer(ms);
+                if (loadTrack)
+                    await _musicProvider.PlayTrackAsync();     // load the track URI onto the device
+
+                await _musicProvider.PausePlaybackAsync();     // park playback
+                await _musicProvider.SeekToPlaybackTime(floored); // move to the target while parked
+                await _musicProvider.ResumePlaybackAsync();    // play
+                await Task.Delay(PlayLatencyMs);               // let audio actually start
+                StartTimer(floored);                           // anchor the clock at that second
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Seek failed: " + ex);
+                Debug.WriteLine("Re-anchor failed: " + ex);
             }
         }
 
         /// <summary>
-        /// (Re)anchors the local clock to <paramref name="initialProgressMs"/>. If the timer
-        /// loop isn't running yet, starts it plus the background re-sync loop.
+        /// (Re)anchors the local clock to <paramref name="initialProgressMs"/>. If the loop
+        /// isn't running, starts it under a new generation.
         /// </summary>
         public void StartTimer(int initialProgressMs)
         {
             _anchorMs = initialProgressMs;
             _syncStopwatch.Restart();
 
-            if (_timerRunning) return; // loops already running — just re-anchored
+            if (_timerRunning) return; // loop already running — just re-anchored
             _timerRunning = true;
 
-            _ = Task.Run(TimerLoop);
-            _ = Task.Run(ResyncLoop);
+            int gen = ++_loopGen;
+            _ = Task.Run(() => TimerLoop(gen));
         }
 
         public void StopTimer()
@@ -149,57 +125,22 @@ namespace LumikitApp
             PlaybackStopped?.Invoke();
         }
 
-        // Extrapolate position from the anchor every 10ms — no network involved.
-        private async Task TimerLoop()
+        // Stop the clock for an internal transition (e.g. a seek) without notifying listeners.
+        private void StopClockSilently()
         {
-            while (_timerRunning)
+            _timerRunning = false;
+            _syncStopwatch.Stop();
+        }
+
+        // Extrapolate position from the anchor every 10ms — no network involved.
+        private async Task TimerLoop(int gen)
+        {
+            while (_timerRunning && gen == _loopGen)
             {
                 _progressMs = _anchorMs + (int)_syncStopwatch.ElapsedMilliseconds;
                 ProgressUpdated?.Invoke(_progressMs);
                 await Task.Delay(10);
             }
-        }
-
-        // Periodically reconcile the local clock with Spotify's real position.
-        private async Task ResyncLoop()
-        {
-            while (_timerRunning)
-            {
-                await Task.Delay(ResyncIntervalMs);
-                if (!_timerRunning) break;
-
-                try
-                {
-                    // Don't reconcile while paused/buffering — the reading would be misleading.
-                    if (!await _musicProvider.IsPlayingAsync()) continue;
-
-                    int truth    = await GetAnchoredPositionMsAsync();
-                    int estimate = _anchorMs + (int)_syncStopwatch.ElapsedMilliseconds;
-                    int error    = truth - estimate;
-
-                    if (Math.Abs(error) > SnapThresholdMs)
-                        _anchorMs += error;                                   // big desync: snap
-                    else
-                        _anchorMs += Math.Clamp(error, -MaxNudgeMs, MaxNudgeMs); // drift: nudge
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Resync failed: " + ex);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Reads Spotify's reported position and adds an estimate of one-way network latency
-        /// (half the measured round-trip), since the value was sampled server-side before it
-        /// reached us.
-        /// </summary>
-        private async Task<int> GetAnchoredPositionMsAsync()
-        {
-            var rtt = Stopwatch.StartNew();
-            int pos = await _musicProvider.GetPlaybackProgressMsAsync();
-            rtt.Stop();
-            return pos + (int)(rtt.ElapsedMilliseconds / 2);
         }
     }
 }

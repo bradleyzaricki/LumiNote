@@ -12,8 +12,7 @@ namespace LumikitApp
     {
         private readonly TaskCompletionSource _chosen = new();
 
-        /// <summary>Provider names the user enabled, e.g. "Spotify", "LocalFiles".</summary>
-        public List<string> SelectedProviders { get; } = new();
+        public List<ProviderType> SelectedProviders { get; } = new();
 
         public Task Choice => _chosen.Task;
 
@@ -42,9 +41,9 @@ namespace LumikitApp
         {
             SelectedProviders.Clear();
             if (this.FindControl<ToggleButton>("SpotifyToggle")?.IsChecked == true)
-                SelectedProviders.Add("Spotify");
+                SelectedProviders.Add(ProviderType.Spotify);
             if (this.FindControl<ToggleButton>("LocalToggle")?.IsChecked == true)
-                SelectedProviders.Add("LocalFiles");
+                SelectedProviders.Add(ProviderType.LocalFiles);
 
             if (SelectedProviders.Count == 0) return;
 

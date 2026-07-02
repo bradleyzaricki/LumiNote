@@ -55,7 +55,7 @@ namespace LumikitApp
                     var track = JsonSerializer.Deserialize<TrackData>(json);
                     if (track == null) continue;
                     track.MigrateLegacyFields();
-                    if (_provider.providerName == null || track.Sources.ContainsKey(_provider.providerName))
+                    if (track.HasSource(_provider.providerName))
                         listFront.Add(track);
                     else
                         listBack.Add(track);
@@ -108,11 +108,34 @@ namespace LumikitApp
             return destPath;
         }
 
+        // Saves audio bytes downloaded from the database into the same local store used for
+        // imported files, so both sources are indistinguishable to playback afterwards.
+        public string SaveAudioBytesToAppStorage(byte[] audioBytes, string extension = ".wav")
+        {
+            var appRoot = DirectoryPaths.AudioDir;
+            Directory.CreateDirectory(appRoot);
+
+            var hash = ComputeHash(audioBytes);
+            var destPath = Path.Combine(appRoot, hash + extension);
+
+            if (!File.Exists(destPath))
+                File.WriteAllBytes(destPath, audioBytes);
+
+            return destPath;
+        }
+
         private static string ComputeFileHash(string path)
         {
             using var sha = SHA256.Create();
             using var stream = File.OpenRead(path);
             var hash = sha.ComputeHash(stream);
+            return Convert.ToHexString(hash);
+        }
+
+        private static string ComputeHash(byte[] data)
+        {
+            using var sha = SHA256.Create();
+            var hash = sha.ComputeHash(data);
             return Convert.ToHexString(hash);
         }
 
@@ -143,9 +166,11 @@ namespace LumikitApp
                     TrackName = t._trackName ?? "",
                     Subtitle = t.author ?? "",
 
-                    Color = _provider.providerName != null && t.Sources.ContainsKey(_provider.providerName)
+                    Color = t.HasSource(_provider.providerName)
                         ? new SolidColorBrush(_provider.ProviderColor)
-                        : Brushes.Gray
+                        : Brushes.Gray,
+
+                    SourceBadges = TrackItemUI.BuildBadges(t.HasSource)
                 })
                 .ToList();
         }

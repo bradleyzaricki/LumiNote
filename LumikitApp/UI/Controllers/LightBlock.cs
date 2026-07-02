@@ -17,6 +17,7 @@ namespace LumikitApp
         public int SecondaryStartLight { get; set; }
         public int SecondaryEndLight { get; set; }
         public Color SecondBlockColor {get; set;}
+        public Color FillColor { get; set; }
         public int Intensity { get; set; }
         public Color BlockColor { get; set; }
         public List<EffectData> BlockEffects { get; set; } = new List<EffectData> { new EffectData { Type = Effect.None } };
@@ -31,7 +32,8 @@ namespace LumikitApp
             Seperate,
             Repeat,
             ChangeColor,
-            Twinkle
+            Twinkle,
+            FillColor
 
         }
         private Point dragStartCanvas;
@@ -55,6 +57,7 @@ namespace LumikitApp
             Intensity = blockToMimic.Intensity;
             BlockColor = blockToMimic.BlockColor;
             SecondBlockColor = blockToMimic.SecondBlockColor;
+            FillColor = blockToMimic.FillColor;
             BlockEffects = blockToMimic.BlockEffects.Select(e => e.DeepCopy()).ToList();
             SecondaryStartLight = blockToMimic.SecondaryStartLight;
             SecondaryEndLight = blockToMimic.SecondaryEndLight;

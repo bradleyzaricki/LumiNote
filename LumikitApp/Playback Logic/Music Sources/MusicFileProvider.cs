@@ -18,7 +18,7 @@ namespace LumikitApp
 
         public Color ProviderColor {get; set;}
         public bool IsProviderLocal { get; set; } = true;
-        public string providerName => "LocalFiles";
+        public ProviderType providerName => ProviderType.LocalFiles;
         public TrackPOCO currentTrack { get; set; }
         private int _stream;
         private bool _init;

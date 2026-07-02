@@ -37,6 +37,16 @@ public class LightEffectsComputer
         bool hasRepeat           = Has(block, LightBlock.Effect.Repeat);
         bool hasChangeColor      = Has(block, LightBlock.Effect.ChangeColor);
         bool hasTwinkle          = Has(block, LightBlock.Effect.Twinkle);
+        bool hasFillColor        = Has(block, LightBlock.Effect.FillColor);
+
+        // FillColor replaces "empty" (transparent) areas with a second colour instead of
+        // leaving them dark, so e.g. Strobe flickers between two colours and Travel paints
+        // the trailing gap. Applied as a final pass below.
+        Color fillColor = block.FillColor;
+
+        // During Strobe's off half-period the whole strip would normally go dark. With a fill
+        // colour that off-phase becomes a flat fill frame instead of nothing.
+        bool strobeOff = false;
 
         if (hasStrobe)
         {
@@ -62,7 +72,13 @@ public class LightEffectsComputer
 
             long halfPeriods = (long)(elapsedMsLocal / snappedHalfPeriodMs);
             if (halfPeriods % 2L == 1L)
-                return null;
+            {
+                // No fill colour → classic on/off strobe (dark off-phase).
+                if (!hasFillColor) return null;
+                // With a fill colour the off-phase is rendered as a flat fill frame: clear the
+                // primary pattern so the fill pass below paints the whole strip.
+                strobeOff = true;
+            }
         }
         if (hasFadeOut)
         {
@@ -246,6 +262,22 @@ else if (hasCombineOrSeperate)
                 byte a = (byte)Math.Clamp((int)(c.A * flicker), 0, entireIntensity);
 
                 stripColorsIndividual[i] = new Color(a, c.R, c.G, c.B);
+            }
+        }
+
+        if (hasFillColor)
+        {
+            // Strobe off-phase: drop the primary pattern so the whole strip becomes the fill.
+            if (strobeOff)
+                Array.Clear(stripColorsIndividual, 0, lightcount);
+
+            // Paint the fill colour into every empty (transparent) pixel, leaving the lit
+            // primary pattern untouched.
+            for (int i = 0; i < lightcount; i++)
+            {
+                if (stripColorsIndividual[i].A == 0)
+                    stripColorsIndividual[i] =
+                        new Color(entireIntensity, fillColor.R, fillColor.G, fillColor.B);
             }
         }
 

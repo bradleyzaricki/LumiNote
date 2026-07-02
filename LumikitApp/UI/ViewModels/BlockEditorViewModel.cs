@@ -13,7 +13,7 @@ public class BlockEditorViewModel : INotifyPropertyChanged
     public event Action? PreviewRequested;
 
     // ── Effect backing fields ─────────────────────────────────────────────────
-    private bool? _fadeIn, _fadeOut, _strobe, _travel, _combine, _separate, _repeat, _changeColor, _twinkle;
+    private bool? _fadeIn, _fadeOut, _strobe, _travel, _combine, _separate, _repeat, _changeColor, _twinkle, _fillColor;
 
     // ── Slider backing fields ─────────────────────────────────────────────────
     private double _lightRangeLower, _lightRangeUpper = 1000;
@@ -28,6 +28,7 @@ public class BlockEditorViewModel : INotifyPropertyChanged
     private int    _selectedTabIndex;
     private IBrush _blockColorBrush       = Brushes.BlueViolet;
     private IBrush _secondBlockColorBrush = Brushes.Transparent;
+    private IBrush _fillColorBrush        = Brushes.Transparent;
 
     // ── Effect checkboxes ─────────────────────────────────────────────────────
     public bool? FadeIn    { get => _fadeIn;    set { _fadeIn    = value; Notify(); } }
@@ -84,6 +85,12 @@ public class BlockEditorViewModel : INotifyPropertyChanged
         set { _changeColor = value; Notify(); UpdateVisibility(); }
     }
 
+    public bool? FillColor
+    {
+        get => _fillColor;
+        set { _fillColor = value; Notify(); UpdateVisibility(); }
+    }
+
     // ── Range sliders ─────────────────────────────────────────────────────────
     public double LightRangeLower    { get => _lightRangeLower;    set { _lightRangeLower    = value; Notify(); } }
     public double LightRangeUpper    { get => _lightRangeUpper;    set { _lightRangeUpper    = value; Notify(); } }
@@ -102,6 +109,7 @@ public class BlockEditorViewModel : INotifyPropertyChanged
     public bool LightRangeVisible        { get; private set; }
     public bool LightRange2Visible       { get; private set; }
     public bool SecondColorPanelVisible  { get; private set; }
+    public bool FillColorPanelVisible    { get; private set; }
     public bool AdditionalInput1PanelVisible { get; private set; }
     public bool AdditionalInput2PanelVisible { get; private set; }
 
@@ -114,6 +122,7 @@ public class BlockEditorViewModel : INotifyPropertyChanged
     // ── Colors ────────────────────────────────────────────────────────────────
     public IBrush BlockColorBrush       { get => _blockColorBrush;       set { _blockColorBrush       = value; Notify(); } }
     public IBrush SecondBlockColorBrush { get => _secondBlockColorBrush; set { _secondBlockColorBrush = value; Notify(); } }
+    public IBrush FillColorBrush        { get => _fillColorBrush;        set { _fillColorBrush        = value; Notify(); } }
 
     // ── Tab ───────────────────────────────────────────────────────────────────
     public int SelectedTabIndex { get => _selectedTabIndex; set { _selectedTabIndex = value; Notify(); } }
@@ -125,15 +134,18 @@ public class BlockEditorViewModel : INotifyPropertyChanged
     // Load all nine effects at once, bypassing mutual-exclusion side effects.
     // Used when restoring a saved block so state is set exactly as stored.
     public void LoadEffects(bool? fadeIn, bool? fadeOut, bool? strobe, bool? travel,
-                            bool? combine, bool? separate, bool? repeat, bool? changeColor, bool? twinkle)
+                            bool? combine, bool? separate, bool? repeat, bool? changeColor, bool? twinkle,
+                            bool? fillColor)
     {
         _fadeIn = fadeIn; _fadeOut = fadeOut; _strobe = strobe;
         _travel = travel; _combine = combine; _separate = separate;
         _repeat = repeat; _changeColor = changeColor; _twinkle = twinkle;
+        _fillColor = fillColor;
 
         Notify(nameof(FadeIn));  Notify(nameof(FadeOut)); Notify(nameof(Strobe));
         Notify(nameof(Travel));  Notify(nameof(Combine)); Notify(nameof(Separate));
         Notify(nameof(Repeat));  Notify(nameof(ChangeColor)); Notify(nameof(Twinkle));
+        Notify(nameof(FillColor));
 
         UpdateVisibility();
     }
@@ -146,6 +158,7 @@ public class BlockEditorViewModel : INotifyPropertyChanged
         LightRangeVisible            = !dualRange;
         LightRange2Visible           = dualRange;
         SecondColorPanelVisible      = _changeColor == true;
+        FillColorPanelVisible        = _fillColor == true;
         AdditionalInput1PanelVisible = combineSep;
         AdditionalInput2PanelVisible = _repeat == true;
 
@@ -177,6 +190,7 @@ public class BlockEditorViewModel : INotifyPropertyChanged
         Notify(nameof(LightRangeVisible));
         Notify(nameof(LightRange2Visible));
         Notify(nameof(SecondColorPanelVisible));
+        Notify(nameof(FillColorPanelVisible));
         Notify(nameof(AdditionalInput1PanelVisible));
         Notify(nameof(AdditionalInput2PanelVisible));
         Notify(nameof(RangeSlider1Label));

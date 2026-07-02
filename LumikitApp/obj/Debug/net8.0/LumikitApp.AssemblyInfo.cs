@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LumikitApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b70de792344a4f746029491437f9114fa71e2696")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a103369e64d5d1a21bb05cf04db4f0815a5612ec")]
 [assembly: System.Reflection.AssemblyProductAttribute("LumikitApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LumikitApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

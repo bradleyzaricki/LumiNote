@@ -20,7 +20,7 @@ namespace LumikitApp
             AvaloniaXamlLoader.Load(this);
         }
 
-        private static IServiceProvider BuildServices(IReadOnlyList<string> selectedProviders)
+        private static IServiceProvider BuildServices(IReadOnlyList<ProviderType> selectedProviders)
         {
             var services = new ServiceCollection();
 
@@ -33,11 +33,11 @@ namespace LumikitApp
             {
                 switch (name)
                 {
-                    case "Spotify":
+                    case ProviderType.Spotify:
                         var sp = new SpotifyProvider(clientId, redirectUri);
                         pairs.Add((sp, new SpotifyPlaybackHandler(sp)));
                         break;
-                    case "LocalFiles":
+                    case ProviderType.LocalFiles:
                         var lf = new MusicFileProvider();
                         pairs.Add((lf, new LocalFilesPlaybackHandler(lf)));
                         break;

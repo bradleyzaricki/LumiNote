@@ -93,6 +93,18 @@ namespace LumikitApp
         }
 
         /// <summary>
+        /// Total duration of the loaded stream in ms (0 if nothing is loaded).
+        /// </summary>
+        public Task<int> GetTrackDurationMsAsync()
+        {
+            if (_stream == 0) return Task.FromResult(0);
+
+            long len = Bass.ChannelGetLength(_stream);
+            double sec = Bass.ChannelBytes2Seconds(_stream, len);
+            return Task.FromResult(sec > 0 ? (int)(sec * 1000) : 0);
+        }
+
+        /// <summary>
         /// Skip the current track and 
         /// </summary>
         public async Task PlayTrackAsync()

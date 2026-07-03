@@ -68,6 +68,12 @@ public interface IMusicProvider
     /// </summary>
     /// <returns></returns>
     Task<int> GetPlaybackProgressMsAsync();
+
+    /// <summary>
+    /// Returns the total duration of the currently loaded track in ms, or 0 when unknown.
+    /// Used by the queue to detect end-of-track and advance.
+    /// </summary>
+    Task<int> GetTrackDurationMsAsync();
     
     /// <summary>
     /// Prompt the provider to seek to the select playback time

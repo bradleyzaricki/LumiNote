@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using LumikitApp.Models;
 using Avalonia.Media;
@@ -38,24 +39,28 @@ public class DatabaseAccess
 
     public async Task SaveTrackAsync(string trackId, TrackData track)
     {
+        var localKey = ProviderType.LocalFiles.ToString();
         var localAudioPath = track.GetSource(ProviderType.LocalFiles) ?? track.filePath;
 
+        // Upload the source dict; the local link is stored as a bare filename (rebuilt on download).
+        var sources = new Dictionary<string, string>(track.Sources);
+
         string? audioBase64 = null;
-        var fileName = track.filePath;
         if (!string.IsNullOrEmpty(localAudioPath) && File.Exists(localAudioPath))
         {
             audioBase64 = Convert.ToBase64String(await File.ReadAllBytesAsync(localAudioPath));
-            fileName = Path.GetFileName(localAudioPath);
+            sources[localKey] = Path.GetFileName(localAudioPath);
         }
 
         var payload = new
         {
             _BPM = track._BPM,
             _trackName = track._trackName,
-            provider = track.provider,
-            filePath = fileName,
+            artist = track.author,
             _lightBlocks = track._lightBlocks,
-            audioBase64
+            sources,
+            audioBase64,
+            audioProvider = localKey
         };
 
         var url = new Uri($"{BaseUrl}/tracks/{Uri.EscapeDataString(trackId)}");
@@ -135,10 +140,7 @@ public class DatabaseAccess
     /// <exception cref="Exception"></exception>
     public async Task<List<TrackItemUI>> ListTracksAsync(bool addUnusableTracks = true)
     {
-        var url = (addUnusableTracks
-            ? new Uri($"{BaseUrl}/tracks")
-            : new Uri($"{BaseUrl}/tracks?provider={_provider.providerName}"));
-
+        var url = new Uri($"{BaseUrl}/tracks");
 
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         req.Headers.Add("x-api-key", ApiKey);
@@ -154,35 +156,37 @@ public class DatabaseAccess
         if (!doc.RootElement.TryGetProperty("items", out var items))
             throw new Exception($"Unexpected JSON:\n{body}");
 
+        var activeName = _provider.providerName.ToString();
         var listStart = new List<TrackItemUI>();
         var listEnd = new List<TrackItemUI>();
-        
+
         foreach (var item in items.EnumerateArray())
         {
             var trackId = item.GetProperty("track_id").GetString() ?? "";
             var trackName = item.GetProperty("track_name").GetString() ?? "(untitled)";
-            var p = item.GetProperty("provider").GetString() ?? "";
-            var bpm = item.GetProperty("bpm").GetInt32();
+            var providersCsv = item.TryGetProperty("providers", out var provEl) ? provEl.GetString() ?? "" : "";
+            var providers = providersCsv.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var bpm = item.TryGetProperty("bpm", out var bpmEl) && bpmEl.ValueKind == JsonValueKind.Number
+                ? bpmEl.GetInt32() : 0;
+
+            bool usable = providers.Contains(activeName);
+
             TrackItemUI trackItem = new TrackItemUI
             {
                 TrackId = trackId,
                 TrackName = trackName,
-                Subtitle = $"{p} • {bpm} BPM",
-                Provider = p,
-                Color = p == _provider.providerName.ToString()
-                ? new SolidColorBrush(_provider.ProviderColor)
-                : Brushes.Gray,
-                SourceBadges = TrackItemUI.BuildBadges(pt => pt.ToString() == p)
+                Subtitle = $"{string.Join(", ", providers)} • {bpm} BPM",
+                Provider = providersCsv,
+                Color = usable
+                    ? new SolidColorBrush(_provider.ProviderColor)
+                    : Brushes.Gray,
+                SourceBadges = TrackItemUI.BuildBadges(pt => providers.Contains(pt.ToString()))
             };
-            if (p == _provider.providerName.ToString())
-            {
-                listStart.Add(trackItem);
-            }
-            else if (addUnusableTracks)
-            {
-                listEnd.Add(trackItem);
-            }
 
+            if (usable)
+                listStart.Add(trackItem);
+            else if (addUnusableTracks)
+                listEnd.Add(trackItem);
         }
         listStart.AddRange(listEnd);
 
@@ -226,7 +230,7 @@ public class DatabaseAccess
             list.Add(new TrackSummary
             {
                 track_id = el.GetProperty("track_id").GetString(),
-                provider = el.GetProperty("provider").GetString(),
+                provider = el.TryGetProperty("providers", out var pEl) ? pEl.GetString() : null,
                 bpm = el.TryGetProperty("bpm", out var bpmEl) ? bpmEl.GetDouble() : 0,
                 track_name = el.TryGetProperty("track_name", out var nameEl) ? nameEl.GetString() : null
             });

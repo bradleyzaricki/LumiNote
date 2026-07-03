@@ -250,13 +250,31 @@ namespace LumikitApp
         }
 
         /// <summary>
-        /// GET integer value of playback progress in ms 
+        /// GET integer value of playback progress in ms
         /// </summary>
         /// <returns></returns>
         public async Task<int> GetPlaybackProgressMsAsync()
         {
             var playback = await _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest());
             return playback?.ProgressMs ?? 0;
+        }
+
+        /// <summary>
+        /// Total duration of the loaded track via the Spotify track endpoint (0 if unknown).
+        /// </summary>
+        public async Task<int> GetTrackDurationMsAsync()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(currentlyPlayingPath)) return 0;
+                var track = await _spotify.Tracks.Get(currentlyPlayingPath);
+                return track?.DurationMs ?? 0;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("GetTrackDurationMs failed: " + ex.Message);
+                return 0;
+            }
         }
 
         public async Task SeekToPlaybackTime(int ms)

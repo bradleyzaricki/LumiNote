@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Media;
@@ -13,7 +14,12 @@ public class BlockEditorViewModel : INotifyPropertyChanged
     public event Action? PreviewRequested;
 
     // ── Effect backing fields ─────────────────────────────────────────────────
-    private bool? _fadeIn, _fadeOut, _strobe, _travel, _combine, _separate, _repeat, _changeColor, _twinkle, _fillColor;
+    // Shape (Travel/Combine/Seperate) and Texture (Twinkle) are each mutually exclusive
+    // and modeled as a single selection: Effect.None = none, null = mixed multi-selection
+    // (leave untouched).
+    private LightBlock.Effect? _selectedShape   = LightBlock.Effect.None;
+    private LightBlock.Effect? _selectedTexture = LightBlock.Effect.None;
+    private bool? _fadeIn, _fadeOut, _strobe, _repeat, _changeColor, _fillColor, _comet;
 
     // ── Slider backing fields ─────────────────────────────────────────────────
     private double _lightRangeLower, _lightRangeUpper = 1000;
@@ -21,57 +27,75 @@ public class BlockEditorViewModel : INotifyPropertyChanged
     private double _range2Slider2Lower, _range2Slider2Upper = 1000;
 
     // ── Text / color / UI state ───────────────────────────────────────────────
-    private string _intensityText        = "";
-    private string _additionalInput1Text = "";
-    private string _additionalInput2Text = "";
+    private string _intensityText = "";
     private bool   _editorVisible;
     private int    _selectedTabIndex;
     private IBrush _blockColorBrush       = Brushes.BlueViolet;
     private IBrush _secondBlockColorBrush = Brushes.Transparent;
     private IBrush _fillColorBrush        = Brushes.Transparent;
 
-    // ── Effect checkboxes ─────────────────────────────────────────────────────
-    public bool? FadeIn    { get => _fadeIn;    set { _fadeIn    = value; Notify(); } }
-    public bool? FadeOut   { get => _fadeOut;   set { _fadeOut   = value; Notify(); } }
-    public bool? Strobe    { get => _strobe;    set { _strobe    = value; Notify(); } }
-    public bool? Twinkle   { get => _twinkle;   set { _twinkle   = value; Notify(); } }
-
-    // Travel, Combine, Separate are mutually exclusive — setting one clears the others
-    public bool? Travel
+    // ── Shape selection ───────────────────────────────────────────────────────
+    public LightBlock.Effect? SelectedShape
     {
-        get => _travel;
+        get => _selectedShape;
         set
         {
-            _travel = value;
-            if (value == true) { _combine = false; _separate = false; Notify(nameof(Combine)); Notify(nameof(Separate)); }
+            if (_selectedShape == value) return;
+            _selectedShape = value;
             Notify();
+            NotifyShapeRadios();
             UpdateVisibility();
         }
     }
 
-    public bool? Combine
+    // Radio button wrappers — setting one true routes through SelectedShape;
+    // the false writes radio groups produce are ignored.
+    public bool ShapeStatic   { get => _selectedShape == LightBlock.Effect.None;     set { if (value) SelectedShape = LightBlock.Effect.None; } }
+    public bool ShapeTravel   { get => _selectedShape == LightBlock.Effect.Travel;   set { if (value) SelectedShape = LightBlock.Effect.Travel; } }
+    public bool ShapeCombine  { get => _selectedShape == LightBlock.Effect.Combine;  set { if (value) SelectedShape = LightBlock.Effect.Combine; } }
+    public bool ShapeSeparate { get => _selectedShape == LightBlock.Effect.Seperate; set { if (value) SelectedShape = LightBlock.Effect.Seperate; } }
+    public bool ShapeScanner  { get => _selectedShape == LightBlock.Effect.Scanner;  set { if (value) SelectedShape = LightBlock.Effect.Scanner; } }
+
+    private void NotifyShapeRadios()
     {
-        get => _combine;
+        Notify(nameof(ShapeStatic));
+        Notify(nameof(ShapeTravel));
+        Notify(nameof(ShapeCombine));
+        Notify(nameof(ShapeSeparate));
+        Notify(nameof(ShapeScanner));
+    }
+
+    // ── Texture selection ─────────────────────────────────────────────────────
+    public LightBlock.Effect? SelectedTexture
+    {
+        get => _selectedTexture;
         set
         {
-            _combine = value;
-            if (value == true) { _travel = false; _separate = false; Notify(nameof(Travel)); Notify(nameof(Separate)); }
+            if (_selectedTexture == value) return;
+            _selectedTexture = value;
             Notify();
-            UpdateVisibility();
+            NotifyTextureRadios();
         }
     }
 
-    public bool? Separate
+    public bool TextureNone    { get => _selectedTexture == LightBlock.Effect.None;    set { if (value) SelectedTexture = LightBlock.Effect.None; } }
+    public bool TextureTwinkle { get => _selectedTexture == LightBlock.Effect.Twinkle; set { if (value) SelectedTexture = LightBlock.Effect.Twinkle; } }
+    public bool TextureShimmer { get => _selectedTexture == LightBlock.Effect.Shimmer; set { if (value) SelectedTexture = LightBlock.Effect.Shimmer; } }
+    public bool TextureSparkle { get => _selectedTexture == LightBlock.Effect.Sparkle; set { if (value) SelectedTexture = LightBlock.Effect.Sparkle; } }
+
+    private void NotifyTextureRadios()
     {
-        get => _separate;
-        set
-        {
-            _separate = value;
-            if (value == true) { _travel = false; _combine = false; Notify(nameof(Travel)); Notify(nameof(Combine)); }
-            Notify();
-            UpdateVisibility();
-        }
+        Notify(nameof(TextureNone));
+        Notify(nameof(TextureTwinkle));
+        Notify(nameof(TextureShimmer));
+        Notify(nameof(TextureSparkle));
     }
+
+    // ── Modifier checkboxes ───────────────────────────────────────────────────
+    public bool? FadeIn  { get => _fadeIn;  set { _fadeIn  = value; Notify(); } }
+    public bool? FadeOut { get => _fadeOut; set { _fadeOut = value; Notify(); } }
+    public bool? Strobe  { get => _strobe;  set { _strobe  = value; Notify(); } }
+    public bool? Comet   { get => _comet;   set { _comet   = value; Notify(); } }
 
     public bool? Repeat
     {
@@ -91,6 +115,11 @@ public class BlockEditorViewModel : INotifyPropertyChanged
         set { _fillColor = value; Notify(); UpdateVisibility(); }
     }
 
+    // ── Dynamic effect params ─────────────────────────────────────────────────
+    // One row per param of each active effect, generated from EffectCatalog by
+    // BlockEditorPanel. The editor's ItemsControl renders these.
+    public ObservableCollection<EffectParamViewModel> EffectParams { get; } = new();
+
     // ── Range sliders ─────────────────────────────────────────────────────────
     public double LightRangeLower    { get => _lightRangeLower;    set { _lightRangeLower    = value; Notify(); } }
     public double LightRangeUpper    { get => _lightRangeUpper;    set { _lightRangeUpper    = value; Notify(); } }
@@ -100,24 +129,18 @@ public class BlockEditorViewModel : INotifyPropertyChanged
     public double Range2Slider2Upper { get => _range2Slider2Upper; set { _range2Slider2Upper = value; Notify(); } }
 
     // ── Text inputs ───────────────────────────────────────────────────────────
-    public string IntensityText        { get => _intensityText;        set { _intensityText        = value; Notify(); } }
-    public string AdditionalInput1Text { get => _additionalInput1Text; set { _additionalInput1Text = value; Notify(); } }
-    public string AdditionalInput2Text { get => _additionalInput2Text; set { _additionalInput2Text = value; Notify(); } }
+    public string IntensityText { get => _intensityText; set { _intensityText = value; Notify(); } }
 
     // ── Visibility (computed in UpdateVisibility) ─────────────────────────────
-    public bool EditorVisible            { get => _editorVisible; set { _editorVisible = value; Notify(); } }
-    public bool LightRangeVisible        { get; private set; }
-    public bool LightRange2Visible       { get; private set; }
-    public bool SecondColorPanelVisible  { get; private set; }
-    public bool FillColorPanelVisible    { get; private set; }
-    public bool AdditionalInput1PanelVisible { get; private set; }
-    public bool AdditionalInput2PanelVisible { get; private set; }
+    public bool EditorVisible           { get => _editorVisible; set { _editorVisible = value; Notify(); } }
+    public bool LightRangeVisible       { get; private set; }
+    public bool LightRange2Visible      { get; private set; }
+    public bool SecondColorPanelVisible { get; private set; }
+    public bool FillColorPanelVisible   { get; private set; }
 
     // ── Labels (computed in UpdateVisibility) ─────────────────────────────────
-    public string RangeSlider1Label     { get; private set; } = "Start Lightspan";
-    public string RangeSlider2Label     { get; private set; } = "End Lightspan";
-    public string AdditionalInput1Label { get; private set; } = "";
-    public string AdditionalInput2Label { get; private set; } = "";
+    public string RangeSlider1Label { get; private set; } = "Start Lightspan";
+    public string RangeSlider2Label { get; private set; } = "End Lightspan";
 
     // ── Colors ────────────────────────────────────────────────────────────────
     public IBrush BlockColorBrush       { get => _blockColorBrush;       set { _blockColorBrush       = value; Notify(); } }
@@ -131,72 +154,51 @@ public class BlockEditorViewModel : INotifyPropertyChanged
 
     public void RequestPreview() => PreviewRequested?.Invoke();
 
-    // Load all nine effects at once, bypassing mutual-exclusion side effects.
+    // Load the shape, texture and all modifiers at once, bypassing setter side effects.
     // Used when restoring a saved block so state is set exactly as stored.
-    public void LoadEffects(bool? fadeIn, bool? fadeOut, bool? strobe, bool? travel,
-                            bool? combine, bool? separate, bool? repeat, bool? changeColor, bool? twinkle,
-                            bool? fillColor)
+    public void LoadEffects(LightBlock.Effect? shape, LightBlock.Effect? texture,
+                            bool? fadeIn, bool? fadeOut, bool? strobe,
+                            bool? repeat, bool? changeColor, bool? fillColor, bool? comet)
     {
+        _selectedShape = shape;
+        _selectedTexture = texture;
         _fadeIn = fadeIn; _fadeOut = fadeOut; _strobe = strobe;
-        _travel = travel; _combine = combine; _separate = separate;
-        _repeat = repeat; _changeColor = changeColor; _twinkle = twinkle;
-        _fillColor = fillColor;
+        _repeat = repeat; _changeColor = changeColor;
+        _fillColor = fillColor; _comet = comet;
 
+        Notify(nameof(SelectedShape));
+        NotifyShapeRadios();
+        Notify(nameof(SelectedTexture));
+        NotifyTextureRadios();
         Notify(nameof(FadeIn));  Notify(nameof(FadeOut)); Notify(nameof(Strobe));
-        Notify(nameof(Travel));  Notify(nameof(Combine)); Notify(nameof(Separate));
-        Notify(nameof(Repeat));  Notify(nameof(ChangeColor)); Notify(nameof(Twinkle));
-        Notify(nameof(FillColor));
+        Notify(nameof(Repeat));  Notify(nameof(ChangeColor));
+        Notify(nameof(FillColor)); Notify(nameof(Comet));
 
         UpdateVisibility();
     }
 
     private void UpdateVisibility()
     {
-        bool dualRange  = _travel == true || _combine == true || _separate == true;
-        bool combineSep = _combine == true || _separate == true;
+        bool dualRange  = _selectedShape is LightBlock.Effect.Travel
+                                         or LightBlock.Effect.Combine
+                                         or LightBlock.Effect.Seperate;
+        bool combineSep = _selectedShape is LightBlock.Effect.Combine
+                                         or LightBlock.Effect.Seperate;
 
-        LightRangeVisible            = !dualRange;
-        LightRange2Visible           = dualRange;
-        SecondColorPanelVisible      = _changeColor == true;
-        FillColorPanelVisible        = _fillColor == true;
-        AdditionalInput1PanelVisible = combineSep;
-        AdditionalInput2PanelVisible = _repeat == true;
+        LightRangeVisible       = !dualRange;
+        LightRange2Visible      = dualRange;
+        SecondColorPanelVisible = _changeColor == true;
+        FillColorPanelVisible   = _fillColor == true;
 
-        RangeSlider1Label = combineSep ? "Lightspan 1"      : "Start Lightspan";
-        RangeSlider2Label = combineSep ? "Lightspan 2"      : "End Lightspan";
-
-        if (combineSep)
-        {
-            AdditionalInput1Label = "Combined Width (0-1000)";
-        }
-        else
-        {
-            AdditionalInput1Label  = "";
-            _additionalInput1Text  = "";
-            Notify(nameof(AdditionalInput1Text));
-        }
-
-        if (_repeat == true)
-        {
-            AdditionalInput2Label = "Repeat Number";
-        }
-        else
-        {
-            AdditionalInput2Label  = "";
-            _additionalInput2Text  = "";
-            Notify(nameof(AdditionalInput2Text));
-        }
+        RangeSlider1Label = combineSep ? "Lightspan 1" : "Start Lightspan";
+        RangeSlider2Label = combineSep ? "Lightspan 2" : "End Lightspan";
 
         Notify(nameof(LightRangeVisible));
         Notify(nameof(LightRange2Visible));
         Notify(nameof(SecondColorPanelVisible));
         Notify(nameof(FillColorPanelVisible));
-        Notify(nameof(AdditionalInput1PanelVisible));
-        Notify(nameof(AdditionalInput2PanelVisible));
         Notify(nameof(RangeSlider1Label));
         Notify(nameof(RangeSlider2Label));
-        Notify(nameof(AdditionalInput1Label));
-        Notify(nameof(AdditionalInput2Label));
     }
 
     private void Notify([CallerMemberName] string? name = null)

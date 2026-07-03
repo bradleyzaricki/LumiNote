@@ -29,15 +29,17 @@ public class LightEffectsComputer
         static EffectData? Get(LightBlock b, LightBlock.Effect e) =>
             b.BlockEffects?.FirstOrDefault(x => x.Type == e);
 
-        bool hasTravel           = Has(block, LightBlock.Effect.Travel);
-        bool hasCombineOrSeperate= Has(block, LightBlock.Effect.Combine) || Has(block, LightBlock.Effect.Seperate);
+        // Shape (mutually exclusive: which pixels are lit), texture (mutually exclusive:
+        // per-pixel surface modulation) and modifiers (stackable post-passes).
+        LightBlock.Effect shape   = block.GetShape();
+        LightBlock.Effect texture = block.GetTexture();
         bool hasStrobe           = Has(block, LightBlock.Effect.Strobe);
         bool hasFadeOut          = Has(block, LightBlock.Effect.FadeOut);
         bool hasFadeIn           = Has(block, LightBlock.Effect.FadeIn);
         bool hasRepeat           = Has(block, LightBlock.Effect.Repeat);
         bool hasChangeColor      = Has(block, LightBlock.Effect.ChangeColor);
-        bool hasTwinkle          = Has(block, LightBlock.Effect.Twinkle);
         bool hasFillColor        = Has(block, LightBlock.Effect.FillColor);
+        bool hasComet            = Has(block, LightBlock.Effect.Comet);
 
         // FillColor replaces "empty" (transparent) areas with a second colour instead of
         // leaving them dark, so e.g. Strobe flickers between two colours and Travel paints
@@ -105,17 +107,27 @@ public class LightEffectsComputer
             baseColor = Color.FromRgb(r, g, b);
         }
 
-        if (!hasTravel && !hasCombineOrSeperate)
+        // Comet tail requests emitted by moving shapes below. Each is (edge position, the
+        // direction the tail extends: -1 left / +1 right, an optional wrap span, wrap flag).
+        // A "trailing" edge is one the lit region is moving AWAY from, so its tail marks the
+        // pixels just vacated — that's what makes a comet chase its own head.
+        var cometTails = new List<(double Edge, int Dir, double WrapLo, double WrapHi, bool Wrap)>();
+
+        // Given a segment's two edges (position + signed velocity each), emit a tail off
+        // whichever edge is trailing: the left edge if it's moving right, the right edge if
+        // it's moving left. Shrink-on-both-sides yields two tails; a translate yields one.
+        void EmitEdgeTails(double posA, double velA, double posB, double velB)
         {
-            for (int i = 0; i < lightcount; i++)
-            {
-                if (block.StartLight > i || block.EndLight < i)
-                    stripColorsIndividual[i] = new Color(0, 0, 0, 0);
-                else
-                    stripColorsIndividual[i] = new Color(entireIntensity, baseColor.R, baseColor.G, baseColor.B);
-            }
+            double leftPos, leftVel, rightPos, rightVel;
+            if (posA <= posB) { leftPos = posA; leftVel = velA; rightPos = posB; rightVel = velB; }
+            else              { leftPos = posB; leftVel = velB; rightPos = posA; rightVel = velA; }
+            if (leftVel  > 0) cometTails.Add((leftPos,  -1, 0, 0, false));
+            if (rightVel < 0) cometTails.Add((rightPos, +1, 0, 0, false));
         }
-        else if (hasTravel)
+
+        switch (shape)
+        {
+        case LightBlock.Effect.Travel:
         {
             double s0 = block.StartLight;
             double e0 = block.EndLight;
@@ -125,6 +137,8 @@ public class LightEffectsComputer
 
             double start = s0 + (s1 - s0) * relPos;
             double end = e0 + (e1 - e0) * relPos;
+
+            if (hasComet) EmitEdgeTails(start, s1 - s0, end, e1 - e0);
 
             if (end < start)
             {
@@ -140,9 +154,11 @@ public class LightEffectsComputer
                 else
                     stripColorsIndividual[i] = new Color(entireIntensity, baseColor.R, baseColor.G, baseColor.B);
             }
+            break;
         }
-else if (hasCombineOrSeperate)
-{
+        case LightBlock.Effect.Combine:
+        case LightBlock.Effect.Seperate:
+        {
     static double Lerp(double a, double b, double t) => a + (b - a) * t;
 
     static (double start, double end) Normalize(double a, double b)
@@ -151,7 +167,7 @@ else if (hasCombineOrSeperate)
     }
 
     double t = Math.Clamp(relPos, 0.0, 1.0);
-    bool isSeparate = Has(block, LightBlock.Effect.Seperate);
+    bool isSeparate = shape == LightBlock.Effect.Seperate;
 
     // Input 1 = left side, Input 2 = right side
     var left0 = Normalize(block.StartLight, block.EndLight);
@@ -180,9 +196,7 @@ else if (hasCombineOrSeperate)
 
     // Third field = desired final TOTAL width
     double targetTotalWidth = Math.Max(0.0,
-        Get(block, LightBlock.Effect.Combine)?.Params.GetValueOrDefault("TargetWidth", 0)
-        ?? Get(block, LightBlock.Effect.Seperate)?.Params.GetValueOrDefault("TargetWidth", 0)
-        ?? 0);
+        block.GetShapeData()?.Params.GetValueOrDefault("TargetWidth", 0) ?? 0);
 
     double totalInitialWidth = leftWidth0 + rightWidth0;
 
@@ -217,6 +231,17 @@ else if (hasCombineOrSeperate)
     double rightStart= isSeparate ? Lerp(rightStart1,rightStart0,t) : Lerp(rightStart0,rightStart1,t);
     double rightEnd  = isSeparate ? Lerp(rightEnd1,  rightEnd0,  t) : Lerp(rightEnd0,  rightEnd1,  t);
 
+    if (hasComet)
+    {
+        // Velocity sign = which way each edge lerps. Separate reverses combine's direction.
+        double leftStartVel  = isSeparate ? leftStart0  - leftStart1  : leftStart1  - leftStart0;
+        double leftEndVel    = isSeparate ? leftEnd0    - leftEnd1    : leftEnd1    - leftEnd0;
+        double rightStartVel = isSeparate ? rightStart0 - rightStart1 : rightStart1 - rightStart0;
+        double rightEndVel   = isSeparate ? rightEnd0   - rightEnd1   : rightEnd1   - rightEnd0;
+        EmitEdgeTails(leftStart,  leftStartVel,  leftEnd,  leftEndVel);
+        EmitEdgeTails(rightStart, rightStartVel, rightEnd, rightEndVel);
+    }
+
     double lo1 = Math.Clamp(Math.Min(leftStart, leftEnd), 0, lightcount - 1);
     double hi1 = Math.Clamp(Math.Max(leftStart, leftEnd), 0, lightcount - 1);
     double lo2 = Math.Clamp(Math.Min(rightStart, rightEnd), 0, lightcount - 1);
@@ -231,40 +256,119 @@ else if (hasCombineOrSeperate)
             ? new Color(entireIntensity, baseColor.R, baseColor.G, baseColor.B)
             : new Color(0, 0, 0, 0);
     }
-}
-        if (hasTwinkle)
+    break;
+        }
+        case LightBlock.Effect.Scanner:
         {
-            double left = containerLeft >= 0 ? containerLeft : Canvas.GetLeft(block.Container);
-            uint seed = (uint)(left * 1000.0) ^
-                        (uint)(block.StartLight * 2654435761u) ^
-                        (uint)(block.EndLight * 1597334677u) ^
-                        (uint)((int)(relPos * 100000.0));
+            var sd = block.GetShapeData();
+            double width  = Math.Clamp(sd?.Params.GetValueOrDefault("Width", 50) ?? 50, 1, lightcount);
+            double cycles = Math.Max(0.0001, sd?.Params.GetValueOrDefault("Cycles", 4) ?? 4);
+            bool   wrap   = (sd?.Params.GetValueOrDefault("Wrap", 0) ?? 0) != 0;
 
-            static uint Hash(uint x)
+            double lo = Math.Min(block.StartLight, block.EndLight);
+            double hi = Math.Max(block.StartLight, block.EndLight);
+            double spanLen = hi - lo;
+            if (spanLen <= 0) break; // zero-width span → nothing lit
+            width = Math.Min(width, spanLen);
+
+            double tt = relPos * cycles;
+
+            if (!wrap)
             {
-                x ^= x >> 16;
-                x *= 0x7feb352d;
-                x ^= x >> 15;
-                x *= 0x846ca68b;
-                x ^= x >> 16;
-                return x;
+                // Bounce: triangle wave sweeps the bar to a far edge and back.
+                double phase = tt - 2.0 * Math.Floor(tt / 2.0); // [0,2)
+                double tri   = phase <= 1.0 ? phase : 2.0 - phase; // [0,1]
+                double barLo = lo + tri * (spanLen - width);
+                double barHi = barLo + width;
+
+                for (int i = 0; i < lightcount; i++)
+                    stripColorsIndividual[i] = (i >= barLo && i <= barHi)
+                        ? new Color(entireIntensity, baseColor.R, baseColor.G, baseColor.B)
+                        : new Color(0, 0, 0, 0);
+
+                if (hasComet)
+                {
+                    // Moving right on the rising half (tail behind = left), left on the falling half.
+                    if (phase < 1.0) cometTails.Add((barLo, -1, 0, 0, false));
+                    else             cometTails.Add((barHi, +1, 0, 0, false));
+                }
             }
+            else
+            {
+                // Wrap: sawtooth slides the bar one direction; it re-enters the start edge while
+                // still exiting the end, so it can straddle both edges — the thing Travel can't do.
+                double saw = tt - Math.Floor(tt); // [0,1)
+                double offset = saw * spanLen;
 
-            static double Rand01(uint x) => (Hash(x) & 0xFFFFFF) / (double)0x1000000;
+                for (int i = 0; i < lightcount; i++)
+                {
+                    double L = i - lo;
+                    bool lit = i >= lo && i <= hi
+                               && (((L - offset) % spanLen) + spanLen) % spanLen < width;
+                    stripColorsIndividual[i] = lit
+                        ? new Color(entireIntensity, baseColor.R, baseColor.G, baseColor.B)
+                        : new Color(0, 0, 0, 0);
+                }
 
+                // Bar moves toward +; its trailing (back) edge is at the offset, tail wraps the span.
+                if (hasComet) cometTails.Add((lo + offset, -1, lo, hi, true));
+            }
+            break;
+        }
+        default: // static span
+        {
             for (int i = 0; i < lightcount; i++)
             {
-                var c = stripColorsIndividual[i];
-                if (c.A == 0) continue;
+                if (block.StartLight > i || block.EndLight < i)
+                    stripColorsIndividual[i] = new Color(0, 0, 0, 0);
+                else
+                    stripColorsIndividual[i] = new Color(entireIntensity, baseColor.R, baseColor.G, baseColor.B);
+            }
+            break;
+        }
+        }
 
-                double r = Rand01(seed ^ (uint)(i * 374761393u));
-                double flicker = Math.Pow(r, 2.2);
-                byte a = (byte)Math.Clamp((int)(c.A * flicker), 0, entireIntensity);
+        // Comet: paint a fading tail into the pixels each moving edge is vacating. Runs after
+        // the shape (needs its motion) but before FillColor (so fill occupies whatever the tail
+        // didn't) and before textures (so surface modulation covers the tail too).
+        if (hasComet && cometTails.Count > 0)
+        {
+            int tailLen = (int)Math.Clamp(
+                Get(block, LightBlock.Effect.Comet)?.Params.GetValueOrDefault("TailLength", 80) ?? 80,
+                1, lightcount);
 
-                stripColorsIndividual[i] = new Color(a, c.R, c.G, c.B);
+            foreach (var tail in cometTails)
+            {
+                int edgeIdx = (int)Math.Round(tail.Edge);
+                // Clamp the wrap span to valid pixel indices — EndLight can be 1000 while the
+                // strip is indexed 0..999, so an unclamped wrap index would overrun the array.
+                int wlo = Math.Clamp((int)Math.Round(tail.WrapLo), 0, lightcount - 1);
+                int whi = Math.Clamp((int)Math.Round(tail.WrapHi), 0, lightcount - 1);
+                int wspan = whi - wlo + 1;
+
+                for (int d = 1; d <= tailLen; d++)
+                {
+                    int idx = edgeIdx + tail.Dir * d;
+                    if (tail.Wrap)
+                    {
+                        if (wspan <= 0) break;
+                        idx = wlo + (((idx - wlo) % wspan) + wspan) % wspan;
+                    }
+                    else if (idx < 0 || idx >= lightcount) break;
+
+                    double falloff = 1.0 - (double)d / tailLen; // bright at the edge → 0 at the tip
+                    byte a = (byte)Math.Clamp((int)(entireIntensity * falloff), 0, 255);
+                    // Max-blend: never dims a lit segment pixel, and where two tails overlap the
+                    // brighter wins.
+                    if (a > stripColorsIndividual[idx].A)
+                        stripColorsIndividual[idx] = new Color(a, baseColor.R, baseColor.G, baseColor.B);
+                }
             }
         }
 
+        // FillColor runs before the texture pass so the texture can (optionally) modulate
+        // fill pixels too; the mask remembers which pixels the fill painted.
+        bool[]? fillMask = null;
         if (hasFillColor)
         {
             // Strobe off-phase: drop the primary pattern so the whole strip becomes the fill.
@@ -273,11 +377,85 @@ else if (hasCombineOrSeperate)
 
             // Paint the fill colour into every empty (transparent) pixel, leaving the lit
             // primary pattern untouched.
+            fillMask = new bool[lightcount];
             for (int i = 0; i < lightcount; i++)
             {
                 if (stripColorsIndividual[i].A == 0)
+                {
                     stripColorsIndividual[i] =
                         new Color(entireIntensity, fillColor.R, fillColor.G, fillColor.B);
+                    fillMask[i] = true;
+                }
+            }
+        }
+
+        if (texture != LightBlock.Effect.None)
+        {
+            var td = block.GetTextureData();
+
+            // AffectFill (default on) lets the texture modulate the fill pixels as well;
+            // off restores the pre-texture look of a solid fill behind the textured pattern.
+            bool affectFill = (td?.Params.GetValueOrDefault("AffectFill", 1) ?? 1) != 0;
+
+            double left = containerLeft >= 0 ? containerLeft : Canvas.GetLeft(block.Container);
+            uint blockSeed = (uint)(left * 1000.0) ^
+                             (uint)(block.StartLight * 2654435761u) ^
+                             (uint)(block.EndLight * 1597334677u);
+
+            // Skip fill pixels when AffectFill is off; skip transparent (unlit) pixels always.
+            bool ModulatesPixel(int i) =>
+                stripColorsIndividual[i].A != 0 && (affectFill || fillMask == null || !fillMask[i]);
+
+            if (texture == LightBlock.Effect.Twinkle)
+            {
+                // Independent per-pixel flicker, re-rolled each frame from a time-seeded hash.
+                uint seed = blockSeed ^ (uint)((int)(relPos * 100000.0));
+                for (int i = 0; i < lightcount; i++)
+                {
+                    if (!ModulatesPixel(i)) continue;
+                    var c = stripColorsIndividual[i];
+                    double flicker = Math.Pow(Rand01(seed ^ (uint)(i * 374761393u)), 2.2);
+                    byte a = (byte)Math.Clamp((int)(c.A * flicker), 0, entireIntensity);
+                    stripColorsIndividual[i] = new Color(a, c.R, c.G, c.B);
+                }
+            }
+            else if (texture == LightBlock.Effect.Shimmer)
+            {
+                // A brightness sine wave scrolling along the strip — smooth where Twinkle is noisy.
+                double wavelength = Math.Max(1.0, td?.Params.GetValueOrDefault("Wavelength", 120) ?? 120);
+                double speed      = td?.Params.GetValueOrDefault("Speed", 2) ?? 2;
+                double depth      = Math.Clamp((td?.Params.GetValueOrDefault("Depth", 60) ?? 60) / 100.0, 0.0, 1.0);
+                double scroll     = relPos * speed * 2.0 * Math.PI;
+
+                for (int i = 0; i < lightcount; i++)
+                {
+                    if (!ModulatesPixel(i)) continue;
+                    var c = stripColorsIndividual[i];
+                    double wave = (Math.Sin(i / wavelength * 2.0 * Math.PI - scroll) + 1.0) * 0.5; // [0,1]
+                    double mult = 1.0 - depth * (1.0 - wave);                                      // [1-depth,1]
+                    byte a = (byte)Math.Clamp((int)(c.A * mult), 0, entireIntensity);
+                    stripColorsIndividual[i] = new Color(a, c.R, c.G, c.B);
+                }
+            }
+            else if (texture == LightBlock.Effect.Sparkle)
+            {
+                // Occasional white-hot glints over the lit pattern. Sparkles are clustered into
+                // small cells so they survive the 1000→N-LED downsample instead of vanishing.
+                double density = Math.Clamp((td?.Params.GetValueOrDefault("Density", 10) ?? 10) / 100.0, 0.0, 1.0);
+                double speed   = Math.Max(1.0, td?.Params.GetValueOrDefault("Speed", 20) ?? 20);
+                const int cell = 6;
+                uint seed = blockSeed ^ (uint)((int)(relPos * speed) * 2246822519u);
+
+                for (int i = 0; i < lightcount; i++)
+                {
+                    if (!ModulatesPixel(i)) continue;
+                    if (Rand01(seed ^ (uint)((i / cell) * 2654435761u)) >= density) continue;
+                    var c = stripColorsIndividual[i];
+                    byte nr = (byte)(c.R + (255 - c.R) * 0.85);
+                    byte ng = (byte)(c.G + (255 - c.G) * 0.85);
+                    byte nb = (byte)(c.B + (255 - c.B) * 0.85);
+                    stripColorsIndividual[i] = new Color(c.A, nr, ng, nb);
+                }
             }
         }
 
@@ -312,8 +490,19 @@ else if (hasCombineOrSeperate)
 
         return stripColorsIndividual;
     }
-    
-    
+
+    // Fast integer hash (fmix32-style) for the stateless per-pixel textures.
+    private static uint Hash(uint x)
+    {
+        x ^= x >> 16; x *= 0x7feb352d;
+        x ^= x >> 15; x *= 0x846ca68b;
+        x ^= x >> 16;
+        return x;
+    }
+
+    private static double Rand01(uint x) => (Hash(x) & 0xFFFFFF) / (double)0x1000000;
+
+
     /// <summary>
     /// Pure computation — no Avalonia calls. Safe to run on any thread.
     /// </summary>

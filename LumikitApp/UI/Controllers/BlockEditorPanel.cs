@@ -10,15 +10,14 @@ using LumikitApp.ViewModels;
 /// Owns all block editor sidebar logic: loading block values into the editor
 /// and applying selected changes back onto light blocks.
 /// All UI state is written through BlockEditorViewModel; bindings keep the view in sync.
+/// Effect param rows are generated dynamically from the EffectCatalog schema.
 /// </summary>
 public class BlockEditorPanel
 {
     private readonly BlockEditorViewModel _viewModel;
     private readonly TimelineView _timeline;
 
-    private string _loadedIntensity    = "";
-    private string _loadedSingleInput1 = "";
-    private string _loadedSingleInput2 = "";
+    private string _loadedIntensity = "";
 
     private double _loadedLightRangeLower, _loadedLightRangeUpper;
     private double _loadedRange2Slider1Lower, _loadedRange2Slider1Upper;
@@ -36,17 +35,27 @@ public class BlockEditorPanel
     // View model properties that represent actual block data; changes to these auto-apply.
     private static readonly HashSet<string> EditableProps = new()
     {
+        nameof(BlockEditorViewModel.SelectedShape),
+        nameof(BlockEditorViewModel.SelectedTexture),
         nameof(BlockEditorViewModel.FadeIn),    nameof(BlockEditorViewModel.FadeOut),
-        nameof(BlockEditorViewModel.Strobe),    nameof(BlockEditorViewModel.Travel),
-        nameof(BlockEditorViewModel.Combine),   nameof(BlockEditorViewModel.Separate),
-        nameof(BlockEditorViewModel.Repeat),    nameof(BlockEditorViewModel.ChangeColor),
-        nameof(BlockEditorViewModel.Twinkle),   nameof(BlockEditorViewModel.FillColor),
+        nameof(BlockEditorViewModel.Strobe),    nameof(BlockEditorViewModel.Repeat),
+        nameof(BlockEditorViewModel.ChangeColor), nameof(BlockEditorViewModel.Comet),
+        nameof(BlockEditorViewModel.FillColor),
         nameof(BlockEditorViewModel.LightRangeLower),    nameof(BlockEditorViewModel.LightRangeUpper),
         nameof(BlockEditorViewModel.Range2Slider1Lower), nameof(BlockEditorViewModel.Range2Slider1Upper),
         nameof(BlockEditorViewModel.Range2Slider2Lower), nameof(BlockEditorViewModel.Range2Slider2Upper),
         nameof(BlockEditorViewModel.IntensityText),
-        nameof(BlockEditorViewModel.AdditionalInput1Text),
-        nameof(BlockEditorViewModel.AdditionalInput2Text),
+    };
+
+    // Subset whose changes add/remove effects, so the dynamic param rows must be rebuilt.
+    private static readonly HashSet<string> EffectPresenceProps = new()
+    {
+        nameof(BlockEditorViewModel.SelectedShape),
+        nameof(BlockEditorViewModel.SelectedTexture),
+        nameof(BlockEditorViewModel.FadeIn),    nameof(BlockEditorViewModel.FadeOut),
+        nameof(BlockEditorViewModel.Strobe),    nameof(BlockEditorViewModel.Repeat),
+        nameof(BlockEditorViewModel.ChangeColor), nameof(BlockEditorViewModel.Comet),
+        nameof(BlockEditorViewModel.FillColor),
     };
 
     public BlockEditorPanel(BlockEditorViewModel viewModel, TimelineView timeline)
@@ -66,6 +75,8 @@ public class BlockEditorPanel
         if (e.PropertyName == null || !EditableProps.Contains(e.PropertyName)) return;
 
         ApplyBlockChanges();
+        if (EffectPresenceProps.Contains(e.PropertyName))
+            RebuildEffectParams();
         _viewModel.RequestPreview();
     }
 
@@ -107,35 +118,47 @@ public class BlockEditorPanel
         _viewModel.SecondBlockColorBrush = new SolidColorBrush(block.SecondBlockColor);
         _viewModel.FillColorBrush        = new SolidColorBrush(block.FillColor);
 
-        // Load all effect states at once — bypasses mutual-exclusion so saved data is
-        // restored exactly as stored rather than triggering side-effect clears.
+        // Load shape + texture + all modifier states at once — bypasses setter side effects
+        // so saved data is restored exactly as stored.
         _viewModel.LoadEffects(
+            shape:       ShapeState(selectedBlocks),
+            texture:     TextureState(selectedBlocks),
             fadeIn:      EffectState(selectedBlocks, LightBlock.Effect.FadeIn),
             fadeOut:     EffectState(selectedBlocks, LightBlock.Effect.FadeOut),
             strobe:      EffectState(selectedBlocks, LightBlock.Effect.Strobe),
-            travel:      EffectState(selectedBlocks, LightBlock.Effect.Travel),
-            combine:     EffectState(selectedBlocks, LightBlock.Effect.Combine),
-            separate:    EffectState(selectedBlocks, LightBlock.Effect.Seperate),
             repeat:      EffectState(selectedBlocks, LightBlock.Effect.Repeat),
             changeColor: EffectState(selectedBlocks, LightBlock.Effect.ChangeColor),
-            twinkle:     EffectState(selectedBlocks, LightBlock.Effect.Twinkle),
-            fillColor:   EffectState(selectedBlocks, LightBlock.Effect.FillColor)
+            fillColor:   EffectState(selectedBlocks, LightBlock.Effect.FillColor),
+            comet:       EffectState(selectedBlocks, LightBlock.Effect.Comet)
         );
 
-        var combineEffect = block.BlockEffects.FirstOrDefault(e => e.Type == LightBlock.Effect.Combine)
-                         ?? block.BlockEffects.FirstOrDefault(e => e.Type == LightBlock.Effect.Seperate);
-        var repeatEffect  = block.BlockEffects.FirstOrDefault(e => e.Type == LightBlock.Effect.Repeat);
+        _viewModel.IntensityText = block.Intensity.ToString();
+        _loadedIntensity         = _viewModel.IntensityText;
 
-        _viewModel.IntensityText        = block.Intensity.ToString();
-        _viewModel.AdditionalInput1Text = ((int)(combineEffect?.Params.GetValueOrDefault("TargetWidth", 0) ?? 0)).ToString();
-        _viewModel.AdditionalInput2Text = ((int)(repeatEffect?.Params.GetValueOrDefault("Count", 1) ?? 1)).ToString();
-
-        _loadedIntensity    = _viewModel.IntensityText;
-        _loadedSingleInput1 = _viewModel.AdditionalInput1Text;
-        _loadedSingleInput2 = _viewModel.AdditionalInput2Text;
+        RebuildEffectParams();
 
         _isLoading = false;
         _viewModel.RequestPreview();
+    }
+
+    /// <summary>
+    /// Returns the shape shared by all selected blocks (Effect.None = static span),
+    /// or null when the selection mixes different shapes.
+    /// </summary>
+    private static LightBlock.Effect? ShapeState(List<LightBlock> blocks)
+    {
+        var shape = blocks[0].GetShape();
+        return blocks.All(b => b.GetShape() == shape) ? shape : null;
+    }
+
+    /// <summary>
+    /// Returns the texture shared by all selected blocks (Effect.None = no texture),
+    /// or null when the selection mixes different textures.
+    /// </summary>
+    private static LightBlock.Effect? TextureState(List<LightBlock> blocks)
+    {
+        var texture = blocks[0].GetTexture();
+        return blocks.All(b => b.GetTexture() == texture) ? texture : null;
     }
 
     /// <summary>
@@ -147,6 +170,84 @@ public class BlockEditorPanel
         bool allHave  = blocks.All(b => b.BlockEffects.Any(e => e.Type == effect));
         bool noneHave = blocks.All(b => b.BlockEffects.All(e => e.Type != effect));
         return allHave ? true : noneHave ? false : null;
+    }
+
+    /// <summary>
+    /// Regenerates the dynamic param rows from the reference block's active effects,
+    /// pulling titles/control kinds from the EffectCatalog schema.
+    /// </summary>
+    private void RebuildEffectParams()
+    {
+        foreach (var old in _viewModel.EffectParams)
+            old.ValueChanged -= OnEffectParamChanged;
+        _viewModel.EffectParams.Clear();
+
+        var blocks = _timeline.SelectedBlocks;
+        if (blocks == null || blocks.Count == 0) return;
+        var reference = blocks.Last();
+
+        foreach (var data in ActiveEffectEntries(reference))
+        {
+            var def = EffectCatalog.Get(data.Type);
+            if (def == null) continue;
+            foreach (var p in def.Parameters)
+            {
+                var row = new EffectParamViewModel(data.Type, p,
+                    data.Params.GetValueOrDefault(p.Key, p.Default));
+                row.ValueChanged += OnEffectParamChanged;
+                _viewModel.EffectParams.Add(row);
+            }
+        }
+    }
+
+    /// <summary>Active effect entries in a stable order: shape, then texture, then modifiers in catalog order.</summary>
+    private static IEnumerable<EffectData> ActiveEffectEntries(LightBlock block)
+    {
+        var shape = block.GetShapeData();
+        if (shape != null) yield return shape;
+
+        var texture = block.GetTextureData();
+        if (texture != null) yield return texture;
+
+        foreach (var def in EffectCatalog.Modifiers)
+        {
+            var data = block.BlockEffects?.FirstOrDefault(e => e.Type == def.Type);
+            if (data != null) yield return data;
+        }
+    }
+
+    /// <summary>Writes an edited param value into every selected block that has the effect.</summary>
+    private void OnEffectParamChanged(EffectParamViewModel param)
+    {
+        if (_isLoading) return;
+        if (param.Value is not double value) return;
+        if (_timeline.SelectedBlocks == null) return;
+
+        if (_pendingEditPush && _preEditSnapshot != null)
+        {
+            _timeline.PushUndo(_preEditSnapshot);
+            _pendingEditPush = false;
+        }
+
+        // Params of exclusive categories (shape/texture) with the same key apply across the
+        // whole category (e.g. Combine/Seperate TargetWidth), so a mixed multi-select still
+        // updates every block.
+        var category = EffectCatalog.Get(param.Effect)?.Category;
+        bool crossCategory = category is EffectCategory.Shape or EffectCategory.Texture;
+
+        foreach (var block in _timeline.SelectedBlocks)
+        {
+            foreach (var e in block.BlockEffects)
+            {
+                bool matches = e.Type == param.Effect
+                    || (crossCategory && EffectCatalog.Get(e.Type)?.Category == category
+                        && EffectCatalog.Get(e.Type)!.Parameters.Any(p => p.Key == param.Definition.Key));
+                if (matches)
+                    e.Params[param.Definition.Key] = value;
+            }
+        }
+
+        _viewModel.RequestPreview();
     }
 
     /// <summary>
@@ -165,9 +266,9 @@ public class BlockEditorPanel
             _pendingEditPush = false;
         }
 
-        bool dualRange = _viewModel.Travel  == true
-                      || _viewModel.Combine == true
-                      || _viewModel.Separate == true;
+        bool dualRange = _viewModel.SelectedShape is LightBlock.Effect.Travel
+                                                  or LightBlock.Effect.Combine
+                                                  or LightBlock.Effect.Seperate;
 
         foreach (var block in _timeline.SelectedBlocks)
         {
@@ -194,32 +295,20 @@ public class BlockEditorPanel
                     && int.TryParse(_viewModel.IntensityText, out int intensity))
                 block.Intensity = Math.Clamp(intensity, 0, 255);
 
+            // Shape/texture: null = mixed selection, leave each block untouched.
+            // The setters are idempotent — an unchanged value keeps its entry and params.
+            if (_viewModel.SelectedShape is { } shape)
+                block.SetShape(shape);
+            if (_viewModel.SelectedTexture is { } texture)
+                block.SetTexture(texture);
+
             ApplyEffect(block, LightBlock.Effect.FadeIn,      _viewModel.FadeIn);
             ApplyEffect(block, LightBlock.Effect.FadeOut,     _viewModel.FadeOut);
             ApplyEffect(block, LightBlock.Effect.Strobe,      _viewModel.Strobe);
-            ApplyEffect(block, LightBlock.Effect.Travel,      _viewModel.Travel);
-            ApplyEffect(block, LightBlock.Effect.Combine,     _viewModel.Combine);
-            ApplyEffect(block, LightBlock.Effect.Seperate,    _viewModel.Separate);
             ApplyEffect(block, LightBlock.Effect.Repeat,      _viewModel.Repeat);
             ApplyEffect(block, LightBlock.Effect.ChangeColor, _viewModel.ChangeColor);
-            ApplyEffect(block, LightBlock.Effect.Twinkle,     _viewModel.Twinkle);
+            ApplyEffect(block, LightBlock.Effect.Comet,       _viewModel.Comet);
             ApplyEffect(block, LightBlock.Effect.FillColor,   _viewModel.FillColor);
-
-            // Write params into effect entries after presence is applied
-            if (_viewModel.AdditionalInput1Text != _loadedSingleInput1
-                    && int.TryParse(_viewModel.AdditionalInput1Text, out int combineWidth))
-            {
-                foreach (var e in block.BlockEffects.Where(e =>
-                    e.Type == LightBlock.Effect.Combine || e.Type == LightBlock.Effect.Seperate))
-                    e.Params["TargetWidth"] = combineWidth;
-            }
-
-            if (_viewModel.AdditionalInput2Text != _loadedSingleInput2
-                    && int.TryParse(_viewModel.AdditionalInput2Text, out int repeatCount))
-            {
-                foreach (var e in block.BlockEffects.Where(e => e.Type == LightBlock.Effect.Repeat))
-                    e.Params["Count"] = repeatCount;
-            }
         }
     }
 
@@ -227,7 +316,7 @@ public class BlockEditorPanel
     {
         bool has = block.BlockEffects.Any(e => e.Type == effect);
         if (isChecked == true && !has)
-            block.BlockEffects.Add(new EffectData { Type = effect });
+            block.BlockEffects.Add(EffectCatalog.CreateData(effect));
         else if (isChecked == false)
             block.BlockEffects.RemoveAll(e => e.Type == effect);
         // null = indeterminate = leave untouched

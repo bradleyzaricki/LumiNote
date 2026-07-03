@@ -33,15 +33,91 @@ namespace LumikitApp
             Repeat,
             ChangeColor,
             Twinkle,
-            FillColor
+            FillColor,
+            Scanner,
+            Comet,
+            Shimmer,
+            Sparkle
 
         }
+        /// <summary>
+        /// The block's shape effect (Travel/Combine/Seperate), or Effect.None for a static span.
+        /// Precedence mirrors the old compute chain (Travel, then Seperate, then Combine) so
+        /// legacy blocks that stored more than one shape render unchanged.
+        /// </summary>
+        public Effect GetShape()
+        {
+            if (BlockEffects == null) return Effect.None;
+            if (BlockEffects.Any(e => e.Type == Effect.Travel)) return Effect.Travel;
+            if (BlockEffects.Any(e => e.Type == Effect.Seperate)) return Effect.Seperate;
+            if (BlockEffects.Any(e => e.Type == Effect.Combine)) return Effect.Combine;
+            if (BlockEffects.Any(e => e.Type == Effect.Scanner)) return Effect.Scanner;
+            return Effect.None;
+        }
+
+        /// <summary>The EffectData entry backing the active shape, or null for a static span.</summary>
+        public EffectData? GetShapeData()
+        {
+            var shape = GetShape();
+            return shape == Effect.None ? null : BlockEffects.FirstOrDefault(e => e.Type == shape);
+        }
+
+        /// <summary>
+        /// Sets the shape, removing any other shape entries. Keeps the existing entry (and its
+        /// params) when the shape is unchanged; Effect.None clears all shapes.
+        /// </summary>
+        public void SetShape(Effect shape)
+        {
+            var keep = shape == Effect.None
+                ? null
+                : BlockEffects.FirstOrDefault(e => e.Type == shape);
+            BlockEffects.RemoveAll(e => EffectCatalog.IsShape(e.Type) && e != keep);
+            if (shape != Effect.None && keep == null)
+                BlockEffects.Add(EffectCatalog.CreateData(shape));
+        }
+
+        /// <summary>
+        /// The block's texture effect (per-pixel modulation like Twinkle), or Effect.None.
+        /// Textures are mutually exclusive; precedence for legacy multi-texture data follows
+        /// EffectCatalog order.
+        /// </summary>
+        public Effect GetTexture()
+        {
+            if (BlockEffects == null) return Effect.None;
+            foreach (var def in EffectCatalog.Textures)
+                if (BlockEffects.Any(e => e.Type == def.Type))
+                    return def.Type;
+            return Effect.None;
+        }
+
+        /// <summary>The EffectData entry backing the active texture, or null when there is none.</summary>
+        public EffectData? GetTextureData()
+        {
+            var texture = GetTexture();
+            return texture == Effect.None ? null : BlockEffects.FirstOrDefault(e => e.Type == texture);
+        }
+
+        /// <summary>
+        /// Sets the texture, removing any other texture entries. Keeps the existing entry (and
+        /// its params) when the texture is unchanged; Effect.None clears all textures.
+        /// </summary>
+        public void SetTexture(Effect texture)
+        {
+            var keep = texture == Effect.None
+                ? null
+                : BlockEffects.FirstOrDefault(e => e.Type == texture);
+            BlockEffects.RemoveAll(e => EffectCatalog.IsTexture(e.Type) && e != keep);
+            if (texture != Effect.None && keep == null)
+                BlockEffects.Add(EffectCatalog.CreateData(texture));
+        }
+
         private Point dragStartCanvas;
         private double originalLeft;
         private double originalWidth;
         private bool isResizingLeft;
         private bool isResizingRight;
         private bool isMoving;
+        private bool _groupDragActive;
         public bool isSelected;
         private List<LightBlock> _siblings;
         private ScrollViewer _scrollViewer;
@@ -126,6 +202,10 @@ namespace LumikitApp
             isResizingLeft = (local.X < 6);
             isResizingRight = (local.X > Container.Width - 6);
             isMoving = !isResizingLeft && !isResizingRight;
+            _groupDragActive = false;
+
+            // Capture so the drag keeps tracking even when the pointer outruns the block.
+            e.Pointer.Capture(Container);
         }
         //returns true if bordering lightblocks limit space on playback
         private bool Collides(double newLeft, double width)
@@ -179,15 +259,7 @@ namespace LumikitApp
             }
             else if (isMoving)
             {
-                foreach (var block in _siblings)
-                {
-                    if (!block.isMoving)
-                    {
-                        block.originalLeft = Canvas.GetLeft(block.Container);
-                    }
-                    block.MoveBlock(current,dragStartCanvas);
-
-                }
+                MoveSelectedGroup(current);
             }
         }
         private void ScrollIfNeeded(double edge)
@@ -204,24 +276,61 @@ namespace LumikitApp
             }
         }
 
-        public void MoveBlock(Point current, Point dragStart)
+        /// <summary>
+        /// Moves every selected block as one rigid group by a single delta. The delta is clamped
+        /// once — against the canvas edges and against non-selected blocks only — so the group
+        /// slides until the first block touches an obstacle and never shears apart or self-blocks.
+        /// </summary>
+        private void MoveSelectedGroup(Point current)
         {
-            
-            if (!this.isSelected)
-            {
-                return;
-            }
-            isMoving = true;
             var canvas = (Canvas?)Container.Parent;
-            var canvasWidth = canvas.Bounds.Width;
-            double newLeft = originalLeft + (current.X - dragStart.X);
-            double snappedLeft = Math.Round(newLeft);
-            if (snappedLeft >= 0 && snappedLeft + Container.Width <= canvasWidth &&
-                !Collides(snappedLeft, Container.Width))
+            if (canvas == null) return;
+            double canvasWidth = canvas.Bounds.Width;
+
+            var selected = _siblings.Where(b => b.isSelected).ToList();
+            if (selected.Count == 0) return;
+
+            // Anchor each block's start position once, at the first move of this drag.
+            if (!_groupDragActive)
             {
-                Canvas.SetLeft(Container, snappedLeft);
-                //ScrollIfNeeded(snappedLeft + Container.Width);
+                foreach (var b in selected)
+                    b.originalLeft = Canvas.GetLeft(b.Container);
+                _groupDragActive = true;
             }
+
+            double rawDelta = current.X - dragStartCanvas.X;
+
+            // Canvas-edge bounds: the leftmost block can't cross 0, the rightmost can't cross the end.
+            double lower = -selected.Min(b => b.originalLeft);
+            double upper = canvasWidth - selected.Max(b => b.originalLeft + b.Container.Width);
+
+            // Collision bounds: only non-selected blocks constrain the group. A block to the right
+            // caps how far right we can slide; one to the left caps how far left.
+            foreach (var s in selected)
+            {
+                double sLeft = s.originalLeft;
+                double sRight = s.originalLeft + s.Container.Width;
+                foreach (var o in _siblings)
+                {
+                    if (o.isSelected) continue;
+                    double oLeft = Canvas.GetLeft(o.Container);
+                    double oRight = oLeft + o.Container.Width;
+                    if (oLeft >= sRight)       upper = Math.Min(upper, oLeft - sRight);
+                    else if (oRight <= sLeft)  lower = Math.Max(lower, oRight - sLeft);
+                }
+            }
+
+            // Snap to whole pixels and clamp within the allowed range. Normally the anchor
+            // (delta 0) is valid so lo <= 0 <= hi; bail if a degenerate state inverts them.
+            double lo = Math.Ceiling(lower);
+            double hi = Math.Floor(upper);
+            if (lo > hi) return;
+            double delta = Math.Clamp(Math.Round(rawDelta), lo, hi);
+
+            foreach (var s in selected)
+                Canvas.SetLeft(s.Container, s.originalLeft + delta);
+
+            ScrollIfNeeded(current.X);
         }
         private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
@@ -232,6 +341,7 @@ namespace LumikitApp
             isResizingLeft = false;
             isResizingRight = false;
             isMoving = false;
+            _groupDragActive = false;
         }
         
         

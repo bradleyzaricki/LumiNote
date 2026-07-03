@@ -5,6 +5,7 @@
     using Avalonia.Layout;
     using Avalonia.Media;
     using Avalonia.Threading;
+    using Avalonia.VisualTree;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
@@ -81,7 +82,22 @@
             /// implemented playback handler to control implemented music provider
             /// </summary>
             private IPlaybackHandler _playbackHandler;
-            private List<String> _trackQueue = new List<string>();
+
+            // ── Playback queue ────────────────────────────────────────────────
+            /// <summary>Upcoming tracks; head plays next. Bound to the Queue tab's list.</summary>
+            private readonly ObservableCollection<QueueEntry> _queue = new();
+
+            /// <summary>Duration of the playing track (ms); 0 = unknown → no auto-advance.</summary>
+            private int _currentTrackDurationMs;
+
+            /// <summary>Re-entrancy guard: progress ticks keep firing while a switch is underway.</summary>
+            private bool _queueAdvancing;
+
+            // Queue drag-reorder state (pointer-based; see QueueRow_* handlers).
+            private Border? _queueDragRow;
+            private QueueEntry? _queueDragEntry;
+            private double _queueDragStartY;
+            private bool _queueDragActive;
 
             //Live "Piano Roll" Block Painting Variables
             Border? _activeSwatch;
@@ -279,6 +295,17 @@
                         // Kill any running block preview the moment real playback ticks.
                         if (_previewRunning && _playbackHandler.IsTimerRunning) StopPreview();
 
+                        // End of track (duration from the provider, e.g. Spotify's track
+                        // endpoint) → advance to the next queued track, or stop when empty.
+                        if (_currentTrackDurationMs > 0 && ms >= _currentTrackDurationMs
+                            && !_queueAdvancing && _playbackHandler.IsTimerRunning)
+                        {
+                            _queueAdvancing = true;
+                            _currentTrackDurationMs = 0;
+                            _ = AdvanceQueueAsync();
+                            return;
+                        }
+
                         StopwatchLabel.Text = ms.ToString();
 
                         // Reset serial throttle if ms went backwards (new track / seek / restart)
@@ -334,13 +361,17 @@
                         async (_, _) => await _playbackHandler.ResumeAsync();
                     this.FindControl<Button>("NextTrackButton").Click += async (_, _) =>
                     {
-                        _musicProvider.currentTrack = s_unknownTrack;
-                        //set currently playing path to next track in queue
-                        //_musicProvider.currentlyPlayingPath = Nextpath;
-
-                        await _playbackHandler.PlayAsync();
-                        UpdateCurrentTrack(true, trackGUID: Guid.Empty); // refresh on next track
+                        if (_queue.Count == 0)
+                        {
+                            UpdateErrorText("Queue is empty — add tracks with the ⤒/⤓ buttons.");
+                            return;
+                        }
+                        await AdvanceQueueAsync();
                     };
+
+                    // Queue tab: bind the list and keep the header count in sync.
+                    QueueList.ItemsSource = _queue;
+                    _queue.CollectionChanged += (_, _) => UpdateQueueCountText();
                     this.FindControl<Button>("RestartTrackButton").Click +=
                         async (_, _) => _playbackHandler.RestartAsync();
 
@@ -688,19 +719,59 @@
             /// <param name="e"></param>
             private void OpenAudioFileButton_OnClick(object? sender, RoutedEventArgs e)
             {
-                if (_musicRouter.HasProvider(ProviderType.LocalFiles)) //local import available — open file manager
+                if (sender is not Button b) return;
+
+                bool hasLocal   = _musicRouter.HasProvider(ProviderType.LocalFiles);
+                bool hasSpotify = _musicRouter.HasProvider(ProviderType.Spotify);
+
+                // Multiple sources enabled → let the user pick which one the new lightmap is for.
+                if (hasLocal && hasSpotify)
                 {
-                    if (sender is Button b && this.Resources["OpenAudioFlyout"] is Flyout f)
+                    if (this.Resources["NewLightmapSourceFlyout"] is Flyout picker)
+                        picker.ShowAt(b);
+                }
+                // Single source → go straight to its flow (unchanged behavior).
+                else if (hasLocal)
+                {
+                    if (this.Resources["OpenAudioFlyout"] is Flyout f)
                         f.ShowAt(b);
                 }
-                else if (!_musicProvider.IsProviderLocal) //set current track to currently playing track
+                else if (hasSpotify)
                 {
-                    var path = _musicProvider.GetCurrentlyPlayingTrackIdAsync();
-                    _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
-                    _musicProvider.currentlyPlayingPath = path;
-                    _playbackHandler.PlayAsync();
-                    UpdateCurrentTrack(true, Guid.Empty); 
-                }            
+                    StartSpotifyLightmap();
+                }
+            }
+
+            /// <summary>Picker: start a new lightmap from a local audio file.</summary>
+            private async void PickLocalSource_Click(object? sender, RoutedEventArgs e)
+            {
+                (this.Resources["NewLightmapSourceFlyout"] as Flyout)?.Hide();
+                await PromptAndImportLocalAsync();
+            }
+
+            /// <summary>Picker: start a new lightmap from the currently-playing Spotify track.</summary>
+            private void PickSpotifySource_Click(object? sender, RoutedEventArgs e)
+            {
+                (this.Resources["NewLightmapSourceFlyout"] as Flyout)?.Hide();
+                StartSpotifyLightmap();
+            }
+
+            /// <summary>
+            /// Starts a new lightmap from whatever is currently playing on Spotify. Switches the
+            /// active source to Spotify first, since in mixed mode Local may be active.
+            /// </summary>
+            private async void StartSpotifyLightmap()
+            {
+                if (_musicProvider.providerName != ProviderType.Spotify)
+                    await _musicRouter.SwitchToAsync(ProviderType.Spotify);
+
+                var path = _musicProvider.GetCurrentlyPlayingTrackIdAsync();
+                _currentTrackDurationMs = 0;
+                _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
+                _musicProvider.currentlyPlayingPath = path;
+                await _playbackHandler.PlayAsync();
+                UpdateCurrentTrack(true, Guid.Empty);
+                _currentTrackDurationMs = await _musicProvider.GetTrackDurationMsAsync();
             }
             
             /// <summary>
@@ -710,32 +781,39 @@
             /// <param name="e"></param>
             private async void BrowseAudioFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
             {
-                if (_musicRouter.HasProvider(ProviderType.LocalFiles))
+                await PromptAndImportLocalAsync();
+            }
+
+            /// <summary>
+            /// Prompts for a local audio file, imports it into app storage, and starts a new
+            /// lightmap for it. Shared by the browse flyout and the source picker.
+            /// </summary>
+            private async Task PromptAndImportLocalAsync()
+            {
+                if (!_musicRouter.HasProvider(ProviderType.LocalFiles)) return;
+
+                var dlg = new OpenFileDialog
                 {
-                    var dlg = new OpenFileDialog
+                    Title = "Select an audio file",
+                    AllowMultiple = false,
+                    Filters =
                     {
-                        Title = "Select an audio file",
-                        AllowMultiple = false,
-                        Filters =
+                        new FileDialogFilter
                         {
-                            new FileDialogFilter
-                            {
-                                Name = "Audio",
-                                Extensions = { "mp3", "wav", "flac", "m4a", "aac", "ogg" }
-                            }
+                            Name = "Audio",
+                            Extensions = { "mp3", "wav", "flac", "m4a", "aac", "ogg" }
                         }
-                    };
+                    }
+                };
 
-                    var result = await dlg.ShowAsync(this);
-                    var path = result?.FirstOrDefault();
-                    if (string.IsNullOrWhiteSpace(path)) return;
+                var result = await dlg.ShowAsync(this);
+                var path = result?.FirstOrDefault();
+                if (string.IsNullOrWhiteSpace(path)) return;
 
-                    var importedPath = _jsonDataHandler.ImportAudioToAppStorage(path);
+                var importedPath = _jsonDataHandler.ImportAudioToAppStorage(path);
 
-                    SelectedAudioPathText.Text = importedPath;
-                    OnAudioFileSelected(importedPath);  
-                }
-          
+                SelectedAudioPathText.Text = importedPath;
+                OnAudioFileSelected(importedPath);
             }
             
             /// <summary>
@@ -748,11 +826,12 @@
                 if (_musicProvider.providerName != ProviderType.LocalFiles)
                     await _musicRouter.SwitchToAsync(ProviderType.LocalFiles);
 
+                _currentTrackDurationMs = 0;
                 _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
                 _musicProvider.currentlyPlayingPath = path;
                 await _playbackHandler.PlayAsync();
                 UpdateCurrentTrack(true, trackGUID: Guid.Empty); // refresh on next track
-
+                _currentTrackDurationMs = await _musicProvider.GetTrackDurationMsAsync();
             }
             
             /// <summary>
@@ -815,8 +894,23 @@
             {
                 if (sender is not Avalonia.Controls.Control c) return;
                 if (c.DataContext is not TrackItemUI item) return;
-                _databaseAccess.SaveTrackAsync(item.TrackId.ToString(), _jsonDataHandler.GetTrack(item.TrackId.ToString()));
 
+                var track = _jsonDataHandler.GetTrack(item.TrackId.ToString());
+                if (track == null)
+                {
+                    UpdateErrorText($"Can't upload \"{item.TrackName}\" — no local file found.");
+                    return;
+                }
+
+                try
+                {
+                    await _databaseAccess.SaveTrackAsync(item.TrackId.ToString(), track);
+                    UpdateErrorText($"Uploaded \"{track._trackName}\".");
+                }
+                catch (Exception ex)
+                {
+                    UpdateErrorText($"Upload failed: {ex.Message}");
+                }
             }
 
            
@@ -829,10 +923,22 @@
             {
                 if (sender is not Avalonia.Controls.Control c) return;
                 if (c.DataContext is not TrackItemUI item) return;
-                
-                //Insert and play from top of queue
-                _trackQueue.Insert(0, item.TrackId.ToString());
-                var track = _jsonDataHandler.GetTrack(_trackQueue.First());
+
+                await PlayTrackByIdAsync(item.TrackId.ToString());
+            }
+
+            /// <summary>
+            /// Resolves a library track's best source, switches provider if needed, and plays it.
+            /// Shared by the Play button and the queue (auto-advance + Next).
+            /// </summary>
+            private async Task<bool> PlayTrackByIdAsync(string trackId)
+            {
+                var track = _jsonDataHandler.GetTrack(trackId);
+                if (track == null)
+                {
+                    UpdateErrorText("Track not found in the local library.");
+                    return false;
+                }
 
                 // Pick a source the track has that is also an enabled provider.
                 // Always prefer local files when available (lowest latency / most reliable),
@@ -857,12 +963,14 @@
                 if (targetProvider == null)
                 {
                     UpdateErrorText($"No enabled source linked for \"{track._trackName}\". Use the link buttons to add one.");
-                    return;
+                    return false;
                 }
 
                 // Switch source if needed (router pauses the current source before swapping).
                 if (targetProvider != _musicProvider.providerName)
                     await _musicRouter.SwitchToAsync(targetProvider.Value);
+
+                _currentTrackDurationMs = 0; // no auto-advance until the new duration is known
 
                 _musicProvider.currentlyPlayingPath = track.GetSource(targetProvider.Value);
                 //Set visual information for track that is stored in json
@@ -870,6 +978,128 @@
                 await _playbackHandler.PlayAsync();
                 UpdateCurrentTrack(true, track.trackGUID); // refresh on next track
 
+                _currentTrackDurationMs = await _musicProvider.GetTrackDurationMsAsync();
+                return true;
+            }
+
+            /// <summary>
+            /// Plays the next queued track (dequeuing it); pauses playback when the queue is empty.
+            /// </summary>
+            private async Task AdvanceQueueAsync()
+            {
+                try
+                {
+                    if (_queue.Count > 0)
+                    {
+                        var next = _queue[0];
+                        _queue.RemoveAt(0);
+                        await PlayTrackByIdAsync(next.TrackId);
+                    }
+                    else
+                    {
+                        await _playbackHandler.PauseAsync();
+                    }
+                }
+                finally
+                {
+                    _queueAdvancing = false;
+                }
+            }
+
+            // ── Queue add/remove ──────────────────────────────────────────────
+
+            private void LocalTrack_QueueTop_Click(object? sender, RoutedEventArgs e)
+            {
+                if (sender is not Control c || c.DataContext is not TrackItemUI item) return;
+                _queue.Insert(0, QueueEntry.From(item));
+            }
+
+            private void LocalTrack_QueueBottom_Click(object? sender, RoutedEventArgs e)
+            {
+                if (sender is not Control c || c.DataContext is not TrackItemUI item) return;
+                _queue.Add(QueueEntry.From(item));
+            }
+
+            private void QueueRemove_Click(object? sender, RoutedEventArgs e)
+            {
+                if (sender is not Control c || c.DataContext is not QueueEntry entry) return;
+                _queue.Remove(entry);
+            }
+
+            private void QueueClear_Click(object? sender, RoutedEventArgs e) => _queue.Clear();
+
+            private void UpdateQueueCountText()
+            {
+                QueueCountText.Text = _queue.Count switch
+                {
+                    0 => "Queue is empty",
+                    1 => "1 track",
+                    var n => $"{n} tracks"
+                };
+            }
+
+            // ── Queue drag-reorder ────────────────────────────────────────────
+            // Pointer-based: the pressed row is captured and glued to the cursor via a
+            // translate transform; when it crosses a neighbour's midpoint the collection
+            // Move() swaps them and the anchor shifts one row, so the row stays under the
+            // pointer while the others slide into place.
+
+            private double QueueRowPitch => (_queueDragRow?.Bounds.Height ?? 60) + 6; // row + margin
+
+            private void QueueRow_PointerPressed(object? sender, PointerPressedEventArgs e)
+            {
+                if (sender is not Border row || row.DataContext is not QueueEntry entry) return;
+                // Presses on the row's buttons (✕) are theirs, not a drag.
+                if (e.Source is Visual v && v.GetSelfAndVisualAncestors().OfType<Button>().Any()) return;
+
+                _queueDragRow = row;
+                _queueDragEntry = entry;
+                _queueDragStartY = e.GetPosition(QueueList).Y;
+                _queueDragActive = false;
+                e.Pointer.Capture(row);
+            }
+
+            private void QueueRow_PointerMoved(object? sender, PointerEventArgs e)
+            {
+                if (_queueDragRow == null || _queueDragEntry == null || !ReferenceEquals(sender, _queueDragRow))
+                    return;
+
+                double dy = e.GetPosition(QueueList).Y - _queueDragStartY;
+
+                if (!_queueDragActive)
+                {
+                    if (Math.Abs(dy) < 5) return; // dead zone so clicks don't wiggle rows
+                    _queueDragActive = true;
+                    _queueDragRow.Opacity = 0.75;
+                    if (_queueDragRow.Parent is Control presenter) presenter.ZIndex = 100;
+                }
+
+                int index = _queue.IndexOf(_queueDragEntry);
+                if (index < 0) return;
+
+                // Crossed a neighbour's midpoint → swap and re-anchor one row over.
+                int target = Math.Clamp(index + (int)Math.Round(dy / QueueRowPitch), 0, _queue.Count - 1);
+                if (target != index)
+                {
+                    _queue.Move(index, target);
+                    _queueDragStartY += (target - index) * QueueRowPitch;
+                    dy = e.GetPosition(QueueList).Y - _queueDragStartY;
+                }
+
+                _queueDragRow.RenderTransform = new TranslateTransform(0, dy);
+            }
+
+            private void QueueRow_PointerReleased(object? sender, PointerReleasedEventArgs e)
+            {
+                if (_queueDragRow == null) return;
+
+                _queueDragRow.RenderTransform = null;
+                _queueDragRow.Opacity = 1.0;
+                if (_queueDragRow.Parent is Control presenter) presenter.ZIndex = 0;
+
+                _queueDragRow = null;
+                _queueDragEntry = null;
+                _queueDragActive = false;
             }
             
             /// <summary>
@@ -990,6 +1220,10 @@
                 if (_jsonDataHandler.GetTrack(item.TrackId.ToString()) == null)
                 {
                     TrackData tdToAdd = await _databaseAccess.LoadTrackAsync(item.TrackId.ToString());
+
+                    // GET returns the id as _trackID, which doesn't map to trackGUID — keep the DB identity.
+                    if (Guid.TryParse(item.TrackId, out var dbGuid))
+                        tdToAdd.trackGUID = dbGuid;
 
                     var audioBytes = await _databaseAccess.DownloadTrackAudioAsync(item.TrackId.ToString());
                     if (audioBytes != null)

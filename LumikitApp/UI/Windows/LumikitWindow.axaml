@@ -3,6 +3,7 @@
         xmlns:local="clr-namespace:LumikitApp.Controls"
         xmlns:rs="clr-namespace:RangeSlider.Avalonia.Controls;assembly=RangeSlider.Avalonia"
         xmlns:models="clr-namespace:LumikitApp.Models"
+        xmlns:vm="clr-namespace:LumikitApp.ViewModels"
         x:Class="LumikitApp.LumikitWindow"
         Width="1600" Height="900"
         Background="Black"
@@ -20,6 +21,23 @@
                                Text="No file selected"
                                Foreground="#888"
                                TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </Flyout>
+
+        <Flyout x:Key="NewLightmapSourceFlyout" Placement="Bottom">
+            <Border Background="#222" Padding="12" CornerRadius="8">
+                <StackPanel Width="260" Spacing="8">
+                    <TextBlock Text="New Lightmap From…" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Choose the source for this lightmap." Foreground="#AAA"/>
+                    <Button Content="Local Audio File…"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Click="PickLocalSource_Click"/>
+                    <Button Content="Spotify — Currently Playing"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Click="PickSpotifySource_Click"/>
                 </StackPanel>
             </Border>
         </Flyout>
@@ -79,6 +97,70 @@
             </Border>
         </Flyout>
     </Window.Resources>
+
+    <Window.Styles>
+        <!-- Shared track-row action buttons: consistent size, rounding, and hover -->
+        <Style Selector="Button.trackAction">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="MinWidth" Value="34"/>
+            <Setter Property="Padding" Value="11,0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="#2c2c2c"/>
+            <Setter Property="Foreground" Value="#e6e6e6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.trackAction:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#3d3d3d"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Primary action (Play / Download) -->
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#1DB954"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1ed760"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Destructive action (Delete) -->
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#ff6b6b"/>
+        </Style>
+        <Style Selector="Button.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#5a2424"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Source badge pill -->
+        <Style Selector="Border.badge">
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="6,1"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.badge > TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Thin divider between action groups -->
+        <Style Selector="Border.actionDivider">
+            <Setter Property="Width" Value="1"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Background" Value="#454545"/>
+            <Setter Property="Margin" Value="3,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </Window.Styles>
 
     <Grid x:Name="MainGrid" ColumnDefinitions="*, Auto" RowDefinitions="Auto,Auto,*,Auto" Margin="10">
 
@@ -185,61 +267,86 @@
                                     <ListBox.ItemTemplate>
                                         <DataTemplate x:DataType="models:TrackItemUI">
                                             <Border Background="{Binding Color, Converter={StaticResource DarkenConverter}}"
-                                                    CornerRadius="6"
-                                                    Padding="12"
-                                                    Margin="0,0,0,0"
-                                                    Height="64"
+                                                    CornerRadius="8"
+                                                    Padding="14,8"
+                                                    Margin="0,0,0,6"
+                                                    Height="68"
                                                     BorderThickness="1.5"
                                                     BorderBrush="{Binding Color}">
-                                                <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto"
+                                                <Grid ColumnDefinitions="*,Auto"
                                                       VerticalAlignment="Center"
                                                       HorizontalAlignment="Stretch">
 
-                                                    <StackPanel Spacing="2" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding TrackName}"
-                                                                   Foreground="White"
-                                                                   FontSize="15"
-                                                                   FontWeight="SemiBold"/>
+                                                    <!-- Track info + source badges -->
+                                                    <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding TrackName}"
+                                                                       Foreground="White"
+                                                                       FontSize="15"
+                                                                       FontWeight="SemiBold"
+                                                                       VerticalAlignment="Center"/>
+                                                            <ItemsControl ItemsSource="{Binding SourceBadges}"
+                                                                          VerticalAlignment="Center">
+                                                                <ItemsControl.ItemsPanel>
+                                                                    <ItemsPanelTemplate>
+                                                                        <StackPanel Orientation="Horizontal" Spacing="8"/>
+                                                                    </ItemsPanelTemplate>
+                                                                </ItemsControl.ItemsPanel>
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate x:DataType="models:ProviderBadge">
+                                                                        <Border Classes="badge" Background="{Binding Color}">
+                                                                            <TextBlock Text="{Binding Name}"/>
+                                                                        </Border>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </StackPanel>
                                                         <TextBlock Text="{Binding Subtitle}"
                                                                    Foreground="#9a9a9a"
                                                                    FontSize="12"/>
                                                     </StackPanel>
-                                                    <Button Content="▶"
-                                                            Grid.Column="1"
-                                                            Width="40"
-                                                            Height="32"
-                                                            Margin="8,0,4,0"
-                                                            VerticalAlignment="Center"
-                                                            Click="LocalTrack_Play_Click"/>
-                                                    <Button Content="+"
-                                                            Grid.Column="2"
-                                                            Width="40"
-                                                            Height="32"
-                                                            Margin="0,0,4,0"
-                                                            VerticalAlignment="Center"
-                                                            Click="LocalTrack_Upload_Click"/>
-                                                    <Button Content="Sp"
-                                                            Grid.Column="3"
-                                                            Width="40"
-                                                            Height="32"
-                                                            Margin="0,0,4,0"
-                                                            VerticalAlignment="Center"
-                                                            ToolTip.Tip="Link currently playing Spotify track"
-                                                            Click="LocalTrack_LinkSpotify_Click"/>
-                                                    <Button Content="📂"
-                                                            Grid.Column="4"
-                                                            Width="40"
-                                                            Height="32"
-                                                            Margin="0,0,4,0"
-                                                            VerticalAlignment="Center"
-                                                            ToolTip.Tip="Link local audio file"
-                                                            Click="LocalTrack_LinkFile_Click"/>
-                                                    <Button Content="🗑"
-                                                            Grid.Column="5"
-                                                            Width="40"
-                                                            Height="32"
-                                                            VerticalAlignment="Center"
-                                                            Click="LocalTrack_Delete_Click"/>
+
+                                                    <!-- Actions: primary play | link group | delete -->
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                                                Spacing="6" VerticalAlignment="Center">
+                                                        <Button Classes="trackAction primary" Content="▶"
+                                                                ToolTip.Tip="Play"
+                                                                Click="LocalTrack_Play_Click"/>
+
+                                                        <Button Classes="trackAction" Content="⤒"
+                                                                ToolTip.Tip="Queue next (top of queue)"
+                                                                Click="LocalTrack_QueueTop_Click"/>
+                                                        <Button Classes="trackAction" Content="⤓"
+                                                                ToolTip.Tip="Add to end of queue"
+                                                                Click="LocalTrack_QueueBottom_Click"/>
+
+                                                        <Border Classes="actionDivider"/>
+
+                                                        <ItemsControl ItemsSource="{Binding LinkActions}"
+                                                                      VerticalAlignment="Center">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate x:DataType="models:TrackLinkAction">
+                                                                    <Button Classes="trackAction"
+                                                                            Content="{Binding Label}"
+                                                                            Click="LocalTrack_Link_Click"/>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                        <Button Classes="trackAction" Content="Upload"
+                                                                ToolTip.Tip="Upload this lightmap to the shared library"
+                                                                Click="LocalTrack_Upload_Click"/>
+
+                                                        <Border Classes="actionDivider"/>
+
+                                                        <Button Classes="trackAction danger" Content="🗑"
+                                                                ToolTip.Tip="Delete this lightmap"
+                                                                Click="LocalTrack_Delete_Click"/>
+                                                    </StackPanel>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
@@ -259,33 +366,57 @@
 
             <!-- QUEUE -->
             <TabItem Header="Queue">
-                <Border Background="#1b1b1b"
-                        CornerRadius="6"
-                        Padding="10"
-                        Margin="0,10,0,0">
-                    <ListBox x:Name="QueueTracksListBox">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate x:DataType="models:TrackItemUI">
-                                <Grid ColumnDefinitions="*,Auto" Margin="6">
-                                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBox x:Name="QueueTrackSearchBox"
-                                 Width="320"
-                                 Watermark="Search tracks by name or ID..."
-                                 HorizontalAlignment="Left"
-                                 TextChanged="LocalTrackSearchBox_TextChanged"/>
+                <Grid Margin="0,10,0,0" RowDefinitions="Auto,*">
 
-                        <Button Content="Refresh"
-                                Width="100"
-                                HorizontalAlignment="Left"/>
+                    <StackPanel Orientation="Horizontal" Spacing="10" Grid.Row="0" Margin="0,0,0,10">
+                        <TextBlock Text="Up Next" FontSize="16" FontWeight="Bold"
+                                   Foreground="White" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="QueueCountText" Text="Queue is empty"
+                                   Foreground="#9a9a9a" VerticalAlignment="Center"/>
+                        <Button Classes="trackAction" Content="Clear"
+                                ToolTip.Tip="Remove all tracks from the queue"
+                                Click="QueueClear_Click"/>
                     </StackPanel>
 
-       
-
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </Border>
+                    <!-- Rows drag-reorder with the pointer: handlers live in code-behind. -->
+                    <Border Grid.Row="1" Background="#1b1b1b" CornerRadius="6" Padding="10">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl x:Name="QueueList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:QueueEntry">
+                                        <Border Background="{Binding Color, Converter={StaticResource DarkenConverter}}"
+                                                BorderBrush="{Binding Color}"
+                                                BorderThickness="1.5"
+                                                CornerRadius="8"
+                                                Padding="14,8"
+                                                Margin="0,0,0,6"
+                                                Height="60"
+                                                Cursor="Hand"
+                                                PointerPressed="QueueRow_PointerPressed"
+                                                PointerMoved="QueueRow_PointerMoved"
+                                                PointerReleased="QueueRow_PointerReleased">
+                                            <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                                                <TextBlock Grid.Column="0" Text="☰" Foreground="#777"
+                                                           FontSize="16" VerticalAlignment="Center"
+                                                           Margin="0,0,12,0"/>
+                                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding TrackName}" Foreground="White"
+                                                               FontSize="14" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding Subtitle}" Foreground="#9a9a9a"
+                                                               FontSize="11"/>
+                                                </StackPanel>
+                                                <Button Grid.Column="2" Classes="trackAction danger" Content="✕"
+                                                        ToolTip.Tip="Remove from queue"
+                                                        Click="QueueRemove_Click"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
             </TabItem>
         
             <!-- DB TRACKS -->
@@ -322,23 +453,38 @@
                             <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="models:TrackItemUI">
                                     <Border Background="{Binding Color, Converter={StaticResource DarkenConverter}}"
-                                            CornerRadius="6"
-                                            Padding="12"
-                                            Margin="0,0,0,0"
-                                            Height="64"
+                                            CornerRadius="8"
+                                            Padding="14,8"
+                                            Margin="0,0,0,6"
+                                            Height="68"
                                             BorderThickness="1.5"
                                             BorderBrush="{Binding Color}">
                                         <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center" HorizontalAlignment="Stretch">
-                                            <StackPanel Spacing="2" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding TrackName}" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                                            <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+                                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding TrackName}" Foreground="White" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                    <ItemsControl ItemsSource="{Binding SourceBadges}" VerticalAlignment="Center">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <StackPanel Orientation="Horizontal" Spacing="8"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="models:ProviderBadge">
+                                                                <Border Classes="badge" Background="{Binding Color}">
+                                                                    <TextBlock Text="{Binding Name}"/>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
                                                 <TextBlock Text="{Binding Subtitle}" Foreground="#9a9a9a" FontSize="12"/>
                                             </StackPanel>
-                                            <Button Content="+" Grid.Column="1"
-                                                    Width="40"
-                                                    Height="32"
-                                                    Margin="12,0,8,0"
+                                            <Button Classes="trackAction primary" Grid.Column="1"
+                                                    Content="Download"
                                                     VerticalAlignment="Center"
                                                     HorizontalAlignment="Right"
+                                                    ToolTip.Tip="Download this lightmap to your local library"
                                                     Click="DatabaseTrack_Download_Click"/>
                                         </Grid>
                                     </Border>
@@ -375,11 +521,15 @@
                                     VerticalAlignment="Stretch"/>
 
                                 <!-- LIGHTBLOCK SETTINGS -->
+                                <ScrollViewer HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch"
+                                              Margin="30,25"
+                                              ZIndex="10"
+                                              VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
                                 <Grid HorizontalAlignment="Stretch"
                                       VerticalAlignment="Top"
-                                      Margin="30,25"
-                                      ZIndex="10"
-                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" Row="0">
+                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
                                     <!-- LIGHTSPAN -->
                                     
                                     <StackPanel  Name="LightRange" Grid.Row="0" Margin="0,10" IsVisible="{Binding LightRangeVisible}">
@@ -481,32 +631,56 @@
                                         </Border>
                                     </Border>
                                     </StackPanel>
-                                    
-                                    
+
+
+                                    <StackPanel Name="FillColorPanel" Grid.Row="5" Orientation="Horizontal" Margin="0,10" IsVisible="{Binding FillColorPanelVisible}">
+                                    <TextBlock Name="FillColorHeader" Text="Fill Color:" Foreground="White" VerticalAlignment="Center" Margin="0,10,8,10"/>
+                                    <Border Name="FillColorFrame"
+                                            Width="200"
+                                            Height="40"
+                                            CornerRadius="8"
+                                            BorderBrush="Black"
+                                            BorderThickness="6"
+                                            ClipToBounds="True"
+                                            HorizontalAlignment="Left"
+                                            IsVisible="True">
+                                        <Border CornerRadius="8" Background="Transparent">
+                                            <Canvas Name="FillColorDropBox" Background="{Binding FillColorBrush}"/>
+                                        </Border>
+                                    </Border>
+                                    </StackPanel>
+
+
                                     <StackPanel Grid.Row="4" >
                                         <TextBlock Text="Intensity (0-255)" Foreground="White"/>
                                         <TextBox Name="IntensityInput" Width="200" HorizontalAlignment="Left"
                                                  Text="{Binding IntensityText, Mode=TwoWay}"/>
 
-                                        <StackPanel Name="AdditionalSingleInputPanel1" IsVisible="{Binding AdditionalInput1PanelVisible}">
-                                            <TextBlock Name="AdditionalSingleInputLabel1" Foreground="White"
-                                                       Text="{Binding AdditionalInput1Label}"/>
-                                            <TextBox Name="AdditionalSingleInput1TextBox" Width="200" HorizontalAlignment="Left"
-                                                     Text="{Binding AdditionalInput1Text, Mode=TwoWay}"/>
-                                        </StackPanel>
-
-                                        <StackPanel Name="AdditionalSingleInputPanel2" IsVisible="{Binding AdditionalInput2PanelVisible}">
-                                            <TextBlock Name="AdditionalSingleInputLabel2" Foreground="White"
-                                                       Text="{Binding AdditionalInput2Label}"/>
-                                            <TextBox Name="AdditionalSingleInput2TextBox" Width="200" HorizontalAlignment="Left"
-                                                     Text="{Binding AdditionalInput2Text, Mode=TwoWay}"/>
-                                        </StackPanel>
+                                        <!-- Dynamic effect params: one titled input per param of each
+                                             active effect, generated from the EffectCatalog schema. -->
+                                        <ItemsControl Name="EffectParamsList" ItemsSource="{Binding EffectParams}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:EffectParamViewModel">
+                                                    <StackPanel>
+                                                        <StackPanel IsVisible="{Binding IsNumberBox}">
+                                                            <TextBlock Foreground="White" Text="{Binding Title}"/>
+                                                            <TextBox Width="200" HorizontalAlignment="Left"
+                                                                     Text="{Binding Text, Mode=TwoWay}"/>
+                                                        </StackPanel>
+                                                        <CheckBox Content="{Binding Title}" Foreground="White"
+                                                                  IsVisible="{Binding IsCheckBox}"
+                                                                  IsChecked="{Binding BoolValue, Mode=TwoWay}"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
                                     </StackPanel>
                                 </Grid>
-                                
+                                </ScrollViewer>
+
                             </Grid>
                         </Grid>
- 
+
                 </TabItem>
             </TabControl>
 
@@ -528,17 +702,38 @@
 
                     <Border Height="1" Background="#333" Margin="0,10,0,10"/>
 
-                    <TextBlock Text="Effect" Foreground="White" Margin="0,10,0,0"/>
+                    <!-- Shape: mutually exclusive, defines which pixels are lit.
+                         Mixed multi-selection = no radio checked; blocks keep their own
+                         shape until the user picks one. -->
+                    <TextBlock Text="Shape" Foreground="White" Margin="0,10,0,0"/>
+                    <StackPanel>
+                        <RadioButton Content="Static"   GroupName="BlockShape" Foreground="White" IsChecked="{Binding ShapeStatic,   Mode=TwoWay}"/>
+                        <RadioButton Content="Travel"   GroupName="BlockShape" Foreground="White" IsChecked="{Binding ShapeTravel,   Mode=TwoWay}"/>
+                        <RadioButton Content="Combine"  GroupName="BlockShape" Foreground="White" IsChecked="{Binding ShapeCombine,  Mode=TwoWay}"/>
+                        <RadioButton Content="Seperate" GroupName="BlockShape" Foreground="White" IsChecked="{Binding ShapeSeparate, Mode=TwoWay}"/>
+                        <RadioButton Content="Scanner"  GroupName="BlockShape" Foreground="White" IsChecked="{Binding ShapeScanner,  Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <!-- Texture: mutually exclusive per-pixel surface modulation over the
+                         lit pixels (optionally including the fill color). -->
+                    <TextBlock Text="Texture" Foreground="White" Margin="0,10,0,0"/>
+                    <StackPanel>
+                        <RadioButton Content="None"    GroupName="BlockTexture" Foreground="White" IsChecked="{Binding TextureNone,    Mode=TwoWay}"/>
+                        <RadioButton Content="Twinkle" GroupName="BlockTexture" Foreground="White" IsChecked="{Binding TextureTwinkle, Mode=TwoWay}"/>
+                        <RadioButton Content="Shimmer" GroupName="BlockTexture" Foreground="White" IsChecked="{Binding TextureShimmer, Mode=TwoWay}"/>
+                        <RadioButton Content="Sparkle" GroupName="BlockTexture" Foreground="White" IsChecked="{Binding TextureSparkle, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <!-- Modifiers: stackable post-passes over the shape's output. -->
+                    <TextBlock Text="Effects" Foreground="White" Margin="0,10,0,0"/>
                     <StackPanel>
                         <CheckBox Content="Fade In"      Foreground="White" IsThreeState="True" IsChecked="{Binding FadeIn,       Mode=TwoWay}"/>
                         <CheckBox Content="Fade Out"     Foreground="White" IsThreeState="True" IsChecked="{Binding FadeOut,      Mode=TwoWay}"/>
                         <CheckBox Content="Strobe"       Foreground="White" IsThreeState="True" IsChecked="{Binding Strobe,       Mode=TwoWay}"/>
-                        <CheckBox Content="Travel"       Foreground="White" IsThreeState="True" IsChecked="{Binding Travel,       Mode=TwoWay}"/>
-                        <CheckBox Content="Combine"      Foreground="White" IsThreeState="True" IsChecked="{Binding Combine,      Mode=TwoWay}"/>
-                        <CheckBox Content="Seperate"     Foreground="White" IsThreeState="True" IsChecked="{Binding Separate,     Mode=TwoWay}"/>
                         <CheckBox Content="Repeat"       Foreground="White" IsThreeState="True" IsChecked="{Binding Repeat,       Mode=TwoWay}"/>
                         <CheckBox Content="Color Change" Foreground="White" IsThreeState="True" IsChecked="{Binding ChangeColor,  Mode=TwoWay}"/>
-                        <CheckBox Content="Twinkle"      Foreground="White" IsThreeState="True" IsChecked="{Binding Twinkle,      Mode=TwoWay}"/>
+                        <CheckBox Content="Comet"        Foreground="White" IsThreeState="True" IsChecked="{Binding Comet,        Mode=TwoWay}"/>
+                        <CheckBox Content="Fill Color"   Foreground="White" IsThreeState="True" IsChecked="{Binding FillColor,    Mode=TwoWay}"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

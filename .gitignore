@@ -13,3 +13,10 @@ packages/
 
 # Avalonia temp
 **/build.force
+
+# Cloudflare Worker / Node backend
+node_modules/
+.wrangler/
+# local secrets (Google client secret, API keys) — never commit
+.dev.vars
+*.dev.vars

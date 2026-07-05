@@ -1,0 +1,87 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:LumikitApp.Models"
+        x:Class="LumikitApp.TrackSaveTargetWindow"
+        Width="440"
+        Height="480"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Title="Save Lightmap"
+        Background="#2E2E2E">
+
+    <Window.Styles>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected Border#RowBorder">
+            <Setter Property="BorderThickness" Value="3"/>
+        </Style>
+        <Style Selector="Button.overwrite">
+            <Setter Property="Background" Value="#1DB954"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.overwrite:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#2c2c2c"/>
+            <Setter Property="Foreground" Value="#777"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid Margin="16" RowDefinitions="Auto,*,Auto">
+
+        <TextBlock Grid.Row="0"
+                   Text="This song already has one or more saved lightmaps. Choose one to overwrite, or save this as a new lightmap."
+                   Foreground="White"
+                   FontSize="13"
+                   Margin="0,0,0,12"
+                   TextWrapping="Wrap"/>
+
+        <Border Grid.Row="1" Background="#1b1b1b" CornerRadius="6" Padding="10">
+            <ListBox x:Name="CandidatesListBox"
+                     SelectionMode="Single"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     SelectionChanged="CandidatesListBox_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:TrackItemUI">
+                        <Border x:Name="RowBorder"
+                                Background="{Binding Color, Converter={StaticResource DarkenConverter}}"
+                                CornerRadius="8"
+                                Padding="14,8"
+                                Margin="0,0,0,6"
+                                Height="56"
+                                BorderThickness="1.5"
+                                BorderBrush="{Binding Color}">
+                            <StackPanel Spacing="4" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding TrackName}"
+                                           Foreground="White"
+                                           FontSize="15"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Subtitle}"
+                                           Foreground="#9a9a9a"
+                                           FontSize="12"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,12,0,0">
+            <Button Content="Cancel" Click="Cancel_Click"/>
+            <Button Content="Save as New" Click="SaveAsNew_Click"/>
+            <Button x:Name="OverwriteButton"
+                    Classes="overwrite"
+                    Content="Overwrite Selected"
+                    IsEnabled="False"
+                    Click="Overwrite_Click"/>
+        </StackPanel>
+    </Grid>
+
+</Window>

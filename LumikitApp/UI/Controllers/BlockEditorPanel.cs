@@ -117,6 +117,7 @@ public class BlockEditorPanel
         _viewModel.BlockColorBrush       = new SolidColorBrush(block.BlockColor);
         _viewModel.SecondBlockColorBrush = new SolidColorBrush(block.SecondBlockColor);
         _viewModel.FillColorBrush        = new SolidColorBrush(block.FillColor);
+        _viewModel.StrobeColorBrush      = new SolidColorBrush(block.StrobeColor);
 
         // Load shape + texture + all modifier states at once — bypasses setter side effects
         // so saved data is restored exactly as stored.

@@ -18,6 +18,9 @@ namespace LumikitApp
         public int SecondaryEndLight { get; set; }
         public Color SecondBlockColor {get; set;}
         public Color FillColor { get; set; }
+        // Off-phase colour for the Strobe modifier. Independent of SecondBlockColor (ChangeColor)
+        // and FillColor — a transparent/unset value renders black → classic on/off strobe.
+        public Color StrobeColor { get; set; }
         public int Intensity { get; set; }
         public Color BlockColor { get; set; }
         public List<EffectData> BlockEffects { get; set; } = new List<EffectData> { new EffectData { Type = Effect.None } };
@@ -134,6 +137,7 @@ namespace LumikitApp
             BlockColor = blockToMimic.BlockColor;
             SecondBlockColor = blockToMimic.SecondBlockColor;
             FillColor = blockToMimic.FillColor;
+            StrobeColor = blockToMimic.StrobeColor;
             BlockEffects = blockToMimic.BlockEffects.Select(e => e.DeepCopy()).ToList();
             SecondaryStartLight = blockToMimic.SecondaryStartLight;
             SecondaryEndLight = blockToMimic.SecondaryEndLight;

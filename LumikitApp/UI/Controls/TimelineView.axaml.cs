@@ -90,6 +90,7 @@ public partial class TimelineView : UserControl
             Color = b.BlockColor.ToString(),
             SecondColor = b.SecondBlockColor.ToString(),
             FillColor = b.FillColor.ToString(),
+            StrobeColor = b.StrobeColor.ToString(),
             StartLight = b.StartLight,
             EndLight = b.EndLight,
             SecondaryDualInput1 = b.SecondaryStartLight,
@@ -102,12 +103,16 @@ public partial class TimelineView : UserControl
     /// <summary>Pushes a snapshot of the current state onto the undo history.</summary>
     public void PushUndo() => PushUndo(CaptureState());
 
+    /// <summary>Raised whenever an edit is pushed to the undo history (i.e. the lightmap changed).</summary>
+    public event Action? EditPerformed;
+
     /// <summary>Pushes a previously-captured snapshot onto the undo history.</summary>
     public void PushUndo(List<LightBlockData> snapshot)
     {
         _undoStack.Add(snapshot);
         if (_undoStack.Count > MaxUndo)
             _undoStack.RemoveAt(0);
+        EditPerformed?.Invoke();
     }
 
     /// <summary>
@@ -459,6 +464,7 @@ public partial class TimelineView : UserControl
             block.UpdateColor(color);
             block.SecondBlockColor = Color.TryParse(data.SecondColor, out var color2) ? color2 : new Color();
             block.FillColor = Color.TryParse(data.FillColor, out var color3) ? color3 : new Color();
+            block.StrobeColor = Color.TryParse(data.StrobeColor, out var color4) ? color4 : new Color();
             block.StartLight = data.StartLight;
             block.EndLight = data.EndLight;
             block.BlockEffects = data.BlockEffects ?? new List<EffectData> { new EffectData { Type = LightBlock.Effect.None } };

@@ -33,6 +33,7 @@ public class BlockEditorViewModel : INotifyPropertyChanged
     private IBrush _blockColorBrush       = Brushes.BlueViolet;
     private IBrush _secondBlockColorBrush = Brushes.Transparent;
     private IBrush _fillColorBrush        = Brushes.Transparent;
+    private IBrush _strobeColorBrush      = Brushes.Transparent;
 
     // ── Shape selection ───────────────────────────────────────────────────────
     public LightBlock.Effect? SelectedShape
@@ -94,7 +95,7 @@ public class BlockEditorViewModel : INotifyPropertyChanged
     // ── Modifier checkboxes ───────────────────────────────────────────────────
     public bool? FadeIn  { get => _fadeIn;  set { _fadeIn  = value; Notify(); } }
     public bool? FadeOut { get => _fadeOut; set { _fadeOut = value; Notify(); } }
-    public bool? Strobe  { get => _strobe;  set { _strobe  = value; Notify(); } }
+    public bool? Strobe  { get => _strobe;  set { _strobe  = value; Notify(); UpdateVisibility(); } }
     public bool? Comet   { get => _comet;   set { _comet   = value; Notify(); } }
 
     public bool? Repeat
@@ -137,6 +138,7 @@ public class BlockEditorViewModel : INotifyPropertyChanged
     public bool LightRange2Visible      { get; private set; }
     public bool SecondColorPanelVisible { get; private set; }
     public bool FillColorPanelVisible   { get; private set; }
+    public bool StrobeColorPanelVisible { get; private set; }
 
     // ── Labels (computed in UpdateVisibility) ─────────────────────────────────
     public string RangeSlider1Label { get; private set; } = "Start Lightspan";
@@ -146,6 +148,7 @@ public class BlockEditorViewModel : INotifyPropertyChanged
     public IBrush BlockColorBrush       { get => _blockColorBrush;       set { _blockColorBrush       = value; Notify(); } }
     public IBrush SecondBlockColorBrush { get => _secondBlockColorBrush; set { _secondBlockColorBrush = value; Notify(); } }
     public IBrush FillColorBrush        { get => _fillColorBrush;        set { _fillColorBrush        = value; Notify(); } }
+    public IBrush StrobeColorBrush      { get => _strobeColorBrush;      set { _strobeColorBrush      = value; Notify(); } }
 
     // ── Tab ───────────────────────────────────────────────────────────────────
     public int SelectedTabIndex { get => _selectedTabIndex; set { _selectedTabIndex = value; Notify(); } }
@@ -189,6 +192,7 @@ public class BlockEditorViewModel : INotifyPropertyChanged
         LightRange2Visible      = dualRange;
         SecondColorPanelVisible = _changeColor == true;
         FillColorPanelVisible   = _fillColor == true;
+        StrobeColorPanelVisible = _strobe == true;
 
         RangeSlider1Label = combineSep ? "Lightspan 1" : "Start Lightspan";
         RangeSlider2Label = combineSep ? "Lightspan 2" : "End Lightspan";
@@ -197,6 +201,7 @@ public class BlockEditorViewModel : INotifyPropertyChanged
         Notify(nameof(LightRange2Visible));
         Notify(nameof(SecondColorPanelVisible));
         Notify(nameof(FillColorPanelVisible));
+        Notify(nameof(StrobeColorPanelVisible));
         Notify(nameof(RangeSlider1Label));
         Notify(nameof(RangeSlider2Label));
     }

@@ -64,6 +64,10 @@
             
             //Current track data for accurate lightmap/audio matching logic
             private string currentGUID = Guid.Empty.ToString();
+
+            // True once the loaded lightmap has unsaved edits; gates track switching so the user
+            // is prompted to save before moving on. Cleared on load and on a successful save.
+            private bool _lightmapDirty;
             
             //Lists to store both local track UI items and database track ui items
             private List<TrackItemUI> _allLocalTrackItems = new();
@@ -73,6 +77,7 @@
             private Canvas _blockColorDropBox;
             private Canvas _secondColorDropBox;
             private Canvas _fillColorDropBox;
+            private Canvas _strobeColorDropBox;
             private TextBox _bpmInput;
             
             private TextBlock _errorText;
@@ -126,6 +131,7 @@
                 _blockColorDropBox = this.FindControl<Canvas>("ColorDropBox");
                 _secondColorDropBox = this.FindControl<Canvas>("SecondColorDropBox");
                 _fillColorDropBox = this.FindControl<Canvas>("FillColorDropBox");
+                _strobeColorDropBox = this.FindControl<Canvas>("StrobeColorDropBox");
                 _blockEditor = new BlockEditorPanel(_viewModel, Timeline);
                 _serialPanel = serialPanel;
                 _serialPanel.ErrorOccurred           += UpdateErrorText;
@@ -228,61 +234,11 @@
                 _blockEditor.Hide();
                 
                 this.FindControl<Button>("SaveTrackDataButton").Click += async (_, _) =>
-                {
-                    var newPopUp = new NewTrackPopup();
+                    await ShowSaveLightmapDialogAsync();
 
-                    // 'this' is the parent window; ShowDialog makes it modal
-                    bool? result = await newPopUp.ShowDialog<bool?>(this);
-
-                    if (result == true)
-                    {
-                        string title = newPopUp.TitleText;
-                        string authors = newPopUp.AuthorText;
-
-                        var track = await _musicProvider.GetCurrentlyPlayingTrackAsync();
-                        if (currentGUID == Guid.Empty.ToString())
-                        {
-                            currentGUID = Guid.NewGuid().ToString();
-                        }
-                        Console.WriteLine("Saving " + title +" lightmap with filepath: " + _musicProvider.currentlyPlayingPath);
-                        Timeline.ReorderLightBlocks();
-                        // Preserve any previously linked sources (e.g. a Spotify link added to a local track)
-                        var existingSources = _jsonDataHandler.GetTrack(currentGUID)?.Sources
-                                             ?? new Dictionary<string, string>();
-
-                        var trackData = new TrackData
-                        {
-                            filePath = _musicProvider.currentlyPlayingPath,
-                            _trackName = title,
-                            author = authors,
-                            trackGUID = Guid.Parse(currentGUID),
-                            provider = _musicProvider.providerName.ToString(),
-                            Sources = existingSources,
-                            _BPM = double.Parse(_bpmInput.Text),
-                            _lightBlocks = Timeline.LightBlocks
-                                .Select(b => new LightBlockData
-                                {
-                                    X = Canvas.GetLeft(b.Container) / Timeline.SlotWidth,
-                                    Width = b.Container.Width / Timeline.SlotWidth,
-                                    Color = (b.BlockColor).ToString(),
-                                    SecondColor = (b.SecondBlockColor).ToString(),
-                                    FillColor = (b.FillColor).ToString(),
-                                    StartLight = b.StartLight,
-                                    EndLight = b.EndLight,
-                                    SecondaryDualInput2 = b.SecondaryEndLight,
-                                    SecondaryDualInput1 = b.SecondaryStartLight,
-                                    BlockEffects = b.BlockEffects,
-                                    LightIntensity = b.Intensity
-                                })
-                                .ToList()
-
-                        };
-                        trackData.SetSource(_musicProvider.providerName, _musicProvider.currentlyPlayingPath);
-                        _jsonDataHandler
-                            .SaveTrack(
-                                trackData);
-                    }
-                };
+                // Any edit pushed to the timeline's undo history marks the lightmap dirty, so a
+                // track switch (UI or queue) knows to prompt for a save first.
+                Timeline.EditPerformed += () => _lightmapDirty = true;
 
                                 
                 
@@ -392,6 +348,112 @@
                 
             }
 
+            /// <summary>
+            /// Shows the save-lightmap flow (overwrite an existing lightmap for this song, or save
+            /// as new) and writes the current timeline to disk. Returns true if a save completed,
+            /// false if the user cancelled. Shared by the Save button and the pre-switch prompt.
+            /// </summary>
+            private async Task<bool> ShowSaveLightmapDialogAsync()
+            {
+                var playbackId = _musicProvider.currentlyPlayingPath;
+
+                // Other local lightmaps already saved for this exact song (same provider source) —
+                // let the user pick one to overwrite instead of silently clobbering whatever
+                // currentGUID happens to still point at.
+                var candidates = _jsonDataHandler.GetAllTracks()
+                    .Where(t => t.GetSource(_musicProvider.providerName) == playbackId)
+                    .ToList();
+
+                Guid targetGuid;
+                string title;
+                string authors;
+
+                if (candidates.Count > 0)
+                {
+                    var candidateItems = candidates.Select(t => new TrackItemUI
+                    {
+                        TrackId = t.trackGUID.ToString(),
+                        TrackName = t._trackName,
+                        Subtitle = t.author,
+                        Color = new Avalonia.Media.SolidColorBrush(_musicProvider.ProviderColor)
+                    }).ToList();
+
+                    var picker = new TrackSaveTargetWindow(candidateItems, currentGUID);
+                    var choice = await picker.ShowDialog<Guid?>(this);
+                    if (choice == null) return false; // cancelled
+
+                    if (choice.Value == Guid.Empty)
+                    {
+                        // Save as new → prompt for a fresh title/author.
+                        var newPopUp = new NewTrackPopup();
+                        if (await newPopUp.ShowDialog<bool?>(this) != true) return false;
+                        title = newPopUp.TitleText;
+                        authors = newPopUp.AuthorText;
+                        targetGuid = Guid.NewGuid();
+                    }
+                    else
+                    {
+                        // Overwrite an existing lightmap → keep its title/author, no prompt.
+                        targetGuid = choice.Value;
+                        var existing = _jsonDataHandler.GetTrack(targetGuid.ToString());
+                        title = existing?._trackName ?? "";
+                        authors = existing?.author ?? "";
+                    }
+                }
+                else
+                {
+                    // No existing lightmap for this song → inherently new, prompt for title/author.
+                    var newPopUp = new NewTrackPopup();
+                    if (await newPopUp.ShowDialog<bool?>(this) != true) return false;
+                    title = newPopUp.TitleText;
+                    authors = newPopUp.AuthorText;
+                    targetGuid = currentGUID != Guid.Empty.ToString() ? Guid.Parse(currentGUID) : Guid.NewGuid();
+                }
+
+                currentGUID = targetGuid.ToString();
+
+                Console.WriteLine("Saving " + title +" lightmap with filepath: " + _musicProvider.currentlyPlayingPath);
+                Timeline.ReorderLightBlocks();
+                // Preserve any previously linked sources (e.g. a Spotify link added to a local track)
+                var existingSources = _jsonDataHandler.GetTrack(currentGUID)?.Sources
+                                     ?? new Dictionary<string, string>();
+
+                var trackData = new TrackData
+                {
+                    filePath = _musicProvider.currentlyPlayingPath,
+                    _trackName = title,
+                    author = authors,
+                    trackGUID = targetGuid,
+                    provider = _musicProvider.providerName.ToString(),
+                    Sources = existingSources,
+                    _BPM = double.Parse(_bpmInput.Text),
+                    _lightBlocks = Timeline.LightBlocks
+                        .Select(b => new LightBlockData
+                        {
+                            X = Canvas.GetLeft(b.Container) / Timeline.SlotWidth,
+                            Width = b.Container.Width / Timeline.SlotWidth,
+                            Color = (b.BlockColor).ToString(),
+                            SecondColor = (b.SecondBlockColor).ToString(),
+                            FillColor = (b.FillColor).ToString(),
+                            StrobeColor = (b.StrobeColor).ToString(),
+                            StartLight = b.StartLight,
+                            EndLight = b.EndLight,
+                            SecondaryDualInput2 = b.SecondaryEndLight,
+                            SecondaryDualInput1 = b.SecondaryStartLight,
+                            BlockEffects = b.BlockEffects,
+                            LightIntensity = b.Intensity
+                        })
+                        .ToList()
+                };
+                trackData.SetSource(_musicProvider.providerName, _musicProvider.currentlyPlayingPath);
+                _jsonDataHandler.SaveTrack(trackData);
+
+                _lightmapDirty = false;
+                _allLocalTrackItems = BuildLocalTrackItems();
+                LocalTracksListBox.ItemsSource = _allLocalTrackItems;
+                return true;
+            }
+
             public async void UpdateCurrentTrack(bool startNewLightShow, Guid trackGUID)
             {
                 currentGUID=trackGUID.ToString();
@@ -421,6 +483,9 @@
                     _bpmInput.Text = "0";
                     Timeline.DrawTimelineSlots();
                 }
+
+                // Freshly loaded lightmap — no unsaved edits yet.
+                _lightmapDirty = false;
             }
             
             /// <summary>
@@ -558,9 +623,11 @@
                     DragDrop.SetAllowDrop(_blockColorDropBox, true);
                     DragDrop.SetAllowDrop(_secondColorDropBox, true);
                     DragDrop.SetAllowDrop(_fillColorDropBox, true);
+                    DragDrop.SetAllowDrop(_strobeColorDropBox, true);
                     _blockColorDropBox.AddHandler(DragDrop.DropEvent, OnColorCanvasDrop, RoutingStrategies.Bubble);
                     _secondColorDropBox.AddHandler(DragDrop.DropEvent, OnColorCanvasDrop, RoutingStrategies.Bubble);
                     _fillColorDropBox.AddHandler(DragDrop.DropEvent, OnColorCanvasDrop, RoutingStrategies.Bubble);
+                    _strobeColorDropBox.AddHandler(DragDrop.DropEvent, OnColorCanvasDrop, RoutingStrategies.Bubble);
                 }
 
             
@@ -609,6 +676,14 @@
                     foreach (var block in Timeline.SelectedBlocks ?? new List<LightBlock>())
                         block.FillColor = color;
                     _viewModel.FillColorBrush = new SolidColorBrush(color);
+                    return;
+                }
+
+                if (ReferenceEquals(sender, _strobeColorDropBox))
+                {
+                    foreach (var block in Timeline.SelectedBlocks ?? new List<LightBlock>())
+                        block.StrobeColor = color;
+                    _viewModel.StrobeColorBrush = new SolidColorBrush(color);
                     return;
                 }
             }
@@ -933,6 +1008,19 @@
             /// </summary>
             private async Task<bool> PlayTrackByIdAsync(string trackId)
             {
+                // If the current lightmap has unsaved edits, postpone the switch and ask what to do.
+                if (_lightmapDirty)
+                {
+                    // Nullable: closing via the title-bar X yields null, treated as Cancel.
+                    var choice = await new UnsavedChangesPrompt().ShowDialog<UnsavedChoice?>(this);
+                    if (choice is null or UnsavedChoice.Cancel)
+                        return false; // abort the switch — stay on the edited lightmap
+                    if (choice == UnsavedChoice.Save && !await ShowSaveLightmapDialogAsync())
+                        return false; // backed out of the save target picker — abort the switch
+                    // Save (completed) or Don't Save → discard the dirty state and switch.
+                    _lightmapDirty = false;
+                }
+
                 var track = _jsonDataHandler.GetTrack(trackId);
                 if (track == null)
                 {
@@ -991,9 +1079,11 @@
                 {
                     if (_queue.Count > 0)
                     {
+                        // Peek, not pop: only consume the queue entry once the switch actually
+                        // happens. If a pending-save prompt is cancelled the track stays queued.
                         var next = _queue[0];
-                        _queue.RemoveAt(0);
-                        await PlayTrackByIdAsync(next.TrackId);
+                        if (await PlayTrackByIdAsync(next.TrackId))
+                            _queue.Remove(next);
                     }
                     else
                     {

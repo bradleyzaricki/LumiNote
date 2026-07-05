@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LumikitApp.UnsavedChangesPrompt"
+        Width="420"
+        Height="200"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Title="Unsaved Changes"
+        Background="#2E2E2E">
+
+    <Window.Styles>
+        <Style Selector="Button">
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        <Style Selector="Button.save">
+            <Setter Property="Background" Value="#1DB954"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.discard">
+            <Setter Property="Foreground" Value="#ff6b6b"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+
+        <TextBlock Grid.Row="0"
+                   Text="Unsaved lightmap changes"
+                   FontSize="17"
+                   FontWeight="Bold"
+                   Foreground="White"/>
+
+        <TextBlock Grid.Row="1"
+                   Text="You have unsaved edits to this lightmap. Save them before switching tracks?"
+                   Foreground="#CCC"
+                   TextWrapping="Wrap"
+                   Margin="0,12,0,0"
+                   VerticalAlignment="Top"/>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10">
+            <Button Content="Cancel" Click="Cancel_Click"/>
+            <Button Classes="discard" Content="Don't Save" Click="DontSave_Click"/>
+            <Button Classes="save" Content="Save" Click="Save_Click"/>
+        </StackPanel>
+    </Grid>
+
+</Window>

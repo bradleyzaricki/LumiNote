@@ -529,7 +529,7 @@
                                               HorizontalScrollBarVisibility="Disabled">
                                 <Grid HorizontalAlignment="Stretch"
                                       VerticalAlignment="Top"
-                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                                     <!-- LIGHTSPAN -->
                                     
                                     <StackPanel  Name="LightRange" Grid.Row="0" Margin="0,10" IsVisible="{Binding LightRangeVisible}">
@@ -646,6 +646,24 @@
                                             IsVisible="True">
                                         <Border CornerRadius="8" Background="Transparent">
                                             <Canvas Name="FillColorDropBox" Background="{Binding FillColorBrush}"/>
+                                        </Border>
+                                    </Border>
+                                    </StackPanel>
+
+
+                                    <StackPanel Name="StrobeColorPanel" Grid.Row="6" Orientation="Horizontal" Margin="0,10" IsVisible="{Binding StrobeColorPanelVisible}">
+                                    <TextBlock Name="StrobeColorHeader" Text="Strobe Color:" Foreground="White" VerticalAlignment="Center" Margin="0,10,8,10"/>
+                                    <Border Name="StrobeColorFrame"
+                                            Width="200"
+                                            Height="40"
+                                            CornerRadius="8"
+                                            BorderBrush="Black"
+                                            BorderThickness="6"
+                                            ClipToBounds="True"
+                                            HorizontalAlignment="Left"
+                                            IsVisible="True">
+                                        <Border CornerRadius="8" Background="Transparent">
+                                            <Canvas Name="StrobeColorDropBox" Background="{Binding StrobeColorBrush}"/>
                                         </Border>
                                     </Border>
                                     </StackPanel>

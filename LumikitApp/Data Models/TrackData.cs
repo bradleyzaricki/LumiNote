@@ -54,6 +54,8 @@ namespace LumikitApp
         public string SecondColor { get; set; }
 
         public string FillColor { get; set; }
+
+        public string StrobeColor { get; set; }
         [System.Text.Json.Serialization.JsonConverter(typeof(EffectDataListConverter))]
         public List<EffectData> BlockEffects { get; set; }
         

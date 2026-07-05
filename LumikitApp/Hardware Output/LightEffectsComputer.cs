@@ -41,13 +41,14 @@ public class LightEffectsComputer
         bool hasFillColor        = Has(block, LightBlock.Effect.FillColor);
         bool hasComet            = Has(block, LightBlock.Effect.Comet);
 
-        // FillColor replaces "empty" (transparent) areas with a second colour instead of
-        // leaving them dark, so e.g. Strobe flickers between two colours and Travel paints
-        // the trailing gap. Applied as a final pass below.
+        // FillColor fills "empty" (transparent) areas of the shape with a colour instead of
+        // leaving them dark (e.g. Travel's trailing gap). Applied as a final pass below.
         Color fillColor = block.FillColor;
 
-        // During Strobe's off half-period the whole strip would normally go dark. With a fill
-        // colour that off-phase becomes a flat fill frame instead of nothing.
+        // Strobe's off half-period: the lit shape flashes to the strobe's own colour
+        // (StrobeColor, applied via the baseColor override below) rather than the primary.
+        // Independent of ChangeColor's SecondBlockColor and of FillColor — fill is now purely
+        // for empty shape pixels.
         bool strobeOff = false;
 
         if (hasStrobe)
@@ -73,14 +74,9 @@ public class LightEffectsComputer
                 Math.Round(1000.0 / (flashesPerSecond * 2.0) / serialIntervalMs) * serialIntervalMs);
 
             long halfPeriods = (long)(elapsedMsLocal / snappedHalfPeriodMs);
-            if (halfPeriods % 2L == 1L)
-            {
-                // No fill colour → classic on/off strobe (dark off-phase).
-                if (!hasFillColor) return null;
-                // With a fill colour the off-phase is rendered as a flat fill frame: clear the
-                // primary pattern so the fill pass below paints the whole strip.
-                strobeOff = true;
-            }
+            // Odd half-period = off-phase → flash to the second strobe colour. A transparent/
+            // unset second colour renders as black, giving the classic on/off strobe.
+            strobeOff = halfPeriods % 2L == 1L;
         }
         if (hasFadeOut)
         {
@@ -106,6 +102,11 @@ public class LightEffectsComputer
 
             baseColor = Color.FromRgb(r, g, b);
         }
+
+        // Strobe off-phase flashes the lit shape to the strobe's own colour. A transparent/
+        // unset strobe colour renders as black → the classic on/off strobe.
+        if (strobeOff)
+            baseColor = block.StrobeColor;
 
         // Comet tail requests emitted by moving shapes below. Each is (edge position, the
         // direction the tail extends: -1 left / +1 right, an optional wrap span, wrap flag).
@@ -371,10 +372,6 @@ public class LightEffectsComputer
         bool[]? fillMask = null;
         if (hasFillColor)
         {
-            // Strobe off-phase: drop the primary pattern so the whole strip becomes the fill.
-            if (strobeOff)
-                Array.Clear(stripColorsIndividual, 0, lightcount);
-
             // Paint the fill colour into every empty (transparent) pixel, leaving the lit
             // primary pattern untouched.
             fillMask = new bool[lightcount];

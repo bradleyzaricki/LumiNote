@@ -1,11 +1,14 @@
 {
-  "name": "worker1_dl",
+  "name": "luminote-backend",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
     "start": "wrangler dev"
+  },
+  "dependencies": {
+    "jose": "^5.9.6"
   },
   "devDependencies": {
     "wrangler": "^4.107.0"

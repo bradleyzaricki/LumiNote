@@ -151,26 +151,62 @@ namespace LumikitApp
         }
         
         /// <summary>
-        /// Get all tracks from the local storage and returns them as a list of TrackItemUI elements
+        /// Get all tracks from the local storage and returns them as a list of TrackItemUI elements.
+        /// `myUserId` (the signed-in Google account, or null) decides each row's library group
+        /// (Mine / Downloaded / Remixed); groups sort Mine → Remixed → Downloaded.
         /// </summary>
-        /// <returns></returns>
-        public  List<TrackItemUI> GetAllTrackItems()
+        public List<TrackItemUI> GetAllTrackItems(string? myUserId = null, string? myUserName = null)
         {
             var tracks = GetAllTracks();
 
             return tracks
                 .Where(t => t != null)
-                .Select(t => new TrackItemUI
+                .Select(t =>
                 {
-                    TrackId = t.trackGUID.ToString(),
-                    TrackName = t._trackName ?? "",
-                    Subtitle = t.author ?? "",
+                    var group = t.GetLibraryGroup(myUserId);
+                    var groupTag = group switch
+                    {
+                        LibraryGroup.Downloaded => $" • Downloaded (by {t.OwnerName ?? "unknown"})",
+                        LibraryGroup.Remixed => " • Remix",
+                        _ => ""
+                    };
+                    return new TrackItemUI
+                    {
+                        TrackId = t.trackGUID.ToString(),
+                        // Card areas: title = lightmap name; SongName/Artist/Author/Status
+                        // render in their own aligned columns (see the local list's DataTemplate).
+                        TrackName = t.DisplayName ?? "",
+                        Subtitle = (t.LightmapName != null ? $"{t._trackName} • " : "") + (t.artist ?? "") + groupTag,
+                        SongName = t._trackName ?? "",
+                        LightmapName = t.LightmapName,
+                        // Artist = the song's artist (always the typed field).
+                        Artist = t.artist ?? "",
+                        // Author = the Google account that created it. Downloaded maps show the
+                        // uploader; your own maps show your name once uploaded (OwnerName), or
+                        // your current sign-in while still local-only. Empty if never signed in.
+                        Author = group == LibraryGroup.Downloaded
+                            ? (t.OwnerName ?? "unknown")
+                            : (t.OwnerName ?? myUserName ?? ""),
+                        IsMine = group != LibraryGroup.Downloaded,
+                        Status = group == LibraryGroup.Remixed ? "Remix" : "",
 
-                    Color = t.HasSource(_provider.providerName)
-                        ? new SolidColorBrush(_provider.ProviderColor)
-                        : Brushes.Gray,
+                        Group = group,
+                        OwnerId = t.OwnerId,
+                        CloudLightmapId = t.CloudLightmapId,
+                        CloudVersion = t.CloudVersion,
 
-                    SourceBadges = TrackItemUI.BuildBadges(t.HasSource)
+                        Color = t.HasSource(_provider.providerName)
+                            ? new SolidColorBrush(_provider.ProviderColor)
+                            : Brushes.Gray,
+
+                        SourceBadges = TrackItemUI.BuildBadges(t.HasSource)
+                    };
+                })
+                .OrderBy(i => i.Group switch
+                {
+                    LibraryGroup.Mine => 0,
+                    LibraryGroup.Remixed => 1,
+                    _ => 2
                 })
                 .ToList();
         }

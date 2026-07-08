@@ -49,7 +49,9 @@ namespace LumikitApp
             services.AddSingleton(router);
             services.AddSingleton<IMusicProvider>(router);
             services.AddSingleton<IPlaybackHandler>(router);
+            services.AddSingleton<IAppLog, AppLog>();
             services.AddSingleton<JsonDataHandler>();
+            services.AddSingleton<GoogleAuthService>();
             services.AddSingleton<DatabaseAccess>();
             services.AddTransient<BlockEditorViewModel>();
             services.AddSingleton<ISerialPanel, SerialPanel>();

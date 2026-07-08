@@ -52,6 +52,10 @@
             private JsonDataHandler _jsonDataHandler;
             
             private DatabaseAccess _databaseAccess;
+            private GoogleAuthService _googleAuth;
+
+            // lightmap_id → version from the last cloud refresh; drives "update available".
+            private Dictionary<string, int> _cloudVersions = new();
             /// <summary> The serial output for lighting communications  </summary>
             private ISerialPanel _serialPanel;
             
@@ -80,8 +84,45 @@
             private Canvas _strobeColorDropBox;
             private TextBox _bpmInput;
             
-            private TextBlock _errorText;
-            private TextBlock _hardwareConnectionText; 
+            // Debug console overlay (see ErrorConsole in the axaml): renders IAppLog entries;
+            // the pill button appears/counts only for Error-level entries while it's closed.
+            private IAppLog _log;
+            private Border _errorConsole;
+            private Button _viewErrorsButton;
+            private ScrollViewer _consoleScroll;
+            private readonly ObservableCollection<ConsoleRow> _consoleRows = new();
+            private int _unseenErrors;
+
+            /// <summary>Presentation row for one AppLogEntry: preformatted text + severity color.</summary>
+            private sealed class ConsoleRow
+            {
+                private static readonly IBrush InfoBrush  = new SolidColorBrush(Color.Parse("#B8B8B8"));
+                private static readonly IBrush WarnBrush  = new SolidColorBrush(Color.Parse("#E5C07B"));
+                private static readonly IBrush ErrorBrush = new SolidColorBrush(Color.Parse("#FF6B6B"));
+
+                public string Text { get; }
+                public IBrush Brush { get; }
+
+                public ConsoleRow(AppLogEntry entry)
+                {
+                    var level = entry.Level switch
+                    {
+                        AppLogLevel.Error => "ERR",
+                        AppLogLevel.Warning => "WRN",
+                        _ => "INF"
+                    };
+                    var source = entry.Source == "App" ? "" : $" [{entry.Source}]";
+                    Text = $"[{entry.Timestamp:HH:mm:ss} {level}]{source} {entry.Message}";
+                    Brush = entry.Level switch
+                    {
+                        AppLogLevel.Error => ErrorBrush,
+                        AppLogLevel.Warning => WarnBrush,
+                        _ => InfoBrush
+                    };
+                }
+            }
+
+            private TextBlock _hardwareConnectionText;
             
             /// <summary>
             /// implemented playback handler to control implemented music provider
@@ -114,27 +155,35 @@
             {
                 InitializeComponent();
             }
-            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel, ISerialPanel serialPanel, OffsetTapper offsetTapper, RoutingMusicSession musicRouter)
+            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel, ISerialPanel serialPanel, OffsetTapper offsetTapper, RoutingMusicSession musicRouter, GoogleAuthService googleAuth, IAppLog appLog)
             {
                 _musicProvider = provider;
                 _playbackHandler = playbackHandler;
                 _musicRouter = musicRouter;
                 _jsonDataHandler = jsonDataHandler;
                 _databaseAccess = databaseAccess;
+                _googleAuth = googleAuth;
                 _viewModel = blockEditorViewModel;
                 _offsetTapper = offsetTapper;
+                _log = appLog;
                 InitializeComponent();
                 DataContext = _viewModel;
 
-                _errorText = this.FindControl<TextBlock>("ErrorText");
+                _errorConsole = this.FindControl<Border>("ErrorConsole");
+                _viewErrorsButton = this.FindControl<Button>("ViewErrorsButton");
+                _consoleScroll = this.FindControl<ScrollViewer>("ConsoleScroll");
+                this.FindControl<ItemsControl>("ConsoleItems").ItemsSource = _consoleRows;
+                foreach (var entry in _log.Snapshot()) _consoleRows.Add(new ConsoleRow(entry)); // entries logged before the window existed
+                _log.EntryAdded += OnLogEntry;
                 _hardwareConnectionText = this.FindControl<TextBlock>("HardwareConnectionText");
                 _blockColorDropBox = this.FindControl<Canvas>("ColorDropBox");
                 _secondColorDropBox = this.FindControl<Canvas>("SecondColorDropBox");
                 _fillColorDropBox = this.FindControl<Canvas>("FillColorDropBox");
                 _strobeColorDropBox = this.FindControl<Canvas>("StrobeColorDropBox");
+                UpdateGoogleSignInButton(); // reflect a persisted sign-in from a previous run
                 _blockEditor = new BlockEditorPanel(_viewModel, Timeline);
                 _serialPanel = serialPanel;
-                _serialPanel.ErrorOccurred           += UpdateErrorText;
+                _serialPanel.ErrorOccurred           += msg => _log.Error(msg, "Serial");
                 _serialPanel.ConnectionStatusChanged += UpdateHardwareConnectionText;
 
                 _viewModel.PreviewRequested += () =>
@@ -203,6 +252,11 @@
                         StopPreview();
                         _blockEditor.Hide();
                     }
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.OemTilde && !focused)
+                {
+                    SetErrorConsoleVisible(!_errorConsole.IsVisible);
                     e.Handled = true;
                 }
             }
@@ -319,7 +373,7 @@
                     {
                         if (_queue.Count == 0)
                         {
-                            UpdateErrorText("Queue is empty — add tracks with the ⤒/⤓ buttons.");
+                            _log.Warn("Queue is empty — add tracks with the ⤒/⤓ buttons.");
                             return;
                         }
                         await AdvanceQueueAsync();
@@ -366,15 +420,30 @@
 
                 Guid targetGuid;
                 string title;
-                string authors;
+                string artists;
+                string? lightmapName;
+
+                // Prompt for names. Track name/author autofill from Spotify's metadata when
+                // that's the active source; local files leave them for the user to type.
+                async Task<(string lightmap, string title, string artists)?> PromptForNamesAsync()
+                {
+                    var popup = new NewTrackPopup();
+                    if (_musicProvider.providerName == ProviderType.Spotify)
+                    {
+                        var nowPlaying = await _musicProvider.GetCurrentlyPlayingTrackAsync();
+                        popup.Prefill(null, nowPlaying?.trackName, nowPlaying?.artistName);
+                    }
+                    if (await popup.ShowDialog<bool?>(this) != true) return null;
+                    return (popup.LightmapText, popup.TitleText, popup.ArtistText);
+                }
 
                 if (candidates.Count > 0)
                 {
                     var candidateItems = candidates.Select(t => new TrackItemUI
                     {
                         TrackId = t.trackGUID.ToString(),
-                        TrackName = t._trackName,
-                        Subtitle = t.author,
+                        TrackName = t.DisplayName,
+                        Subtitle = t.LightmapName != null ? $"{t._trackName} • {t.artist}" : t.artist,
                         Color = new Avalonia.Media.SolidColorBrush(_musicProvider.ProviderColor)
                     }).ToList();
 
@@ -384,30 +453,40 @@
 
                     if (choice.Value == Guid.Empty)
                     {
-                        // Save as new → prompt for a fresh title/author.
-                        var newPopUp = new NewTrackPopup();
-                        if (await newPopUp.ShowDialog<bool?>(this) != true) return false;
-                        title = newPopUp.TitleText;
-                        authors = newPopUp.AuthorText;
+                        // Save as new → prompt for fresh names.
+                        var names = await PromptForNamesAsync();
+                        if (names == null) return false;
+                        (lightmapName, title, artists) = names.Value;
                         targetGuid = Guid.NewGuid();
                     }
                     else
                     {
-                        // Overwrite an existing lightmap → keep its title/author, no prompt.
+                        // Overwrite an existing lightmap → keep its names, no prompt.
                         targetGuid = choice.Value;
                         var existing = _jsonDataHandler.GetTrack(targetGuid.ToString());
+                        lightmapName = existing?.LightmapName;
                         title = existing?._trackName ?? "";
-                        authors = existing?.author ?? "";
+                        artists = existing?.artist ?? "";
                     }
                 }
                 else
                 {
-                    // No existing lightmap for this song → inherently new, prompt for title/author.
-                    var newPopUp = new NewTrackPopup();
-                    if (await newPopUp.ShowDialog<bool?>(this) != true) return false;
-                    title = newPopUp.TitleText;
-                    authors = newPopUp.AuthorText;
+                    // No existing lightmap for this song → inherently new, prompt for names.
+                    var names = await PromptForNamesAsync();
+                    if (names == null) return false;
+                    (lightmapName, title, artists) = names.Value;
                     targetGuid = currentGUID != Guid.Empty.ToString() ? Guid.Parse(currentGUID) : Guid.NewGuid();
+                }
+
+                // Saving over someone else's downloaded lightmap forks it into a remix you
+                // own (move, not copy — mirrors the server's reupload rule): new identity,
+                // provenance in ParentLightmapId, and the downloaded original file removed.
+                var prior = _jsonDataHandler.GetTrack(targetGuid.ToString());
+                bool foreignOwned = prior?.OwnerId != null && prior.OwnerId != _googleAuth.UserId;
+                if (foreignOwned)
+                {
+                    _jsonDataHandler.DeleteTrack(targetGuid.ToString());
+                    targetGuid = Guid.NewGuid();
                 }
 
                 currentGUID = targetGuid.ToString();
@@ -415,17 +494,28 @@
                 Console.WriteLine("Saving " + title +" lightmap with filepath: " + _musicProvider.currentlyPlayingPath);
                 Timeline.ReorderLightBlocks();
                 // Preserve any previously linked sources (e.g. a Spotify link added to a local track)
-                var existingSources = _jsonDataHandler.GetTrack(currentGUID)?.Sources
+                var existingSources = prior?.Sources
                                      ?? new Dictionary<string, string>();
 
                 var trackData = new TrackData
                 {
                     filePath = _musicProvider.currentlyPlayingPath,
                     _trackName = title,
-                    author = authors,
+                    LightmapName = string.IsNullOrWhiteSpace(lightmapName) ? null : lightmapName,
+                    artist = artists,
                     trackGUID = targetGuid,
                     provider = _musicProvider.providerName.ToString(),
                     Sources = existingSources,
+
+                    // Cloud provenance: a fork starts unsynced with a pointer to its parent;
+                    // otherwise the prior copy's cloud identity carries through unchanged.
+                    CloudLightmapId  = foreignOwned ? null : prior?.CloudLightmapId,
+                    ParentLightmapId = foreignOwned
+                        ? (prior?.CloudLightmapId ?? prior?.trackGUID.ToString())
+                        : prior?.ParentLightmapId,
+                    OwnerId     = foreignOwned ? null : prior?.OwnerId,
+                    OwnerName   = foreignOwned ? null : prior?.OwnerName,
+                    CloudVersion = foreignOwned ? 0 : prior?.CloudVersion ?? 0,
                     _BPM = double.Parse(_bpmInput.Text),
                     _lightBlocks = Timeline.LightBlocks
                         .Select(b => new LightBlockData
@@ -510,18 +600,58 @@
             }
 
             /// <summary>
-            /// Frontend UI text to signal program did not behave as expected
+            /// Renders a new IAppLog entry into the overlay console. Called from whatever
+            /// thread logged, so it marshals itself to the UI thread. Only Error-level
+            /// entries surface the View Errors pill while the console is closed.
             /// </summary>
-            /// <param name="error"></param>
-            public void UpdateErrorText(string error)
+            private void OnLogEntry(AppLogEntry entry)
             {
-                if (_errorText == null) return; //lost cause at this point
-                
-                if (!_errorText.IsVisible)
+                if (!Dispatcher.UIThread.CheckAccess())
                 {
-                    _errorText.IsVisible = true;
+                    Dispatcher.UIThread.Post(() => OnLogEntry(entry));
+                    return;
                 }
-                _errorText.Text = error;
+
+                _consoleRows.Add(new ConsoleRow(entry));
+                while (_consoleRows.Count > AppLog.MaxEntries) _consoleRows.RemoveAt(0);
+
+                if (_errorConsole.IsVisible)
+                {
+                    // Post at Background priority so the new row has been measured first.
+                    Dispatcher.UIThread.Post(() => _consoleScroll.ScrollToEnd(), DispatcherPriority.Background);
+                }
+                else if (entry.Level == AppLogLevel.Error)
+                {
+                    _unseenErrors++;
+                    _viewErrorsButton.Content = _unseenErrors > 1 ? $"⚠ View Errors ({_unseenErrors})" : "⚠ View Errors";
+                    _viewErrorsButton.IsVisible = true;
+                }
+            }
+
+            private void SetErrorConsoleVisible(bool visible)
+            {
+                _errorConsole.IsVisible = visible;
+                if (!visible) return;
+
+                // Opening the console marks all errors as seen; the pill is purely a
+                // notification (the ≡ Console button is the persistent way back in).
+                _unseenErrors = 0;
+                _viewErrorsButton.Content = "⚠ View Errors";
+                _viewErrorsButton.IsVisible = false;
+                Dispatcher.UIThread.Post(() => _consoleScroll.ScrollToEnd(), DispatcherPriority.Background);
+            }
+
+            private void ToggleErrorConsole_Click(object? sender, RoutedEventArgs e) =>
+                SetErrorConsoleVisible(!_errorConsole.IsVisible);
+
+            private void CloseErrorConsole_Click(object? sender, RoutedEventArgs e) =>
+                SetErrorConsoleVisible(false);
+
+            private void ClearErrorConsole_Click(object? sender, RoutedEventArgs e)
+            {
+                _log.Clear();
+                _consoleRows.Clear();
+                _unseenErrors = 0;
             }
             
             /// <summary>
@@ -915,9 +1045,19 @@
             /// </summary>
             private List<TrackItemUI> BuildLocalTrackItems()
             {
-                var items = _jsonDataHandler.GetAllTrackItems();
+                // Grouping (Mine / Remixed / Downloaded) depends on who's signed in.
+                var items = _jsonDataHandler.GetAllTrackItems(_googleAuth.UserId, _googleAuth.UserName ?? _googleAuth.Email);
                 foreach (var item in items)
                 {
+                    // Downloaded/synced tracks that fell behind the cloud get a badge.
+                    if (item.CloudLightmapId != null
+                        && _cloudVersions.TryGetValue(item.CloudLightmapId, out var cloudV)
+                        && cloudV > item.CloudVersion)
+                    {
+                        item.UpdateAvailable = true;
+                        item.Status = (item.Status.Length > 0 ? item.Status + " • " : "") + "⬆ Update available";
+                    }
+
                     item.LinkActions = _musicRouter.AvailableProviders
                         .Select(p => new TrackLinkAction
                         {
@@ -951,10 +1091,12 @@
             {
                 var search = LocalTrackSearchBox.Text?.ToLower() ?? "";
 
+                // One box matches lightmap name, track name, and author together.
                 var filtered = _allLocalTrackItems
                     .Where(t =>
                         (t.TrackName ?? "").ToLower().Contains(search) ||
-                        (t.Subtitle ?? "").ToLower().Contains(search))
+                        (t.SongName ?? "").ToLower().Contains(search) ||
+                        (t.Artist ?? "").ToLower().Contains(search))
                     .ToList();
 
                 LocalTracksListBox.ItemsSource = filtered;
@@ -973,18 +1115,36 @@
                 var track = _jsonDataHandler.GetTrack(item.TrackId.ToString());
                 if (track == null)
                 {
-                    UpdateErrorText($"Can't upload \"{item.TrackName}\" — no local file found.");
+                    _log.Error($"Can't upload \"{item.TrackName}\" — no local file found.");
                     return;
                 }
 
                 try
                 {
-                    await _databaseAccess.SaveTrackAsync(item.TrackId.ToString(), track);
-                    UpdateErrorText($"Uploaded \"{track._trackName}\".");
+                    // Uploading needs an account (ownership + the 4-per-song limit live server-side).
+                    if (!_googleAuth.IsSignedIn)
+                    {
+                        _log.Info("Opening Google sign-in in your browser…");
+                        if (!await _googleAuth.SignInAsync())
+                        {
+                            _log.Warn("Sign-in cancelled — uploading needs a Google account.");
+                            return;
+                        }
+                        UpdateGoogleSignInButton();
+                    }
+
+                    // Updates your own cloud copy (version bump) or creates a new
+                    // lightmap/remix; comes back with the cloud identity to persist.
+                    var updated = await _databaseAccess.UploadLightmapAsync(track);
+                    _jsonDataHandler.SaveTrack(updated);
+
+                    _allLocalTrackItems = BuildLocalTrackItems();
+                    LocalTracksListBox.ItemsSource = _allLocalTrackItems;
+                    _log.Info($"Uploaded \"{track._trackName}\" (v{updated.CloudVersion}).");
                 }
                 catch (Exception ex)
                 {
-                    UpdateErrorText($"Upload failed: {ex.Message}");
+                    _log.Error($"Upload failed: {ex.Message}");
                 }
             }
 
@@ -1024,7 +1184,7 @@
                 var track = _jsonDataHandler.GetTrack(trackId);
                 if (track == null)
                 {
-                    UpdateErrorText("Track not found in the local library.");
+                    _log.Error("Track not found in the local library.");
                     return false;
                 }
 
@@ -1050,7 +1210,7 @@
 
                 if (targetProvider == null)
                 {
-                    UpdateErrorText($"No enabled source linked for \"{track._trackName}\". Use the link buttons to add one.");
+                    _log.Warn($"No enabled source linked for \"{track._trackName}\". Use the link buttons to add one.");
                     return false;
                 }
 
@@ -1062,7 +1222,7 @@
 
                 _musicProvider.currentlyPlayingPath = track.GetSource(targetProvider.Value);
                 //Set visual information for track that is stored in json
-                _musicProvider.currentTrack = new TrackPOCO(track.trackGUID, track._trackName, track.author, null);
+                _musicProvider.currentTrack = new TrackPOCO(track.trackGUID, track._trackName, track.artist, null);
                 await _playbackHandler.PlayAsync();
                 UpdateCurrentTrack(true, track.trackGUID); // refresh on next track
 
@@ -1235,14 +1395,14 @@
             {
                 if (_musicProvider.providerName != ProviderType.Spotify)
                 {
-                    UpdateErrorText("Switch to the Spotify provider to link a Spotify track.");
+                    _log.Warn("Switch to the Spotify provider to link a Spotify track.");
                     return;
                 }
 
                 var spotifyId = _musicProvider.GetCurrentlyPlayingTrackIdAsync();
                 if (string.IsNullOrEmpty(spotifyId))
                 {
-                    UpdateErrorText("No track currently playing on Spotify.");
+                    _log.Warn("No track currently playing on Spotify.");
                     return;
                 }
 
@@ -1294,10 +1454,152 @@
             /// <param name="e"></param>
             private async void DatabaseTrack_Refresh_Click(object? sender, RoutedEventArgs e)
             {
-                _allDatabaseTrackItems = await _databaseAccess.ListTracksAsync(false);
-                DatabaseTracksListBox.ItemsSource = _allDatabaseTrackItems;
+                try
+                {
+                    _allDatabaseTrackItems = await _databaseAccess.ListTracksAsync(false);
+                    ApplyCloudView();
+
+                    // Remember each cloud lightmap's version, then rebuild the local list so
+                    // downloaded tracks that fell behind show their "update available" badge.
+                    _cloudVersions = _allDatabaseTrackItems
+                        .Where(i => !string.IsNullOrEmpty(i.TrackId))
+                        .GroupBy(i => i.TrackId)
+                        .ToDictionary(g => g.Key, g => g.Max(i => i.Version));
+
+                    _allLocalTrackItems = BuildLocalTrackItems();
+                    LocalTracksListBox.ItemsSource = _allLocalTrackItems;
+                }
+                catch (Exception ex)
+                {
+                    _log.Error($"Refresh failed: {ex.Message}");
+                }
+            }
+
+            /// <summary>
+            /// Rebuilds the cloud list from the last fetch: search filter first, then the
+            /// selected sort (usable-with-current-provider rows always sort ahead of gray ones).
+            /// </summary>
+            private void ApplyCloudView()
+            {
+                if (DatabaseTracksListBox == null) return; // fired during XAML load
+
+                var search = this.FindControl<TextBox>("CloudSearchBox")?.Text?.Trim().ToLowerInvariant() ?? "";
+                IEnumerable<TrackItemUI> view = _allDatabaseTrackItems;
+
+                if (search.Length > 0)
+                    view = view.Where(t =>
+                        (t.TrackName ?? "").ToLowerInvariant().Contains(search) ||
+                        (t.SongName ?? "").ToLowerInvariant().Contains(search) ||
+                        (t.Subtitle ?? "").ToLowerInvariant().Contains(search));
+
+                var usableFirst = view.OrderByDescending(t => t.Usable);
+                view = (this.FindControl<ComboBox>("CloudSortCombo")?.SelectedIndex ?? 0) switch
+                {
+                    1 => usableFirst.ThenBy(t => t.LightmapName ?? t.SongName, StringComparer.OrdinalIgnoreCase),
+                    2 => usableFirst.ThenBy(t => t.OwnerName, StringComparer.OrdinalIgnoreCase),
+                    3 => usableFirst.ThenByDescending(t => t.Likes),
+                    _ => usableFirst.ThenBy(t => t.SongName, StringComparer.OrdinalIgnoreCase)
+                };
+
+                DatabaseTracksListBox.ItemsSource = view.ToList();
+            }
+
+            private void CloudSearchBox_TextChanged(object? sender, TextChangedEventArgs e) => ApplyCloudView();
+            private void CloudSort_Changed(object? sender, SelectionChangedEventArgs e) => ApplyCloudView();
+
+            /// <summary>Copy a cloud lightmap's ID so it can be sent to a friend (→ Get by ID).</summary>
+            private async void DatabaseTrack_CopyId_Click(object? sender, RoutedEventArgs e)
+            {
+                if (sender is not Control c || c.DataContext is not TrackItemUI item) return;
+
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard == null) return;
+
+                await clipboard.SetTextAsync(item.TrackId);
+                _log.Info($"Copied the lightmap ID for \"{item.TrackName}\" — send it to a friend to share.");
+            }
+
+            /// <summary>
+            /// Delete your own lightmap from the shared cloud library (button only shows on
+            /// rows you own; the Worker enforces ownership regardless). The local copy, if
+            /// any, is untouched — it just becomes local-only.
+            /// </summary>
+            private async void DatabaseTrack_Delete_Click(object? sender, RoutedEventArgs e)
+            {
+                if (sender is not Control c || c.DataContext is not TrackItemUI item) return;
+
+                try
+                {
+                    await _databaseAccess.DeleteLightmapAsync(item.TrackId);
+
+                    _allDatabaseTrackItems.Remove(item);
+                    ApplyCloudView();
+                    _log.Info($"Deleted \"{item.TrackName}\" from the shared library.");
+                }
+                catch (Exception ex)
+                {
+                    _log.Error($"Delete failed: {ex.Message}");
+                }
+            }
+
+            /// <summary>Download a lightmap from a pasted shared ID.</summary>
+            private async void CloudGetById_Click(object? sender, RoutedEventArgs e)
+            {
+                var raw = this.FindControl<TextBox>("CloudIdBox")?.Text?.Trim();
+                if (string.IsNullOrEmpty(raw))
+                {
+                    _log.Warn("Paste a lightmap ID first (a friend can copy one with a row's ⧉ ID button).");
+                    return;
+                }
+                if (!Guid.TryParse(raw, out var id))
+                {
+                    _log.Warn($"\"{raw}\" isn't a valid lightmap ID.");
+                    return;
+                }
+
+                await DownloadLightmapAsync(id.ToString(), knownCloudVersion: null, displayName: id.ToString());
             }
             
+            /// <summary>
+            /// Google sign-in/out toggle for the shared library (uploading, remixing, likes).
+            /// </summary>
+            private async void GoogleSignIn_Click(object? sender, RoutedEventArgs e)
+            {
+                try
+                {
+                    if (_googleAuth.IsSignedIn)
+                    {
+                        _googleAuth.SignOut();
+                    }
+                    else
+                    {
+                        _log.Info("Opening Google sign-in in your browser…");
+                        if (await _googleAuth.SignInAsync())
+                            _log.Info($"Signed in as {_googleAuth.UserName ?? _googleAuth.Email}.");
+                        else
+                            _log.Warn("Sign-in cancelled.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _log.Error($"Sign-in failed: {ex.Message}");
+                }
+
+                UpdateGoogleSignInButton();
+                // Grouping depends on who's signed in — rebuild the local shelves.
+                _allLocalTrackItems = BuildLocalTrackItems();
+                LocalTracksListBox.ItemsSource = _allLocalTrackItems;
+            }
+
+            private void UpdateGoogleSignInButton()
+            {
+                var btn = this.FindControl<Button>("GoogleSignInButton");
+                if (btn != null)
+                    btn.Content = _googleAuth.IsSignedIn
+                        ? $"Sign out ({_googleAuth.UserName ?? _googleAuth.Email})"
+                        : "Sign in with Google";
+            }
+
             /// <summary>
             /// Download Track and Lightmap Data to Local JSON Files
             /// </summary>
@@ -1307,25 +1609,78 @@
             {
                 if (sender is not Control c) return;
                 if (c.DataContext is not TrackItemUI item) return;
-                if (_jsonDataHandler.GetTrack(item.TrackId.ToString()) == null)
+
+                await DownloadLightmapAsync(item.TrackId.ToString(), item.Version, item.TrackName);
+            }
+
+            /// <summary>
+            /// Shared download core for both the list rows and Get-by-ID. knownCloudVersion
+            /// short-circuits before the fetch when the list already told us the version;
+            /// the by-ID path passes null and version-checks after loading instead.
+            /// </summary>
+            private async Task DownloadLightmapAsync(string lightmapId, int? knownCloudVersion, string displayName)
+            {
+                var existing = _jsonDataHandler.GetTrack(lightmapId);
+
+                // Already have this cloud version (or newer) → nothing to do. A stale copy
+                // falls through and is overwritten by the fresh download ("update available").
+                if (knownCloudVersion != null && existing != null && existing.CloudVersion >= knownCloudVersion)
                 {
-                    TrackData tdToAdd = await _databaseAccess.LoadTrackAsync(item.TrackId.ToString());
+                    _log.Info($"\"{displayName}\" is already up to date (v{existing.CloudVersion}).");
+                    return;
+                }
 
-                    // GET returns the id as _trackID, which doesn't map to trackGUID — keep the DB identity.
-                    if (Guid.TryParse(item.TrackId, out var dbGuid))
-                        tdToAdd.trackGUID = dbGuid;
-
-                    var audioBytes = await _databaseAccess.DownloadTrackAudioAsync(item.TrackId.ToString());
-                    if (audioBytes != null)
+                try
+                {
+                    TrackData tdToAdd = await _databaseAccess.LoadTrackAsync(lightmapId);
+                    if (tdToAdd == null)
                     {
-                        var localPath = _jsonDataHandler.SaveAudioBytesToAppStorage(audioBytes);
-                        tdToAdd.filePath = localPath;
-                        tdToAdd.SetSource(ProviderType.LocalFiles, localPath);
+                        _log.Error($"No shared lightmap found for ID {lightmapId}.");
+                        return;
+                    }
+                    displayName = tdToAdd.DisplayName ?? displayName;
+
+                    if (knownCloudVersion == null && existing != null && existing.CloudVersion >= tdToAdd.CloudVersion)
+                    {
+                        _log.Info($"\"{displayName}\" is already up to date (v{existing.CloudVersion}).");
+                        return;
+                    }
+
+                    // GET carries lightmap_id/owner/version via TrackData's cloud fields, but the
+                    // local file identity (trackGUID) still needs to be pinned to the cloud id.
+                    if (Guid.TryParse(lightmapId, out var dbGuid))
+                        tdToAdd.trackGUID = dbGuid;
+                    tdToAdd.CloudLightmapId = lightmapId;
+
+                    // Audio: reuse the local copy from a previous download when we have one
+                    // (lightmap updates don't change the song), else fetch it.
+                    var existingAudio = existing?.GetSource(ProviderType.LocalFiles);
+                    if (existingAudio != null && System.IO.File.Exists(existingAudio))
+                    {
+                        tdToAdd.filePath = existingAudio;
+                        tdToAdd.SetSource(ProviderType.LocalFiles, existingAudio);
+                    }
+                    else
+                    {
+                        var audioBytes = await _databaseAccess.DownloadTrackAudioAsync(lightmapId);
+                        if (audioBytes != null)
+                        {
+                            var localPath = _jsonDataHandler.SaveAudioBytesToAppStorage(audioBytes);
+                            tdToAdd.filePath = localPath;
+                            tdToAdd.SetSource(ProviderType.LocalFiles, localPath);
+                        }
                     }
 
                     _jsonDataHandler.SaveTrack(tdToAdd);
-                }
 
+                    _allLocalTrackItems = BuildLocalTrackItems();
+                    LocalTracksListBox.ItemsSource = _allLocalTrackItems;
+                    _log.Info($"Downloaded \"{displayName}\" (v{tdToAdd.CloudVersion}).");
+                }
+                catch (Exception ex)
+                {
+                    _log.Error($"Download failed: {ex.Message}");
+                }
             }
             
             /// <summary>True while the main music timer is ticking.</summary>

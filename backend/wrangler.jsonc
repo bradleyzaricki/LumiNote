@@ -28,6 +28,7 @@
   "d1_databases": [
     {
       "binding": "trackInfo",
+      "database_name": "luminote-track-info",
       "database_id": "162626bd-0de1-45cb-84b6-f61ba678aa89"
     }
   ]

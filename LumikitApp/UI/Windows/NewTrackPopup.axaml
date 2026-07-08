@@ -2,18 +2,21 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="LumikitApp.NewTrackPopup"
         Width="400"
-        Height="220"
+        Height="320"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
-        Title="Track Information">
+        Title="Save Lightmap">
 
     <StackPanel Margin="20" Spacing="12">
 
-        <TextBlock Text="Title"/>
-        <TextBox x:Name="TitleBox" />
+        <TextBlock Text="Lightmap Name"/>
+        <TextBox x:Name="LightmapBox" Watermark="e.g. Chill sunset mix"/>
 
-        <TextBlock Text="Author"/>
-        <TextBox x:Name="AuthorBox" />
+        <TextBlock Text="Track Name"/>
+        <TextBox x:Name="TitleBox" Watermark="The song's title"/>
+
+        <TextBlock Text="Artist"/>
+        <TextBox x:Name="ArtistBox" Watermark="Artist / band"/>
 
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Right"

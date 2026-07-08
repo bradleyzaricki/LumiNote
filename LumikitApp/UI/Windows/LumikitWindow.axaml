@@ -237,7 +237,7 @@
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <TextBox x:Name="LocalTrackSearchBox"
                                          Width="320"
-                                         Watermark="Search tracks by name or ID..."
+                                         Watermark="Search lightmap, track, or author..."
                                          HorizontalAlignment="Left"
                                          TextChanged="LocalTrackSearchBox_TextChanged"/>
 
@@ -273,23 +273,59 @@
                                                     Height="68"
                                                     BorderThickness="1.5"
                                                     BorderBrush="{Binding Color}">
-                                                <Grid ColumnDefinitions="*,Auto"
+                                                <!-- Fixed-width columns so the Artist/Author/Sources
+                                                     areas land in the same spot on every card. -->
+                                                <Grid ColumnDefinitions="*,140,150,180,Auto"
                                                       VerticalAlignment="Center"
                                                       HorizontalAlignment="Stretch">
 
-                                                    <!-- Track info + source badges -->
-                                                    <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
-                                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                                            <TextBlock Text="{Binding TrackName}"
-                                                                       Foreground="White"
-                                                                       FontSize="15"
+                                                    <!-- Identity: lightmap name over the song it maps -->
+                                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center" Margin="0,0,10,0">
+                                                        <TextBlock Text="{Binding TrackName}"
+                                                                   Foreground="White"
+                                                                   FontSize="15"
+                                                                   FontWeight="SemiBold"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Text="{Binding SongName}"
+                                                                   Foreground="#C9C9C9"
+                                                                   FontSize="12"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+
+                                                    <!-- Artist: the song's artist -->
+                                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center" Margin="0,0,10,0">
+                                                        <TextBlock Text="ARTIST" Foreground="#666" FontSize="9" FontWeight="SemiBold"/>
+                                                        <TextBlock Text="{Binding Artist}"
+                                                                   Foreground="#DDD"
+                                                                   FontSize="12"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+
+                                                    <!-- Author: the Google account that created it -->
+                                                    <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center" Margin="0,0,10,0">
+                                                        <TextBlock Text="AUTHOR" Foreground="#666" FontSize="9" FontWeight="SemiBold"/>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                                            <TextBlock Text="{Binding Author}"
+                                                                       Foreground="#DDD"
+                                                                       FontSize="12"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Text="(you)"
+                                                                       Foreground="#00E5FF"
+                                                                       FontSize="12"
                                                                        FontWeight="SemiBold"
-                                                                       VerticalAlignment="Center"/>
+                                                                       IsVisible="{Binding IsMine}"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <!-- Playback sources + sync status -->
+                                                    <StackPanel Grid.Column="3" Spacing="3" VerticalAlignment="Center" Margin="0,0,10,0">
+                                                        <TextBlock Text="SOURCES" Foreground="#666" FontSize="9" FontWeight="SemiBold"/>
+                                                        <StackPanel Orientation="Horizontal" Spacing="6">
                                                             <ItemsControl ItemsSource="{Binding SourceBadges}"
                                                                           VerticalAlignment="Center">
                                                                 <ItemsControl.ItemsPanel>
                                                                     <ItemsPanelTemplate>
-                                                                        <StackPanel Orientation="Horizontal" Spacing="8"/>
+                                                                        <StackPanel Orientation="Horizontal" Spacing="6"/>
                                                                     </ItemsPanelTemplate>
                                                                 </ItemsControl.ItemsPanel>
                                                                 <ItemsControl.ItemTemplate>
@@ -300,14 +336,15 @@
                                                                     </DataTemplate>
                                                                 </ItemsControl.ItemTemplate>
                                                             </ItemsControl>
+                                                            <TextBlock Text="{Binding Status}"
+                                                                       Foreground="#8A8A8A"
+                                                                       FontSize="10"
+                                                                       VerticalAlignment="Center"/>
                                                         </StackPanel>
-                                                        <TextBlock Text="{Binding Subtitle}"
-                                                                   Foreground="#9a9a9a"
-                                                                   FontSize="12"/>
                                                     </StackPanel>
 
                                                     <!-- Actions: primary play | link group | delete -->
-                                                    <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                                    <StackPanel Grid.Column="4" Orientation="Horizontal"
                                                                 Spacing="6" VerticalAlignment="Center">
                                                         <Button Classes="trackAction primary" Content="▶"
                                                                 ToolTip.Tip="Play"
@@ -421,21 +458,49 @@
         
             <!-- DB TRACKS -->
             <TabItem Header="Download Tracks">
-                <Grid Margin="0,10,0,0" RowDefinitions="Auto,*" ColumnSpacing="10">
+                <Grid Margin="0,10,0,0" RowDefinitions="Auto,Auto,*" ColumnSpacing="10">
 
-                    <!-- Search + Refresh ABOVE LIST, LEFT ALIGNED -->
+                    <!-- Search + sort + refresh -->
                     <StackPanel Orientation="Horizontal" Spacing="10" Grid.Row="0">
-                        <TextBox Width="320"
+                        <TextBox x:Name="CloudSearchBox"
+                                 Width="280"
                                  Watermark="Search tracks..."
-                                 HorizontalAlignment="Left"/>
+                                 HorizontalAlignment="Left"
+                                 TextChanged="CloudSearchBox_TextChanged"/>
+                        <ComboBox x:Name="CloudSortCombo"
+                                  Width="170"
+                                  SelectedIndex="0"
+                                  VerticalAlignment="Center"
+                                  SelectionChanged="CloudSort_Changed">
+                            <ComboBoxItem Content="Sort: Track name"/>
+                            <ComboBoxItem Content="Sort: Lightmap name"/>
+                            <ComboBoxItem Content="Sort: Owner"/>
+                            <ComboBoxItem Content="Sort: Likes"/>
+                        </ComboBox>
                         <Button Content="Refresh"
                                 Width="100"
-                                HorizontalAlignment="Left"                                
+                                HorizontalAlignment="Left"
                                 Click="DatabaseTrack_Refresh_Click"/>
+                        <Button x:Name="GoogleSignInButton"
+                                Content="Sign in with Google"
+                                HorizontalAlignment="Left"
+                                Click="GoogleSignIn_Click"/>
+                    </StackPanel>
+
+                    <!-- Share by ID: paste a lightmap ID a friend sent you (each row's ⧉ ID
+                         button copies one) and pull it straight into your library. -->
+                    <StackPanel Orientation="Horizontal" Spacing="10" Grid.Row="1" Margin="0,8,0,10">
+                        <TextBox x:Name="CloudIdBox"
+                                 Width="330"
+                                 Watermark="Paste a shared lightmap ID…"
+                                 HorizontalAlignment="Left"/>
+                        <Button Content="Get by ID"
+                                ToolTip.Tip="Download a friend's lightmap by its shared ID"
+                                Click="CloudGetById_Click"/>
                     </StackPanel>
 
                     <!-- Scrollable List -->
-                    <Border Grid.Row="1"
+                    <Border Grid.Row="2"
                             Background="#1b1b1b"
                             CornerRadius="6"
                             Padding="10">
@@ -459,14 +524,44 @@
                                             Height="68"
                                             BorderThickness="1.5"
                                             BorderBrush="{Binding Color}">
-                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center" HorizontalAlignment="Stretch">
-                                            <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
-                                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding TrackName}" Foreground="White" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <!-- Same aligned columns as the local library cards:
+                                             identity | artist | author | sources -->
+                                        <Grid ColumnDefinitions="*,140,150,180,Auto" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+
+                                            <!-- Identity: lightmap name over the song it maps -->
+                                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center" Margin="0,0,10,0">
+                                                <TextBlock Text="{Binding TrackName}" Foreground="White" FontSize="15"
+                                                           FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding SongName}" Foreground="#C9C9C9" FontSize="12"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+
+                                            <!-- Artist: the song's artist -->
+                                            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center" Margin="0,0,10,0">
+                                                <TextBlock Text="ARTIST" Foreground="#666" FontSize="9" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Artist}" Foreground="#DDD" FontSize="12"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+
+                                            <!-- Author: the Google account that uploaded it -->
+                                            <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center" Margin="0,0,10,0">
+                                                <TextBlock Text="AUTHOR" Foreground="#666" FontSize="9" FontWeight="SemiBold"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock Text="{Binding Author}" Foreground="#DDD" FontSize="12"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="(you)" Foreground="#00E5FF" FontSize="12"
+                                                               FontWeight="SemiBold" IsVisible="{Binding IsMine}"/>
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <!-- Sources + like/BPM stats -->
+                                            <StackPanel Grid.Column="3" Spacing="3" VerticalAlignment="Center" Margin="0,0,10,0">
+                                                <TextBlock Text="SOURCES" Foreground="#666" FontSize="9" FontWeight="SemiBold"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
                                                     <ItemsControl ItemsSource="{Binding SourceBadges}" VerticalAlignment="Center">
                                                         <ItemsControl.ItemsPanel>
                                                             <ItemsPanelTemplate>
-                                                                <StackPanel Orientation="Horizontal" Spacing="8"/>
+                                                                <StackPanel Orientation="Horizontal" Spacing="6"/>
                                                             </ItemsPanelTemplate>
                                                         </ItemsControl.ItemsPanel>
                                                         <ItemsControl.ItemTemplate>
@@ -477,15 +572,27 @@
                                                             </DataTemplate>
                                                         </ItemsControl.ItemTemplate>
                                                     </ItemsControl>
+                                                    <TextBlock Text="{Binding Status}" Foreground="#8A8A8A" FontSize="10"
+                                                               VerticalAlignment="Center"/>
                                                 </StackPanel>
-                                                <TextBlock Text="{Binding Subtitle}" Foreground="#9a9a9a" FontSize="12"/>
                                             </StackPanel>
-                                            <Button Classes="trackAction primary" Grid.Column="1"
-                                                    Content="Download"
-                                                    VerticalAlignment="Center"
-                                                    HorizontalAlignment="Right"
-                                                    ToolTip.Tip="Download this lightmap to your local library"
-                                                    Click="DatabaseTrack_Download_Click"/>
+
+                                            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6"
+                                                        VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                <Button Classes="trackAction"
+                                                        Content="⧉ ID"
+                                                        ToolTip.Tip="Copy this lightmap's ID to share with friends"
+                                                        Click="DatabaseTrack_CopyId_Click"/>
+                                                <Button Classes="trackAction primary"
+                                                        Content="Download"
+                                                        ToolTip.Tip="Download this lightmap to your local library"
+                                                        Click="DatabaseTrack_Download_Click"/>
+                                                <Button Classes="trackAction danger"
+                                                        Content="✕"
+                                                        IsVisible="{Binding CanDelete}"
+                                                        ToolTip.Tip="Delete your lightmap from the shared library (this can't be undone)"
+                                                        Click="DatabaseTrack_Delete_Click"/>
+                                            </StackPanel>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -757,7 +864,64 @@
             </Border>
         </ScrollViewer>
         
-        <TextBlock Grid.Column="0" Grid.Row="3" Name="ErrorText" FontSize="14" Text="" IsVisible="False" Margin="10"/>
+        <!-- Debug console overlay (quake-style): drops over the top of the UI and takes no
+             layout space. Messages stack in ConsoleText; the pill button appears on the
+             first message and toggles the console (as does the ` / ~ key). Negative margin
+             cancels MainGrid's Margin="10" so the panel hugs the window edges. -->
+        <Border Name="ErrorConsole"
+                Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="4"
+                VerticalAlignment="Top" Height="380" Margin="-10,-10,-10,0"
+                Background="#F2141414" BorderBrush="#444" BorderThickness="0,0,0,1"
+                IsVisible="False">
+            <Grid RowDefinitions="Auto,*" Margin="12,8,12,10">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,6">
+                    <TextBlock Grid.Column="0" Text="Console" Foreground="#AAA"
+                               FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" Classes="trackAction" Content="Clear"
+                            Margin="0,0,6,0" Click="ClearErrorConsole_Click"/>
+                    <Button Grid.Column="2" Classes="trackAction" Content="✕"
+                            Click="CloseErrorConsole_Click"/>
+                </Grid>
+                <ScrollViewer Name="ConsoleScroll" Grid.Row="1"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <!-- Rows are ConsoleRow view models (LumikitWindow.axaml.cs): text is
+                         preformatted, Brush encodes the severity color. -->
+                    <ItemsControl Name="ConsoleItems">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <SelectableTextBlock FontFamily="Consolas,Cascadia Mono,Menlo,monospace"
+                                                     FontSize="12" TextWrapping="Wrap"
+                                                     Foreground="{Binding Brush}"
+                                                     Text="{Binding Text}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <Button Name="ViewErrorsButton"
+                Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="4"
+                HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                Padding="8,3" CornerRadius="10" FontSize="11"
+                Background="#CC2C2C2C" Foreground="#FFB3B3"
+                BorderBrush="#3D3D3D" BorderThickness="1"
+                IsVisible="False"
+                Content="⚠ View Errors"
+                Click="ToggleErrorConsole_Click"/>
+
+        <!-- Always-available console toggle. Declared last so it stays clickable above the
+             open console; negative margin cancels MainGrid's Margin="10" to reach the
+             window's true top-right corner. -->
+        <Button Name="ConsoleButton"
+                Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="4"
+                HorizontalAlignment="Right" VerticalAlignment="Top"
+                Margin="0,-8,-8,0" Padding="8,3" CornerRadius="10" FontSize="11"
+                Background="#CC2C2C2C" Foreground="#AAA"
+                BorderBrush="#3D3D3D" BorderThickness="1"
+                Content="≡ Console"
+                ToolTip.Tip="Toggle console (~)"
+                Click="ToggleErrorConsole_Click"/>
 
     </Grid>
         

@@ -1,0 +1,13 @@
+# Template for backend/.dev.vars — copy to `.dev.vars` and fill in for local dev.
+# `.dev.vars` is gitignored; this example is committed as documentation.
+
+# Shared coarse-gate key (must match the deployed `secret`).
+secret=REPLACE_WITH_SHARED_SECRET
+
+# Google OAuth client id — the audience the ID token is verified against.
+# Set the real value in prod with:  wrangler secret put GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_ID=REPLACE_WITH_GOOGLE_OAUTH_CLIENT_ID
+
+# Local testing only: when "true", the X-Dev-User header stands in for a signed-in
+# user (no real Google token needed). NEVER set this in production.
+ALLOW_DEV_AUTH=true

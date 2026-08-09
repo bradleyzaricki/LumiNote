@@ -56,6 +56,10 @@
 
             // lightmap_id → version from the last cloud refresh; drives "update available".
             private Dictionary<string, int> _cloudVersions = new();
+
+            // Last lightmap ID the cloud search box auto-downloaded, so retyping/reformatting
+            // the same pasted ID doesn't refire the download on every keystroke.
+            private Guid? _lastCloudIdFetch;
             /// <summary> The serial output for lighting communications  </summary>
             private ISerialPanel _serialPanel;
             
@@ -149,13 +153,23 @@
             Border? _activeSwatch;
             private BlockEditorPanel _blockEditor;
             private BlockEditorViewModel _viewModel;
-            private OffsetTapper _offsetTapper;
-            public int AudioOffsetMs { get; set; }
+
+            // Per-provider audio→light sync offset (ms), applied at the tick site as
+            // Timeline.Tick(ms + offset). Kept separate per source because local and Spotify have
+            // different latency, and a single lightmap can play on either. Keyed by provider name,
+            // set by the Calibrate Sync button (the tap screen) and persisted across sessions.
+            private readonly Dictionary<ProviderType, int> _providerOffsets = new();
+            private const int DefaultOffsetMs = 20;
+            private int ActiveOffsetMs =>
+                _providerOffsets.TryGetValue(_musicProvider.providerName, out var v) ? v : DefaultOffsetMs;
+            private static string OffsetsPath =>
+                Path.Combine(DirectoryPaths.SettingsDir, "sync_offsets.json");
+
             public LumikitWindow()  // designer uses this
             {
                 InitializeComponent();
             }
-            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel, ISerialPanel serialPanel, OffsetTapper offsetTapper, RoutingMusicSession musicRouter, GoogleAuthService googleAuth, IAppLog appLog)
+            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel, ISerialPanel serialPanel, RoutingMusicSession musicRouter, GoogleAuthService googleAuth, IAppLog appLog)
             {
                 _musicProvider = provider;
                 _playbackHandler = playbackHandler;
@@ -164,8 +178,8 @@
                 _databaseAccess = databaseAccess;
                 _googleAuth = googleAuth;
                 _viewModel = blockEditorViewModel;
-                _offsetTapper = offsetTapper;
                 _log = appLog;
+                LoadProviderOffsets();
                 InitializeComponent();
                 DataContext = _viewModel;
 
@@ -321,7 +335,8 @@
                         // Reset serial throttle if ms went backwards (new track / seek / restart)
                         if (ms < _lastSerialSendMs) _lastSerialSendMs = 0;
 
-                        Color[]? colors = Timeline.Tick(ms + AudioOffsetMs, 10, _serialPanel.BrightnessScale, ColorUpdateIntervalMs);
+                        // Per-source sync offset: uses the active provider's calibrated value.
+                        Color[]? colors = Timeline.Tick(ms + ActiveOffsetMs, 10, _serialPanel.BrightnessScale, ColorUpdateIntervalMs);
 
                         if (colors == null)
                         {
@@ -398,6 +413,10 @@
 
                     ChangeAppTheme(); //Changes app colors to match provider (required by spotify TOS)
                     _allLocalTrackItems = BuildLocalTrackItems();
+
+                    // Populate the shared-library preview immediately if a prior session's
+                    // Google sign-in persisted; otherwise this just leaves it empty.
+                    _ = RefreshCloudTracksAsync();
                         
                 
             }
@@ -546,36 +565,57 @@
 
             public async void UpdateCurrentTrack(bool startNewLightShow, Guid trackGUID)
             {
-                currentGUID=trackGUID.ToString();
-
-                var track = await _musicProvider.GetCurrentlyPlayingTrackAsync();
-                Console.WriteLine(track.trackName);
-                this.FindControl<TextBlock>("NowPlayingTrackText").Text = track.trackName;
-                this.FindControl<TextBlock>("NowPlayingArtistText").Text = track.artistName;
-
-                var albumImage = track.trackCoverImageUrl;
-                await SetAlbumCover(albumImage);
-
-
-                Timeline.ClearBlocks();
-
-                var trackDataLocal = _jsonDataHandler.GetTrack(trackGUID.ToString());
-                if (trackDataLocal != null)
+                // async void: an unhandled exception here is fatal to the whole app, so the
+                // body is fully guarded.
+                try
                 {
-                    Timeline.Bpm = trackDataLocal._BPM;
-                    _bpmInput.Text = Timeline.Bpm.ToString();
-                    Timeline.DrawTimelineSlots();
-                    Timeline.LoadFromTrackData(trackDataLocal);
-                }
-                else
-                {
-                    Timeline.Bpm = 0;
-                    _bpmInput.Text = "0";
-                    Timeline.DrawTimelineSlots();
-                }
+                    currentGUID = trackGUID.ToString();
 
-                // Freshly loaded lightmap — no unsaved edits yet.
-                _lightmapDirty = false;
+                    // Spotify's "currently playing" readback is stale for a beat right after a
+                    // switch — it returns null until it catches up to the track we asked for.
+                    // Poll briefly instead of dereferencing null.
+                    TrackPOCO track = null;
+                    for (int attempt = 0; attempt < 6 && track == null; attempt++)
+                    {
+                        track = await _musicProvider.GetCurrentlyPlayingTrackAsync();
+                        if (track == null) await Task.Delay(150);
+                    }
+
+                    if (track != null)
+                    {
+                        this.FindControl<TextBlock>("NowPlayingTrackText").Text = track.trackName;
+                        this.FindControl<TextBlock>("NowPlayingArtistText").Text = track.artistName;
+                        await SetAlbumCover(track.trackCoverImageUrl);
+                    }
+                    else
+                    {
+                        _log.Warn("Now-playing info unavailable — Spotify readback stayed empty.", "Playback");
+                    }
+
+                    Timeline.ClearBlocks();
+
+                    var trackDataLocal = _jsonDataHandler.GetTrack(trackGUID.ToString());
+                    if (trackDataLocal != null)
+                    {
+                        Timeline.Bpm = trackDataLocal._BPM;
+                        _bpmInput.Text = Timeline.Bpm.ToString();
+                        Timeline.DrawTimelineSlots();
+                        Timeline.LoadFromTrackData(trackDataLocal);
+                    }
+                    else
+                    {
+                        Timeline.Bpm = 0;
+                        _bpmInput.Text = "0";
+                        Timeline.DrawTimelineSlots();
+                    }
+
+                    // Freshly loaded lightmap — no unsaved edits yet.
+                    _lightmapDirty = false;
+                }
+                catch (Exception ex)
+                {
+                    _log.Error($"UpdateCurrentTrack failed: {ex.Message}", "Playback");
+                }
             }
             
             /// <summary>
@@ -1447,21 +1487,82 @@
                 LocalTracksListBox.ItemsSource = _allLocalTrackItems;
             }
 
-            /// <summary>
-            /// Refresh Database Track List
-            /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
-            private async void DatabaseTrack_Refresh_Click(object? sender, RoutedEventArgs e)
+            // ── Per-provider sync offset (tap calibration) ─────────────────────
+
+            // Opens the tap screen for whichever provider is currently active and stores the
+            // result as that provider's sync offset. Note: the tap measures tap-timing against a
+            // metronome, not the true audio→light delay, and it always plays a local beep — so
+            // the value is a hand-tunable starting point, not a measured per-source latency.
+            private async void CalibrateSync_Click(object? sender, RoutedEventArgs e)
+            {
+                var provider = _musicProvider.providerName;
+                var tapper = new OffsetTapper();
+                await tapper.ShowDialog(this);
+
+                _providerOffsets[provider] = tapper.ComputedOffsetMs;
+                SaveProviderOffsets();
+                _log.Info($"Sync offset for {provider} set to {tapper.ComputedOffsetMs} ms.");
+            }
+
+            private void LoadProviderOffsets()
             {
                 try
                 {
-                    _allDatabaseTrackItems = await _databaseAccess.ListTracksAsync(false);
+                    if (!File.Exists(OffsetsPath)) return;
+                    var byName = System.Text.Json.JsonSerializer
+                        .Deserialize<Dictionary<string, int>>(File.ReadAllText(OffsetsPath));
+                    if (byName == null) return;
+                    foreach (var (name, ms) in byName)
+                        if (Enum.TryParse<ProviderType>(name, out var type))
+                            _providerOffsets[type] = ms;
+                }
+                catch
+                {
+                    // Corrupt/unreadable offsets file — fall back to defaults.
+                }
+            }
+
+            private void SaveProviderOffsets()
+            {
+                try
+                {
+                    var byName = _providerOffsets.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value);
+                    File.WriteAllText(OffsetsPath, System.Text.Json.JsonSerializer.Serialize(
+                        byName, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+                }
+                catch (Exception ex)
+                {
+                    _log.Warn("Couldn't save sync offsets: " + ex.Message);
+                }
+            }
+
+            /// <summary>
+            /// (Re)loads the shared-library preview: signed out shows nothing (there's no
+            /// browsing UI without an account driving it), signed in fetches the full list and
+            /// keeps the first 10 as the preview. Called on startup (if a prior sign-in
+            /// persisted) and whenever sign-in state changes — there's no manual refresh button;
+            /// this is the only path that repopulates the list.
+            /// </summary>
+            private async Task RefreshCloudTracksAsync()
+            {
+                if (!_googleAuth.IsSignedIn)
+                {
+                    _allDatabaseTrackItems = new List<TrackItemUI>();
+                    _cloudVersions = new Dictionary<string, int>();
+                    ApplyCloudView();
+                    return;
+                }
+
+                try
+                {
+                    var fetched = await _databaseAccess.ListTracksAsync(false);
+                    _allDatabaseTrackItems = fetched.Take(10).ToList();
                     ApplyCloudView();
 
-                    // Remember each cloud lightmap's version, then rebuild the local list so
-                    // downloaded tracks that fell behind show their "update available" badge.
-                    _cloudVersions = _allDatabaseTrackItems
+                    // Remember each cloud lightmap's version (off the full fetch, not just the
+                    // 10-item preview) so downloaded tracks that fell behind show their
+                    // "update available" badge even if they scrolled out of the preview.
+                    _cloudVersions = fetched
                         .Where(i => !string.IsNullOrEmpty(i.TrackId))
                         .GroupBy(i => i.TrackId)
                         .ToDictionary(g => g.Key, g => g.Max(i => i.Version));
@@ -1471,13 +1572,13 @@
                 }
                 catch (Exception ex)
                 {
-                    _log.Error($"Refresh failed: {ex.Message}");
+                    _log.Error($"Loading shared tracks failed: {ex.Message}");
                 }
             }
 
             /// <summary>
-            /// Rebuilds the cloud list from the last fetch: search filter first, then the
-            /// selected sort (usable-with-current-provider rows always sort ahead of gray ones).
+            /// Rebuilds the cloud list from the last fetch: filters by name/artist/owner or an
+            /// exact/partial lightmap ID, usable-with-current-provider rows sort ahead of gray ones.
             /// </summary>
             private void ApplyCloudView()
             {
@@ -1490,24 +1591,40 @@
                     view = view.Where(t =>
                         (t.TrackName ?? "").ToLowerInvariant().Contains(search) ||
                         (t.SongName ?? "").ToLowerInvariant().Contains(search) ||
-                        (t.Subtitle ?? "").ToLowerInvariant().Contains(search));
+                        (t.Subtitle ?? "").ToLowerInvariant().Contains(search) ||
+                        (t.TrackId ?? "").ToLowerInvariant().Contains(search));
 
-                var usableFirst = view.OrderByDescending(t => t.Usable);
-                view = (this.FindControl<ComboBox>("CloudSortCombo")?.SelectedIndex ?? 0) switch
-                {
-                    1 => usableFirst.ThenBy(t => t.LightmapName ?? t.SongName, StringComparer.OrdinalIgnoreCase),
-                    2 => usableFirst.ThenBy(t => t.OwnerName, StringComparer.OrdinalIgnoreCase),
-                    3 => usableFirst.ThenByDescending(t => t.Likes),
-                    _ => usableFirst.ThenBy(t => t.SongName, StringComparer.OrdinalIgnoreCase)
-                };
-
-                DatabaseTracksListBox.ItemsSource = view.ToList();
+                DatabaseTracksListBox.ItemsSource = view
+                    .OrderByDescending(t => t.Usable)
+                    .ThenBy(t => t.SongName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
             }
 
-            private void CloudSearchBox_TextChanged(object? sender, TextChangedEventArgs e) => ApplyCloudView();
-            private void CloudSort_Changed(object? sender, SelectionChangedEventArgs e) => ApplyCloudView();
+            /// <summary>
+            /// Filters the preview list as you type. A full lightmap ID that isn't already in
+            /// the preview (e.g. one a friend copied with a row's ⧉ ID button) is downloaded
+            /// straight into your local library, the same convenience the old dedicated
+            /// "Get by ID" box gave — just driven from this one box now.
+            /// </summary>
+            private async void CloudSearchBox_TextChanged(object? sender, TextChangedEventArgs e)
+            {
+                ApplyCloudView();
 
-            /// <summary>Copy a cloud lightmap's ID so it can be sent to a friend (→ Get by ID).</summary>
+                var raw = (sender as TextBox)?.Text?.Trim();
+                if (!Guid.TryParse(raw, out var id))
+                {
+                    _lastCloudIdFetch = null;
+                    return;
+                }
+                if (_lastCloudIdFetch == id) return; // already fetched this exact ID
+                if (_allDatabaseTrackItems.Any(t => string.Equals(t.TrackId, id.ToString(), StringComparison.OrdinalIgnoreCase)))
+                    return; // already visible in the preview — let the row's own Download button handle it
+
+                _lastCloudIdFetch = id;
+                await DownloadLightmapAsync(id.ToString(), knownCloudVersion: null, displayName: id.ToString());
+            }
+
+            /// <summary>Copy a cloud lightmap's ID so it can be sent to a friend (paste it into the search box to fetch it).</summary>
             private async void DatabaseTrack_CopyId_Click(object? sender, RoutedEventArgs e)
             {
                 if (sender is not Control c || c.DataContext is not TrackItemUI item) return;
@@ -1542,26 +1659,10 @@
                 }
             }
 
-            /// <summary>Download a lightmap from a pasted shared ID.</summary>
-            private async void CloudGetById_Click(object? sender, RoutedEventArgs e)
-            {
-                var raw = this.FindControl<TextBox>("CloudIdBox")?.Text?.Trim();
-                if (string.IsNullOrEmpty(raw))
-                {
-                    _log.Warn("Paste a lightmap ID first (a friend can copy one with a row's ⧉ ID button).");
-                    return;
-                }
-                if (!Guid.TryParse(raw, out var id))
-                {
-                    _log.Warn($"\"{raw}\" isn't a valid lightmap ID.");
-                    return;
-                }
-
-                await DownloadLightmapAsync(id.ToString(), knownCloudVersion: null, displayName: id.ToString());
-            }
-            
             /// <summary>
             /// Google sign-in/out toggle for the shared library (uploading, remixing, likes).
+            /// Either direction repopulates the cloud preview: signing in loads the 10-track
+            /// preview, signing out clears it (see <see cref="RefreshCloudTracksAsync"/>).
             /// </summary>
             private async void GoogleSignIn_Click(object? sender, RoutedEventArgs e)
             {
@@ -1586,7 +1687,11 @@
                 }
 
                 UpdateGoogleSignInButton();
+                await RefreshCloudTracksAsync();
+
                 // Grouping depends on who's signed in — rebuild the local shelves.
+                // (RefreshCloudTracksAsync already does this when it fetches, but not on the
+                // sign-out path, so do it unconditionally here too.)
                 _allLocalTrackItems = BuildLocalTrackItems();
                 LocalTracksListBox.ItemsSource = _allLocalTrackItems;
             }

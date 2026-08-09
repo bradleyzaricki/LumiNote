@@ -187,6 +187,10 @@
                     Background="BlueViolet"
                     Click="HardwareSettingsOnClick"
                     Flyout="{StaticResource HardwareSettingsFlyout}"/>
+            <Button Name="CalibrateSyncButton"
+                    Content="Calibrate Sync"
+                    Width="130"
+                    Click="CalibrateSync_Click"/>
             <TextBlock Name="HardwareConnectionText" Text="Serial Disconnected" VerticalAlignment="Center"></TextBlock>
         </StackPanel>
 
@@ -234,7 +238,7 @@
                         <TabItem Header="Local Tracks" Margin="0,10,0,0">
                         <Grid Margin="0,0,0,0" RowDefinitions="Auto,*">
 
-                            <StackPanel Orientation="Horizontal" Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="10">
                                 <TextBox x:Name="LocalTrackSearchBox"
                                          Width="320"
                                          Watermark="Search lightmap, track, or author..."
@@ -458,46 +462,23 @@
         
             <!-- DB TRACKS -->
             <TabItem Header="Download Tracks">
-                <Grid Margin="0,10,0,0" RowDefinitions="Auto,Auto,*" ColumnSpacing="10">
+                <Grid Margin="0,0,0,0" RowDefinitions="Auto,Auto,*" ColumnSpacing="20">
 
-                    <!-- Search + sort + refresh -->
-                    <StackPanel Orientation="Horizontal" Spacing="10" Grid.Row="0">
+                    <!-- Search (matches name/artist/owner, or paste a shared lightmap ID) + sign-in -->
+                    <StackPanel Orientation="Horizontal" Spacing="10" Grid.Row="0" Margin="10">
                         <TextBox x:Name="CloudSearchBox"
                                  Width="280"
-                                 Watermark="Search tracks..."
+                                 Watermark="Search tracks, or paste a shared ID..."
                                  HorizontalAlignment="Left"
                                  TextChanged="CloudSearchBox_TextChanged"/>
-                        <ComboBox x:Name="CloudSortCombo"
-                                  Width="170"
-                                  SelectedIndex="0"
-                                  VerticalAlignment="Center"
-                                  SelectionChanged="CloudSort_Changed">
-                            <ComboBoxItem Content="Sort: Track name"/>
-                            <ComboBoxItem Content="Sort: Lightmap name"/>
-                            <ComboBoxItem Content="Sort: Owner"/>
-                            <ComboBoxItem Content="Sort: Likes"/>
-                        </ComboBox>
-                        <Button Content="Refresh"
-                                Width="100"
-                                HorizontalAlignment="Left"
-                                Click="DatabaseTrack_Refresh_Click"/>
+
                         <Button x:Name="GoogleSignInButton"
                                 Content="Sign in with Google"
                                 HorizontalAlignment="Left"
                                 Click="GoogleSignIn_Click"/>
                     </StackPanel>
 
-                    <!-- Share by ID: paste a lightmap ID a friend sent you (each row's ⧉ ID
-                         button copies one) and pull it straight into your library. -->
-                    <StackPanel Orientation="Horizontal" Spacing="10" Grid.Row="1" Margin="0,8,0,10">
-                        <TextBox x:Name="CloudIdBox"
-                                 Width="330"
-                                 Watermark="Paste a shared lightmap ID…"
-                                 HorizontalAlignment="Left"/>
-                        <Button Content="Get by ID"
-                                ToolTip.Tip="Download a friend's lightmap by its shared ID"
-                                Click="CloudGetById_Click"/>
-                    </StackPanel>
+
 
                     <!-- Scrollable List -->
                     <Border Grid.Row="2"

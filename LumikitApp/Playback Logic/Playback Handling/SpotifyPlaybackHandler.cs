@@ -8,10 +8,10 @@ namespace LumikitApp
     /// Drives the lightshow clock for Spotify playback.
     ///
     /// Spotify's Web API only honours whole-second seeks, so every (re)start floors the target
-    /// to the previous second and runs PAUSE → SEEK → PLAY, then anchors a local
-    /// <see cref="Stopwatch"/> that carries the clock from there. A small fixed
-    /// <see cref="PlayLatencyMs"/> delay sits between issuing PLAY and starting the clock, so the
-    /// clock begins when audio actually starts rather than when the command is sent.
+    /// to the previous second and runs PAUSE → SEEK → (settle) → PLAY, then anchors a local
+    /// <see cref="Stopwatch"/> that carries the clock from there. A fixed
+    /// <see cref="SeekSettleMs"/> delay sits between the seek and PLAY, giving Spotify time to
+    /// settle at the new position so playback resumes from there rather than the old spot.
     /// </summary>
     public class SpotifyPlaybackHandler : IPlaybackHandler
     {
@@ -28,9 +28,9 @@ namespace LumikitApp
         // over from a prior start exits instead of running in parallel.
         private int _loopGen;
 
-        // Delay between issuing PLAY and starting the clock, to account for the lag before audio
-        // actually starts. Bump this up if the lights run ahead of the music.
-        private const int PlayLatencyMs = 150;
+        // Delay between the seek and issuing PLAY, giving Spotify time to settle at the new
+        // position while parked so playback resumes from there rather than the old spot.
+        private const int SeekSettleMs = 500;
 
         public int CurrentProgressMs => _progressMs;
         public bool IsTimerRunning => _timerRunning;
@@ -75,8 +75,8 @@ namespace LumikitApp
         /// Shared (re)start routine for play, resume, restart and seek. Spotify only honours
         /// whole-second seeks, so the target is floored to the previous second. For a fresh play
         /// the track URI is loaded first; then PAUSE parks playback, SEEK moves to the target
-        /// while parked, PLAY resumes, and after a small <see cref="PlayLatencyMs"/> wait (for
-        /// audio to actually start) the local clock is anchored at that second.
+        /// while parked, a <see cref="SeekSettleMs"/> wait lets the seek settle, PLAY resumes,
+        /// and the local clock is anchored at that second.
         /// </summary>
         private async Task ReanchorAndPlay(int ms, bool loadTrack)
         {
@@ -90,11 +90,11 @@ namespace LumikitApp
                 if (loadTrack)
                     await _musicProvider.PlayTrackAsync();     // load the track URI onto the device
 
-                await _musicProvider.PausePlaybackAsync();     // park playback
-                await _musicProvider.SeekToPlaybackTime(floored); // move to the target while parked
-                await _musicProvider.ResumePlaybackAsync();    // play
-                await Task.Delay(PlayLatencyMs);               // let audio actually start
-                StartTimer(floored);                           // anchor the clock at that second
+                await _musicProvider.PausePlaybackAsync();     // pause: park playback
+                await _musicProvider.SeekToPlaybackTime(floored); // set: move to the target while parked
+                await Task.Delay(SeekSettleMs);                // wait: let the seek settle
+                await _musicProvider.ResumePlaybackAsync();    // go: play
+                StartTimer(floored);                           // anchor the clock as playback resumes
             }
             catch (Exception ex)
             {

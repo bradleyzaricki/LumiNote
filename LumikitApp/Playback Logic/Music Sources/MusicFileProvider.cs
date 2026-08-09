@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -126,7 +127,16 @@ namespace LumikitApp
         public Task InitializeClient()
         {
             if (_init) return Task.CompletedTask;
-            _init = Bass.Init();
+
+            // Tighter update cadence and buffer than the defaults (100ms/500ms) so
+            // ChannelGetPosition tracks the audible position closely — the playback
+            // handler steers its clock off that read.
+            Bass.Configure(Configuration.UpdatePeriod, 10);
+            Bass.Configure(Configuration.PlaybackBufferLength, 200);
+
+            _init = Bass.Init(Flags: DeviceInitFlags.Latency);
+            if (_init)
+                Debug.WriteLine($"BASS initialized, output latency ~{Bass.Info.Latency}ms");
             return Task.CompletedTask;
         }
         

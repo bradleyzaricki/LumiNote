@@ -113,17 +113,35 @@ public class LightEffectsComputer
         // A "trailing" edge is one the lit region is moving AWAY from, so its tail marks the
         // pixels just vacated — that's what makes a comet chase its own head.
         var cometTails = new List<(double Edge, int Dir, double WrapLo, double WrapHi, bool Wrap)>();
-
+        
         // Given a segment's two edges (position + signed velocity each), emit a tail off
         // whichever edge is trailing: the left edge if it's moving right, the right edge if
         // it's moving left. Shrink-on-both-sides yields two tails; a translate yields one.
         void EmitEdgeTails(double posA, double velA, double posB, double velB)
         {
             double leftPos, leftVel, rightPos, rightVel;
-            if (posA <= posB) { leftPos = posA; leftVel = velA; rightPos = posB; rightVel = velB; }
-            else              { leftPos = posB; leftVel = velB; rightPos = posA; rightVel = velA; }
-            if (leftVel  > 0) cometTails.Add((leftPos,  -1, 0, 0, false));
-            if (rightVel < 0) cometTails.Add((rightPos, +1, 0, 0, false));
+
+            if (posA <= posB)
+            {
+                leftPos = posA;
+                leftVel = velA;
+                rightPos = posB;
+                rightVel = velB;
+            }
+            else
+            {
+                leftPos = posB;
+                leftVel = velB;
+                rightPos = posA;
+                rightVel = velA;
+            }
+
+            // Offset by one pixel so the tail starts flush with the moving edge.
+            if (leftVel > 0)
+                cometTails.Add((leftPos + 1, -1, 0, 0, false));
+
+            if (rightVel < 0)
+                cometTails.Add((rightPos - 1, +1, 0, 0, false));
         }
 
         switch (shape)

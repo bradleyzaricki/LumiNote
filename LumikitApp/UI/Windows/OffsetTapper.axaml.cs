@@ -26,6 +26,7 @@ public partial class OffsetTapper : Window
     private readonly List<int> _tapOffsets = new();
     private long _lastTickMs;
     private string _tempWavPath;
+    private bool _ownsBass;
 
     public OffsetTapper()
     {
@@ -37,7 +38,10 @@ public partial class OffsetTapper : Window
         base.OnOpened(e);
         if (Design.IsDesignMode) return;
 
-        Bass.Init();
+        // Bass.Init returns false when the device is already initialized (e.g. the app's local
+        // provider brought BASS up at startup). Only free it on close if WE initialized it, so
+        // launching this on demand never tears down the running app's shared audio device.
+        _ownsBass = Bass.Init();
 
         _tempWavPath = Path.Combine(Path.GetTempPath(), "lumikit_ping.wav");
         if (!File.Exists(_tempWavPath))
@@ -122,27 +126,22 @@ public partial class OffsetTapper : Window
         }
     }
 
-    private void DoneButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Finish();
+    // Done/Escape close the window; callers await ShowDialog and then read ComputedOffsetMs.
+    private void DoneButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Close();
 
     private void Window_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.Escape)
         {
             e.Handled = true;
-            Finish();
+            Close();
         }
-    }
-
-    private void Finish()
-    {
-        if (_completedTcs.Task.IsCompleted) return;
-        _completedTcs.TrySetResult();
     }
 
     protected override void OnClosed(EventArgs e)
     {
         _cts.Cancel();
-        Bass.Free();
+        if (_ownsBass) Bass.Free();
         _completedTcs.TrySetResult();
         base.OnClosed(e);
     }

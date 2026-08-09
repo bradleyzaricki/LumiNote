@@ -226,7 +226,7 @@ namespace LumikitApp
             {
                 var playback = await _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest());
                 var track = playback?.Item as FullTrack;
-                if (track.Id == currentlyPlayingPath)
+                if (track?.Id == currentlyPlayingPath)
                 {
                     
                     currentTrack = new TrackPOCO(Guid.Empty, track.Name, track.Artists[0].Name,track.Album.Images[1].Url);

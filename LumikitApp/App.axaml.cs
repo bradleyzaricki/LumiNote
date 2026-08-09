@@ -57,7 +57,8 @@ namespace LumikitApp
             services.AddSingleton<ISerialPanel, SerialPanel>();
             services.AddTransient<LumikitWindow>();
             services.AddTransient<ProviderPickerWindow>();
-            services.AddSingleton<OffsetTapper>();
+            // OffsetTapper is no longer a startup singleton — the main window creates one on
+            // demand (Calibrate Sync button) per provider, so it isn't registered here.
             return services.BuildServiceProvider();
         }
 
@@ -75,23 +76,15 @@ namespace LumikitApp
                 //Build DI constructor implementations based on provider choices
                 Services = BuildServices(picker.SelectedProviders);
 
-                //Show offset tapper before main window
-                var offsetTapper = Services.GetRequiredService<OffsetTapper>();
-                desktop.MainWindow = offsetTapper;
-
-                offsetTapper.Show();
-                await offsetTapper.Completed;
-
-                //await login
+                //await login (also inits BASS for local files)
                 var musicProvider = Services.GetRequiredService<IMusicProvider>();
                 await musicProvider.InitializeClient();
 
-                //run main window with computed audio offset
+                //run main window — sync offset is now per-provider, calibrated on demand from the
+                //Calibrate Sync button and persisted, so there is no startup offset step.
                 var mainWindow = Services.GetRequiredService<LumikitWindow>();
-                mainWindow.AudioOffsetMs = offsetTapper.ComputedOffsetMs;
                 desktop.MainWindow = mainWindow;
                 mainWindow.Show();
-                offsetTapper.Close();
                 mainWindow.InitializeWindow();
                 mainWindow.Activate();
             }

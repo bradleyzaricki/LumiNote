@@ -53,7 +53,8 @@ public class LightEffectsComputer
 
         if (hasStrobe)
         {
-            double flashesPerSecond = serialIntervalMs;
+            double flashesPerSecond = Math.Max(1.0,
+                Get(block, LightBlock.Effect.Strobe)?.Params.GetValueOrDefault("FlashesPerSecond", 5) ?? 5);
 
             // Use real elapsed time when provided (always accurate).
             // Fall back to pixel-based estimate only if elapsedMs wasn't passed.

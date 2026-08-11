@@ -61,7 +61,15 @@ namespace LumikitApp
             {
                 CodeChallengeMethod = "S256",
                 CodeChallenge = challenge,
-                Scope = new[] { Scopes.UserReadPlaybackState, Scopes.UserReadCurrentlyPlaying, Scopes.UserModifyPlaybackState, Scopes.UgcImageUpload }
+                // Request only what the app actually calls. Spotify's app review treats
+                // unused scopes as a compliance failure, and UgcImageUpload (playlist cover
+                // upload) was never used by anything here.
+                Scope = new[]
+                {
+                    Scopes.UserReadPlaybackState,
+                    Scopes.UserReadCurrentlyPlaying,
+                    Scopes.UserModifyPlaybackState
+                }
             };
 
             var uri = loginRequest.ToUri();
@@ -229,7 +237,21 @@ namespace LumikitApp
                 if (track?.Id == currentlyPlayingPath)
                 {
                     
-                    currentTrack = new TrackPOCO(Guid.Empty, track.Name, track.Artists[0].Name,track.Album.Images[1].Url);
+                    // Images are ordered widest-first; index 1 is the medium (300px) art.
+                    // Guard the index — some albums expose fewer than three sizes.
+                    var cover = track.Album.Images.Count > 1
+                        ? track.Album.Images[1].Url
+                        : track.Album.Images.FirstOrDefault()?.Url ?? "";
+
+                    // external_urls.spotify is the canonical open.spotify.com link; fall back to
+                    // building it from the id so the required attribution link is never missing.
+                    var url = track.ExternalUrls != null
+                              && track.ExternalUrls.TryGetValue("spotify", out var ext)
+                              && !string.IsNullOrWhiteSpace(ext)
+                        ? ext
+                        : $"https://open.spotify.com/track/{track.Id}";
+
+                    currentTrack = new TrackPOCO(Guid.Empty, track.Name, track.Artists[0].Name, cover, url);
                     return currentTrack;
                 }
 

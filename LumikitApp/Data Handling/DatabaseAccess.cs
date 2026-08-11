@@ -116,7 +116,13 @@ public class DatabaseAccess
         var idToken = await RequireIdTokenAsync();
 
         var localKey = ProviderType.LocalFiles.ToString();
-        var localAudioPath = track.GetSource(ProviderType.LocalFiles) ?? track.filePath;
+
+        // Only ever the LocalFiles source. The legacy `filePath` fallback used to be consulted
+        // here, and on a pre-Sources save that field can hold a *Spotify* track id — uploading
+        // audio derived from a Spotify source would be stream ripping under the Developer Terms.
+        // Spotify is remote-control only so no such bytes exist to read, but keep the path
+        // structurally incapable of it rather than relying on that.
+        var localAudioPath = track.GetSource(ProviderType.LocalFiles);
 
         // Upload the source dict; the local link is stored as a bare filename (rebuilt on download).
         var sources = new Dictionary<string, string>(track.Sources);

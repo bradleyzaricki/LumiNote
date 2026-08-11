@@ -37,7 +37,14 @@
             /// Color update interval (determined by the max update interval with current light config)
             /// </summary>
             private const int ColorUpdateIntervalMs = 50;
-            
+
+            /// <summary>
+            /// Link to the currently displayed track on the active provider's own service, or
+            /// null when it has none (local files) or Spotify hasn't reported one yet. Backs
+            /// the attribution link required alongside displayed Spotify metadata/cover art.
+            /// </summary>
+            private string? _currentProviderTrackUrl;
+
             /// <summary>
             /// The source responsible for playing/pausing/locating a point in a music file
             /// </summary>
@@ -586,6 +593,11 @@
                         this.FindControl<TextBlock>("NowPlayingTrackText").Text = track.trackName;
                         this.FindControl<TextBlock>("NowPlayingArtistText").Text = track.artistName;
                         await SetAlbumCover(track.trackCoverImageUrl);
+
+                        // Metadata/cover art just went on screen — refresh the attribution link
+                        // that has to accompany it.
+                        _currentProviderTrackUrl = track.trackUrl;
+                        UpdateProviderAttribution();
                     }
                     else
                     {
@@ -950,6 +962,48 @@
                 PauseTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
                 RestartTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
                 NextTrackButton.Background = new SolidColorBrush(_musicProvider.ProviderColor, 1);
+
+                UpdateProviderAttribution();
+            }
+
+            /// <summary>
+            /// Shows the Spotify logo + "PLAY ON SPOTIFY" link only while Spotify is the active
+            /// source. Spotify's Developer Terms require displayed metadata and cover art to be
+            /// attributed to Spotify and accompanied by a link back to the track — and equally
+            /// require that the mark is not shown against content from anywhere else, so this
+            /// hides the whole panel for local files rather than leaving it permanently on.
+            /// </summary>
+            private void UpdateProviderAttribution()
+            {
+                bool spotifyActive = _musicRouter.ActiveProviderName == ProviderType.Spotify;
+
+                // Switching away drops the link, so coming back can't briefly offer the
+                // previous track's URL against the newly loaded one.
+                if (!spotifyActive) _currentProviderTrackUrl = null;
+
+                SpotifyAttributionPanel.IsVisible = spotifyActive;
+                // No resolved track link yet (readback still catching up) → no dead button.
+                OpenInSpotifyButton.IsVisible = spotifyActive
+                                                && !string.IsNullOrWhiteSpace(_currentProviderTrackUrl);
+            }
+
+            /// <summary>Opens the current track on Spotify — the required link back to the service.</summary>
+            private void OpenInSpotify_Click(object? sender, RoutedEventArgs e)
+            {
+                if (string.IsNullOrWhiteSpace(_currentProviderTrackUrl)) return;
+
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = _currentProviderTrackUrl,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _log.Error($"Couldn't open Spotify link: {ex.Message}");
+                }
             }
             
             private void HardwareSettingsOnClick(object? sender, RoutedEventArgs e)

@@ -205,14 +205,37 @@
                 <TextBlock Name="NowPlayingArtistText" Foreground="White" FontSize="16"/>
             </StackPanel>
 
-            <Image Name="SpotifyAttributionLogo"
-                   Source="avares://LumikitApp/Icons/spot_white_logo_full.png"
-                   Width="120"
-                   
-                   Margin="30,0,10,10"
-                   HorizontalAlignment="Right"
-                   VerticalAlignment="Top"
-                   IsVisible="True"/>
+            <!-- Spotify attribution. Required by the Developer Terms whenever Spotify metadata
+                 or cover art is on screen, and equally required NOT to appear over content from
+                 another source — so visibility is driven by the active provider in code-behind,
+                 never left on. The logo is 120px wide (guideline minimum is 70px) and is never
+                 recoloured or placed over album art. -->
+            <StackPanel Name="SpotifyAttributionPanel"
+                        Orientation="Vertical"
+                        Margin="30,0,10,10"
+                        Spacing="6"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        IsVisible="False">
+
+                <Image Name="SpotifyAttributionLogo"
+                       Source="avares://LumikitApp/Icons/spot_white_logo_full.png"
+                       Width="120"
+                       HorizontalAlignment="Right"/>
+
+                <!-- The mandated link back to the track on Spotify. Wording must be one of
+                     PLAY ON SPOTIFY / OPEN SPOTIFY / LISTEN ON SPOTIFY per the design guidelines. -->
+                <Button Name="OpenInSpotifyButton"
+                        Content="PLAY ON SPOTIFY"
+                        FontSize="10"
+                        FontWeight="Bold"
+                        Foreground="Black"
+                        Background="#1ED760"
+                        CornerRadius="12"
+                        Padding="12,4"
+                        HorizontalAlignment="Right"
+                        Click="OpenInSpotify_Click"/>
+            </StackPanel>
         </StackPanel>
 
         <Grid Grid.Column="0" Grid.Row="2" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*">

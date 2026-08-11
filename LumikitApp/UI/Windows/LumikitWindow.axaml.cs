@@ -220,6 +220,7 @@
                 _serialPanel = serialPanel;
                 _serialPanel.ErrorOccurred           += msg => _log.Error(msg, "Serial");
                 _serialPanel.ConnectionStatusChanged += UpdateHardwareConnectionText;
+                _serialPanel.DiagnosticsReported     += msg => _log.Info(msg, "Serial");
 
                 _viewModel.PreviewRequested += () =>
                 {

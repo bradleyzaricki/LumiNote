@@ -191,6 +191,12 @@
                     Content="Calibrate Sync"
                     Width="130"
                     Click="CalibrateSync_Click"/>
+            <!-- Only shown when the active source uses a user-supplied developer key. -->
+            <Button Name="MusicSourceKeyButton"
+                    Content="Source Key"
+                    Width="110"
+                    IsVisible="False"
+                    Click="MusicSourceKey_Click"/>
             <TextBlock Name="HardwareConnectionText" Text="Serial Disconnected" VerticalAlignment="Center"></TextBlock>
         </StackPanel>
 

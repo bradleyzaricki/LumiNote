@@ -38,6 +38,9 @@ namespace LumikitApp
         /// <param name="mainWindow"></param>
         /// <param name="clientId"></param>
         /// <param name="redirectUri"></param>
+        /// <summary>How long to wait for the browser to redirect back before giving up.</summary>
+        private static readonly TimeSpan LoginTimeout = TimeSpan.FromMinutes(3);
+
         public SpotifyProvider(string clientId, string redirectUri)
         {
             ProviderColor = new Color(255, 30, 215, 96);
@@ -86,15 +89,37 @@ namespace LumikitApp
 
             Console.WriteLine("Waiting for Spotify login...");
 
-            var context = await http.GetContextAsync();
-            var code = context.Request.QueryString["code"];
+            // The client id comes from the user's own developer app, so a wrong or revoked id is
+            // an ordinary case rather than a bug. Spotify then renders INVALID_CLIENT in the
+            // browser and never redirects here — without a timeout that hangs startup forever.
+            var contextTask = http.GetContextAsync();
+            if (await Task.WhenAny(contextTask, Task.Delay(LoginTimeout)) != contextTask)
+            {
+                http.Stop();
+                throw new TimeoutException(
+                    "Spotify login timed out. Check that the Client ID is correct and that " +
+                    "http://127.0.0.1:5000/callback is listed in your Spotify app's Redirect URIs.");
+            }
 
-            string responseHtml = "<html><body>Login successful. You can close this window.</body></html>";
+            var context = await contextTask;
+            var code  = context.Request.QueryString["code"];
+            var error = context.Request.QueryString["error"];
+
+            string responseHtml = error == null
+                ? "<html><body>Login successful. You can close this window.</body></html>"
+                : $"<html><body>Login failed: {error}. You can close this window.</body></html>";
             byte[] buffer = Encoding.UTF8.GetBytes(responseHtml);
             context.Response.ContentLength64 = buffer.Length;
             await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
             context.Response.OutputStream.Close();
             http.Stop();
+
+            // Spotify redirects back with ?error= when the user denies access or the app is
+            // misconfigured; there's no code to exchange in that case.
+            if (error != null)
+                throw new InvalidOperationException($"Spotify login failed: {error}.");
+            if (string.IsNullOrEmpty(code))
+                throw new InvalidOperationException("Spotify login returned no authorization code.");
 
             var tokenResponse = await new OAuthClient().RequestToken(
                 new PKCETokenRequest(_clientId, code, new Uri(_redirectUri), verifier)

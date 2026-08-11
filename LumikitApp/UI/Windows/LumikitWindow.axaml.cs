@@ -46,6 +46,12 @@
             private string? _currentProviderTrackUrl;
 
             /// <summary>
+            /// The user's own API keys per source. Held so the active source's key can be changed
+            /// without restarting into the picker.
+            /// </summary>
+            private readonly ProviderCredentialStore _credentialStore = null!;
+
+            /// <summary>
             /// The source responsible for playing/pausing/locating a point in a music file
             /// </summary>
             private IMusicProvider _musicProvider;
@@ -176,8 +182,9 @@
             {
                 InitializeComponent();
             }
-            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel, ISerialPanel serialPanel, RoutingMusicSession musicRouter, GoogleAuthService googleAuth, IAppLog appLog)
+            public LumikitWindow(IMusicProvider provider, IPlaybackHandler playbackHandler, JsonDataHandler jsonDataHandler, DatabaseAccess databaseAccess, BlockEditorViewModel blockEditorViewModel, ISerialPanel serialPanel, RoutingMusicSession musicRouter, GoogleAuthService googleAuth, IAppLog appLog, ProviderCredentialStore credentialStore)
             {
+                _credentialStore = credentialStore;
                 _musicProvider = provider;
                 _playbackHandler = playbackHandler;
                 _musicRouter = musicRouter;
@@ -985,6 +992,34 @@
                 // No resolved track link yet (readback still catching up) → no dead button.
                 OpenInSpotifyButton.IsVisible = spotifyActive
                                                 && !string.IsNullOrWhiteSpace(_currentProviderTrackUrl);
+
+                // The key button is meaningful only for sources the user supplies a key for.
+                var active = _musicRouter.ActiveProviderName;
+                MusicSourceKeyButton.IsVisible = active.RequiresUserCredentials();
+                MusicSourceKeyButton.Content   = $"{active.DisplayName()} Key";
+            }
+
+            /// <summary>
+            /// Lets the user replace the active source's developer key mid-session — the common
+            /// case being a key that was mistyped or revoked. The new key is picked up on the
+            /// next launch, since the provider was constructed with the old one.
+            /// </summary>
+            private async void MusicSourceKey_Click(object? sender, RoutedEventArgs e)
+            {
+                var active = _musicRouter.ActiveProviderName;
+                if (!active.RequiresUserCredentials()) return;
+
+                var before = _credentialStore.Get(active)?.ClientId;
+
+                var window = new ProviderCredentialsWindow(active, _credentialStore);
+                await window.ShowDialog(this);
+                await window.Completed;
+
+                var after = _credentialStore.Get(active)?.ClientId;
+                if (before != after)
+                    _log.Info($"{active.DisplayName()} key updated — restart LumiNote for it to take effect.");
+
+                UpdateProviderAttribution();
             }
 
             /// <summary>Opens the current track on Spotify — the required link back to the service.</summary>

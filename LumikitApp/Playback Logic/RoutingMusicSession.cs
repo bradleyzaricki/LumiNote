@@ -121,10 +121,29 @@ namespace LumikitApp
         public IPlaybackHandler GetPlaybackHandler()   => this;
 
         // Initialize every enabled provider (Spotify login, Bass init, etc.).
+        //
+        // One provider failing must not stop the others: a user-supplied API key that's wrong or
+        // revoked makes sign-in failure routine, and it would otherwise leave a perfectly good
+        // local-files source uninitialized. Every provider gets its turn, then the failures are
+        // reported together.
         public async Task InitializeClient()
         {
+            List<Exception>? failures = null;
+
             foreach (var provider in _providers.Values)
-                await provider.InitializeClient();
+            {
+                try
+                {
+                    await provider.InitializeClient();
+                }
+                catch (Exception ex)
+                {
+                    (failures ??= new()).Add(
+                        new InvalidOperationException($"{provider.providerName.DisplayName()}: {ex.Message}", ex));
+                }
+            }
+
+            if (failures != null) throw new AggregateException(failures);
         }
 
         // SeekToPlaybackTime exists on both interfaces with the same signature but different

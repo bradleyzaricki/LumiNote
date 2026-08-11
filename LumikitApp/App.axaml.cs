@@ -20,21 +20,28 @@ namespace LumikitApp
             AvaloniaXamlLoader.Load(this);
         }
 
-        private static IServiceProvider BuildServices(IReadOnlyList<ProviderType> selectedProviders)
+        private static IServiceProvider BuildServices(
+            IReadOnlyList<ProviderType> selectedProviders,
+            ProviderCredentialStore credentials)
         {
             var services = new ServiceCollection();
 
-            string clientId = "7a3be16d49114bcb8317330636aa2647";
-            string redirectUri = "http://127.0.0.1:5000/callback";
-
-            // Build a concrete provider/handler pair for each source the user enabled.
+            // Build a concrete provider/handler pair for each source the user enabled. Providers
+            // needing user-supplied credentials are skipped when unconfigured — the picker
+            // already blocks that combination, this is the backstop.
             var pairs = new List<(IMusicProvider provider, IPlaybackHandler handler)>();
             foreach (var name in selectedProviders)
             {
+                if (!credentials.IsConfigured(name)) continue;
+
                 switch (name)
                 {
                     case ProviderType.Spotify:
-                        var sp = new SpotifyProvider(clientId, redirectUri);
+                        // No client id ships with LumiNote — this is the user's own, from their
+                        // own Spotify developer app. See ProviderCredentialStore.
+                        var sp = new SpotifyProvider(
+                            credentials.Get(ProviderType.Spotify)!.ClientId,
+                            ProviderType.Spotify.RedirectUri()!);
                         pairs.Add((sp, new SpotifyPlaybackHandler(sp)));
                         break;
                     case ProviderType.LocalFiles:
@@ -47,6 +54,9 @@ namespace LumikitApp
             // The router exposes both surfaces and switches between the enabled pairs at runtime.
             var router = new RoutingMusicSession(pairs);
             services.AddSingleton(router);
+            // Same instance the picker used, so credential edits from the main window and from
+            // startup share one view of the store.
+            services.AddSingleton(credentials);
             services.AddSingleton<IMusicProvider>(router);
             services.AddSingleton<IPlaybackHandler>(router);
             services.AddSingleton<IAppLog, AppLog>();
@@ -66,19 +76,36 @@ namespace LumikitApp
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                // Loaded before the picker so it can show which sources are already set up, and
+                // reused for the DI container so both see the same store.
+                var credentials = new ProviderCredentialStore();
+
                 //Create provider service picker window and await choice
-                var picker = new ProviderPickerWindow();
+                var picker = new ProviderPickerWindow(credentials);
                 desktop.MainWindow = picker;
                 picker.Show();
-                
+
                 await picker.Choice;
 
                 //Build DI constructor implementations based on provider choices
-                Services = BuildServices(picker.SelectedProviders);
+                Services = BuildServices(picker.SelectedProviders, credentials);
 
                 //await login (also inits BASS for local files)
                 var musicProvider = Services.GetRequiredService<IMusicProvider>();
-                await musicProvider.InitializeClient();
+                try
+                {
+                    await musicProvider.InitializeClient();
+                }
+                catch (AggregateException ex)
+                {
+                    // A user-supplied key that's wrong, revoked, or missing its redirect URI fails
+                    // here. Every other source still initialized, so carry on into the main window
+                    // with the reason in the console rather than dying on a blank screen — the
+                    // user can fix the key from the source-key button and relaunch.
+                    var log = Services.GetRequiredService<IAppLog>();
+                    foreach (var failure in ex.InnerExceptions)
+                        log.Error($"Music source sign-in failed — {failure.Message}", "Startup");
+                }
 
                 //run main window — sync offset is now per-provider, calibrated on demand from the
                 //Calibrate Sync button and persisted, so there is no startup offset step.

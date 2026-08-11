@@ -111,7 +111,13 @@ when available**.
   `Dictionary<provider→id/path>`; `MigrateLegacyFields()` upgrades old flat `filePath`/
   `provider` and runs on every load.
 - `DatabaseAccess` — shared cloud library via a Cloudflare Worker REST API. **Note: `BaseUrl`
-  and `ApiKey` are hardcoded** in the source (also the Spotify `clientId` in `App.axaml.cs`).
+  and `ApiKey` are hardcoded** in the source.
+- `ProviderCredentialStore` (`Settings/provider_credentials.json`) — **the app ships no Spotify
+  client id**. Spotify's Developer Terms forbid disclosing our Security Codes to third parties,
+  so each user registers their own developer app and enters its client id
+  (`ProviderCredentialsWindow`). `ProviderMetadata` declares per-provider setup requirements and
+  the picker/DI wiring are data-driven off it — a new source needs an enum case, cases in the
+  `ProviderMetadata` switches, and a factory case in `App.BuildServices`; no UI edits.
 
 ## Hardware output
 

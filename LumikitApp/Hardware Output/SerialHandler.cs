@@ -59,9 +59,15 @@ public class SerialHandler
     void NewSerialSetup()
     {
         _serialPort.Handshake = Handshake.None;
-        _serialPort.WriteTimeout = -1;
-        _serialPort.ReadTimeout = -1;
-        _serialPort.WriteBufferSize = 65536;
+        // Finite, so a device that stops draining surfaces as a disconnect the user can see
+        // instead of blocking the sending thread forever. One second is far longer than any
+        // healthy frame write (a 300-LED frame is ~20 ms at 460800 baud).
+        _serialPort.WriteTimeout = 1000;
+        _serialPort.ReadTimeout = 1000;
+        // Deliberately small: a deep OS buffer lets a backlog build silently, which shows up as
+        // the strip drifting behind the music rather than as an error. A couple of frames of
+        // slack is all a realtime stream wants.
+        _serialPort.WriteBufferSize = 4096;
         _serialPort.Open();
         SetActiveLedCount(_activeLedCount);
     }

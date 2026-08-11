@@ -101,8 +101,14 @@ when available**.
   against a long gap; 50/50 reads as blinking, not strobing). Both spans are snapped onto the
   `ColorUpdateIntervalMs` grid **and floored at two frames each**, because the playback tick
   lands on OS timer granularity so real send cadence is coarser than the nominal interval — a
-  one-frame flash can fall between two sends and vanish. That floor is what caps the rate at
-  10 Hz; raising it means shortening `ColorUpdateIntervalMs` *and* the playback tick.
+  one-frame flash can fall between two sends and vanish. At the 50 ms interval that floor pins
+  the flash to 100 ms, so the rate effectively sets the *gap*; 1–3 Hz strobes, 5 Hz is 50/50.
+  Raising the ceiling means a shorter `ColorUpdateIntervalMs`, which **the ESP32 has to keep
+  up with** — 25 ms overloaded it (see `SerialPanel.TrySendFrameAsync`).
+- **`SerialPanel.TrySendFrameAsync` drops a frame if one is still on the wire.** `SendFrame`
+  fills a single shared `_frameBuffer` before writing, so overlapping sends corrupt each
+  other's buffer *and* interleave on the wire; and without a drop a slow device backs up into
+  the OS write buffer, which looks like the strip lagging the music rather than an error.
 - **`TimelineView`** (`UI/Controls/`) owns the light blocks, selection, drag/resize, and the
   **undo history** (`CaptureState`/`PushUndo`/`Undo`; Ctrl+Z in `LumikitWindow.OnKeyDown`).
   `MsPerSlot = 50`.

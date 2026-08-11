@@ -36,13 +36,14 @@
             /// <summary>
             /// Frame interval for the strip, the on-screen preview and the effect grid.
             ///
-            /// 25 ms (40 fps nominal). The playback tick loop wakes on the OS timer granularity
-            /// (~15.6 ms on Windows), so the send gate actually fires around every 31 ms — going
-            /// below ~31 ms here buys nothing without a finer tick. Serial has room: a frame is
-            /// 7 + 3×LEDs bytes, so even 300 LEDs at this rate is ~29 KB/s against the ~46 KB/s
-            /// that 460800 baud carries (and an ESP32-S3 on native USB CDC ignores baud entirely).
+            /// 50 ms (20 fps). Briefly ran at 25 ms, which overloaded the receiving MCU: at that
+            /// cadence frames arrive faster than the device drains them, and because the OS write
+            /// buffer is 64 KB the backlog shows up as the strip lagging the music rather than as
+            /// an error. Raise this only alongside a measured check that the device keeps up at
+            /// the target LED count — bandwidth on paper is not the binding constraint, the
+            /// firmware's per-frame handling is.
             /// </summary>
-            private const int ColorUpdateIntervalMs = 25;
+            private const int ColorUpdateIntervalMs = 50;
 
             /// <summary>
             /// Link to the currently displayed track on the active provider's own service, or

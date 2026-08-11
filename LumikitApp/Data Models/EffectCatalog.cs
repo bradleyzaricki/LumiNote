@@ -81,15 +81,17 @@ public static class EffectCatalog
 
         new(LightBlock.Effect.FadeIn,      "Fade In",      EffectCategory.Modifier),
         new(LightBlock.Effect.FadeOut,     "Fade Out",     EffectCategory.Modifier),
-        // Duty is what makes this look like a strobe rather than a blink — the default 25% is a
-        // short flash against a long dark gap. Lower it for a sharper, more camera-flash feel.
+        // Duty is what makes this read as a strobe rather than a blink: a short flash against a
+        // long dark gap. At the 50 ms frame interval the flash bottoms out at 100 ms (the
+        // two-frame floor in LightEffectsComputer, which keeps any flash from falling between two
+        // serial sends), so in practice the flash is a fixed 100 ms and the *rate* sets the gap.
+        // Duty only bites at 1 Hz, where there's room for it to shorten the flash further.
         //
-        // The 10 Hz ceiling comes from the frame pipeline: LightEffectsComputer holds both the
-        // lit and dark spans to at least two ColorUpdateIntervalMs frames so no flash can fall
-        // between two serial sends, which needs at least four frames per period. Going faster
-        // means shortening ColorUpdateIntervalMs, which in turn needs a finer playback tick.
+        // Hence the 5 Hz ceiling: four frames per period is 200 ms, and at 5 Hz the flash and gap
+        // are both 100 ms — 50/50, which is a blink. Stay at 1–3 Hz for an actual strobe. Faster
+        // needs a shorter ColorUpdateIntervalMs, which the receiving MCU has to keep up with.
         new(LightBlock.Effect.Strobe,      "Strobe",       EffectCategory.Modifier,
-            new EffectParamDefinition("FlashesPerSecond", "Flashes / Second", ParamControl.NumberBox, 5, 1, 10),
+            new EffectParamDefinition("FlashesPerSecond", "Flashes / Second", ParamControl.NumberBox, 2, 1, 5),
             new EffectParamDefinition("Duty",             "Flash Length (%)", ParamControl.NumberBox, 25, 5, 50)),
         new(LightBlock.Effect.Repeat,      "Repeat",       EffectCategory.Modifier,
             new EffectParamDefinition("Count", "Repeat Number", ParamControl.NumberBox, 1, 1, 1000)),

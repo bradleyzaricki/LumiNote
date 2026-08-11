@@ -34,9 +34,15 @@
             private static TrackPOCO s_unknownTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
 
             /// <summary>
-            /// Color update interval (determined by the max update interval with current light config)
+            /// Frame interval for the strip, the on-screen preview and the effect grid.
+            ///
+            /// 25 ms (40 fps nominal). The playback tick loop wakes on the OS timer granularity
+            /// (~15.6 ms on Windows), so the send gate actually fires around every 31 ms — going
+            /// below ~31 ms here buys nothing without a finer tick. Serial has room: a frame is
+            /// 7 + 3×LEDs bytes, so even 300 LEDs at this rate is ~29 KB/s against the ~46 KB/s
+            /// that 460800 baud carries (and an ESP32-S3 on native USB CDC ignores baud entirely).
             /// </summary>
-            private const int ColorUpdateIntervalMs = 50;
+            private const int ColorUpdateIntervalMs = 25;
 
             /// <summary>
             /// Link to the currently displayed track on the active provider's own service, or

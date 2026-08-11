@@ -69,15 +69,35 @@ public class LightEffectsComputer
                 elapsedMsLocal = relPos * (width / 100.0) * 1000.0;
             }
 
-            // Snap half-period to the nearest serialIntervalMs multiple so UI and hardware always agree.
-            double snappedHalfPeriodMs = Math.Max(
-                serialIntervalMs,
-                Math.Round(1000.0 / (flashesPerSecond * 2.0) / serialIntervalMs) * serialIntervalMs);
+            // Duty is what makes a strobe read as a strobe: a brief flash with a long dark gap.
+            // A 50/50 square wave at any rate just reads as blinking between two colours.
+            double duty = Math.Clamp(
+                (Get(block, LightBlock.Effect.Strobe)?.Params.GetValueOrDefault("Duty", 25) ?? 25) / 100.0,
+                0.05, 0.5);
 
-            long halfPeriods = (long)(elapsedMsLocal / snappedHalfPeriodMs);
-            // Odd half-period = off-phase → flash to the second strobe colour. A transparent/
-            // unset second colour renders as black, giving the classic on/off strobe.
-            strobeOff = halfPeriods % 2L == 1L;
+            // Everything is snapped onto the serialIntervalMs grid so the preview and the strip
+            // compute the same waveform.
+            //
+            // The floors matter more than the snapping: frames don't leave on a perfect grid
+            // (the playback tick loop lands on the OS timer granularity, so the real send cadence
+            // is coarser than serialIntervalMs), so a flash only one frame wide can fall between
+            // two sends and be dropped entirely. Holding both the lit and dark spans to at least
+            // two frames keeps every flash catchable — which also caps the usable rate, hence the
+            // matching ceiling on FlashesPerSecond in EffectCatalog.
+            double minSpan = serialIntervalMs * 2.0;
+
+            double periodMs = Math.Max(
+                minSpan * 2.0,
+                Math.Round(1000.0 / flashesPerSecond / serialIntervalMs) * serialIntervalMs);
+
+            double onMs = Math.Clamp(
+                Math.Round(periodMs * duty / serialIntervalMs) * serialIntervalMs,
+                minSpan,
+                periodMs - minSpan);
+
+            // Lit for the first onMs of each period, dark (or StrobeColor) for the remainder.
+            double phaseMs = elapsedMsLocal % periodMs;
+            strobeOff = phaseMs >= onMs;
         }
         if (hasFadeOut)
         {

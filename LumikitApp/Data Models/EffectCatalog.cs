@@ -81,14 +81,16 @@ public static class EffectCatalog
 
         new(LightBlock.Effect.FadeIn,      "Fade In",      EffectCategory.Modifier),
         new(LightBlock.Effect.FadeOut,     "Fade Out",     EffectCategory.Modifier),
-        // Capped at 5 Hz. The pipeline emits one frame per ColorUpdateIntervalMs (50 ms), and
-        // LightEffectsComputer snaps the half-period onto that grid, so 5 Hz is 2 frames per
-        // half — the fastest rate that still renders the same way regardless of frame jitter.
-        // Above it the half-period snaps to a single frame (the Nyquist case), where which
-        // phase you see depends on tick cadence rather than on the waveform. Raising this
-        // ceiling requires shortening ColorUpdateIntervalMs first.
+        // Duty is what makes this look like a strobe rather than a blink — the default 25% is a
+        // short flash against a long dark gap. Lower it for a sharper, more camera-flash feel.
+        //
+        // The 10 Hz ceiling comes from the frame pipeline: LightEffectsComputer holds both the
+        // lit and dark spans to at least two ColorUpdateIntervalMs frames so no flash can fall
+        // between two serial sends, which needs at least four frames per period. Going faster
+        // means shortening ColorUpdateIntervalMs, which in turn needs a finer playback tick.
         new(LightBlock.Effect.Strobe,      "Strobe",       EffectCategory.Modifier,
-            new EffectParamDefinition("FlashesPerSecond", "Flashes / Second", ParamControl.NumberBox, 5, 1, 5)),
+            new EffectParamDefinition("FlashesPerSecond", "Flashes / Second", ParamControl.NumberBox, 5, 1, 10),
+            new EffectParamDefinition("Duty",             "Flash Length (%)", ParamControl.NumberBox, 25, 5, 50)),
         new(LightBlock.Effect.Repeat,      "Repeat",       EffectCategory.Modifier,
             new EffectParamDefinition("Count", "Repeat Number", ParamControl.NumberBox, 1, 1, 1000)),
         new(LightBlock.Effect.ChangeColor, "Color Change", EffectCategory.Modifier),

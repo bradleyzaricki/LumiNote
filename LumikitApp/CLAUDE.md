@@ -96,6 +96,13 @@ when available**.
   vacating: shapes emit "tail requests" (trailing edge + direction, derived from edge
   velocity signs) during their switch case, and a single pass after the switch renders them —
   so Comet works for any moving shape (Travel/Combine/Seperate/Scanner) without per-shape code.
+- **Modifier `Strobe`** is duty-based, not a 50/50 square wave — `FlashesPerSecond` sets the
+  rate and `Duty` the percentage of each period that's lit (default 25%, i.e. a short flash
+  against a long gap; 50/50 reads as blinking, not strobing). Both spans are snapped onto the
+  `ColorUpdateIntervalMs` grid **and floored at two frames each**, because the playback tick
+  lands on OS timer granularity so real send cadence is coarser than the nominal interval — a
+  one-frame flash can fall between two sends and vanish. That floor is what caps the rate at
+  10 Hz; raising it means shortening `ColorUpdateIntervalMs` *and* the playback tick.
 - **`TimelineView`** (`UI/Controls/`) owns the light blocks, selection, drag/resize, and the
   **undo history** (`CaptureState`/`PushUndo`/`Undo`; Ctrl+Z in `LumikitWindow.OnKeyDown`).
   `MsPerSlot = 50`.

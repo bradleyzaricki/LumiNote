@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -38,11 +37,12 @@ namespace LumikitApp
             _provider = provider;
             _store = store;
 
+            // Avalonia's generated InitializeComponent is what assigns the x:Name fields this
+            // window reads (HeadingText, ClientIdBox, ...). Don't hand-roll one that only calls
+            // AvaloniaXamlLoader.Load — the XAML loads but every named field stays null.
             InitializeComponent();
             LoadProvider();
         }
-
-        private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 
         private void LoadProvider()
         {

@@ -6,7 +6,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -33,14 +32,11 @@ namespace LumikitApp
         public ProviderPickerWindow(ProviderCredentialStore credentials)
         {
             _credentials = credentials;
+            // Avalonia's generated InitializeComponent — declaring a zero-arg one here would win
+            // overload resolution over it, loading the XAML but leaving every x:Name field null.
             InitializeComponent();
             BuildProviderTiles();
             RefreshState();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         /// <summary>

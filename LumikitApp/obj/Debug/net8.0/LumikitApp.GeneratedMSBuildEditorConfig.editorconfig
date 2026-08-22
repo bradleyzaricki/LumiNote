@@ -39,6 +39,9 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 [C:/Users/bzari/RiderProjects/LumiNote/LumikitApp/UI/Windows/OffsetTapper.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[C:/Users/bzari/RiderProjects/LumiNote/LumikitApp/UI/Windows/ProviderCredentialsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [C:/Users/bzari/RiderProjects/LumiNote/LumikitApp/UI/Windows/ProviderPickerWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 

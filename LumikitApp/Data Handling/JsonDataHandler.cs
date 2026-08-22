@@ -97,10 +97,19 @@ namespace LumikitApp
             // only leave the temp file behind, never a half-written track file.
             var tempPath = path + ".tmp";
             File.WriteAllText(tempPath, json);
-            if (File.Exists(path))
-                File.Replace(tempPath, path, null);
-            else
-                File.Move(tempPath, path);
+            try
+            {
+                if (File.Exists(path))
+                    File.Replace(tempPath, path, null);
+                else
+                    File.Move(tempPath, path);
+            }
+            catch
+            {
+                // Don't leave the temp file behind if the swap itself failed.
+                try { File.Delete(tempPath); } catch { }
+                throw;
+            }
         }
 
         public void DeleteTrack(string trackID)

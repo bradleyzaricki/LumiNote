@@ -129,6 +129,12 @@ namespace LumikitApp
                 new PKCETokenRequest(_clientId, code, new Uri(_redirectUri), verifier)
             );
 
+            // If Spotify ever stops returning a refresh token here, PKCEAuthenticator has
+            // nothing to refresh with and sessions are back to dying after ~1 hour — this is
+            // the cheap signal that would catch it without waiting an hour to notice.
+            if (string.IsNullOrEmpty(tokenResponse.RefreshToken))
+                _log.Warn("Spotify didn't return a refresh token — the session may stop working after about an hour.", "Spotify");
+
             // PKCEAuthenticator (rather than a static WithToken()) transparently refreshes the
             // access token from the retained refresh token as it expires — Spotify's access
             // tokens last about an hour, and without this every call fails with 401 for the

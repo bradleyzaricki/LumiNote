@@ -561,9 +561,9 @@ public partial class TimelineView : UserControl
     public void Paste()
     {
         if (_selectedBlocks.Count == 0) return;
-        PushUndo();
 
         double leftmostX = _selectedBlocks.Min(b => Canvas.GetLeft(b.Container));
+        bool placedAny = false;
         foreach (var source in _selectedBlocks)
         {
             double offsetX = _lastPointerPos.X + (Canvas.GetLeft(source.Container) - leftmostX);
@@ -576,6 +576,14 @@ public partial class TimelineView : UserControl
             double width = Math.Min(source.Container.Width, availableWidth);
             if (width < _slotWidth) continue; // no room here — skip this block rather than overlap
 
+            // Recorded lazily, on the first block that actually lands — a paste into a fully
+            // crowded region would otherwise still push a no-op undo entry and mark the
+            // lightmap dirty despite visibly changing nothing.
+            if (!placedAny)
+            {
+                PushUndo();
+                placedAny = true;
+            }
             CreateAndPlaceBlock(new LightBlock(source), resolvedX, source.BlockColor, width);
         }
     }

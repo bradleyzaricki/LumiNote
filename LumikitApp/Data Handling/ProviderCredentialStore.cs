@@ -57,13 +57,13 @@ namespace LumikitApp
 
         private void Persist()
         {
+            // Write to a temp file and swap it in, so a crash mid-save can't leave a
+            // truncated store that Load() then has to discard wholesale.
+            var tempPath = StorePath + ".tmp";
             try
             {
                 Directory.CreateDirectory(DirectoryPaths.SettingsDir);
 
-                // Write to a temp file and swap it in, so a crash mid-save can't leave a
-                // truncated store that Load() then has to discard wholesale.
-                var tempPath = StorePath + ".tmp";
                 File.WriteAllText(tempPath, JsonSerializer.Serialize(_entries, JsonOptions));
                 if (File.Exists(StorePath))
                     File.Replace(tempPath, StorePath, null);
@@ -73,6 +73,7 @@ namespace LumikitApp
             catch (Exception ex)
             {
                 Console.WriteLine($"Could not save provider credentials: {ex.Message}");
+                try { File.Delete(tempPath); } catch { }
             }
         }
 

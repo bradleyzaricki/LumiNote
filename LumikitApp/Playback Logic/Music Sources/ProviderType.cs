@@ -82,15 +82,17 @@ namespace LumikitApp
         /// dashboard. The loopback IP literal is deliberate — providers commonly reject
         /// "localhost" while still allowing 127.0.0.1.
         ///
-        /// The port is a high, uncommon one deliberately: 5000 (an earlier choice) is macOS's
-        /// default AirPlay Receiver port, so the loopback listener could fail to bind on Macs
-        /// out of the box. Spotify requires the URI to match what's registered in the
-        /// dashboard verbatim, so — unlike Google's sign-in flow — the port can't just be
-        /// picked freely at runtime; it has to be one fixed value baked in here.
+        /// Port 5000 is also macOS's default AirPlay Receiver port, so this listener can fail
+        /// to bind on Macs out of the box — a real gap, but not fixed by just picking a
+        /// different port here: every user who already registered this URI in their own
+        /// Spotify developer app (see ProviderCredentialStore — the whole point is it's each
+        /// user's own app) would silently break until they updated their dashboard to match.
+        /// Changing it needs to ship as an explicit migration (e.g. detect the stale URI and
+        /// prompt), not a silent constant flip.
         /// </summary>
         public static string? RedirectUri(this ProviderType p) => p switch
         {
-            ProviderType.Spotify => "http://127.0.0.1:53219/callback",
+            ProviderType.Spotify => "http://127.0.0.1:5000/callback",
             _ => null
         };
 

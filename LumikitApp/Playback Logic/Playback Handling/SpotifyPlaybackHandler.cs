@@ -16,6 +16,7 @@ namespace LumikitApp
     public class SpotifyPlaybackHandler : IPlaybackHandler
     {
         private readonly IMusicProvider _musicProvider;
+        private readonly IAppLog _log;
         private readonly Stopwatch _syncStopwatch = new();
         private bool _timerRunning;
         private int _progressMs;
@@ -38,9 +39,10 @@ namespace LumikitApp
         public event Action<int> ProgressUpdated;
         public event Action PlaybackStopped;
 
-        public SpotifyPlaybackHandler(IMusicProvider provider)
+        public SpotifyPlaybackHandler(IMusicProvider provider, IAppLog log)
         {
             _musicProvider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
         public async Task PauseAsync()
@@ -55,7 +57,7 @@ namespace LumikitApp
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Pause failed: " + ex);
+                _log.Error("Pause failed: " + ex.Message, "Spotify");
             }
         }
 
@@ -98,7 +100,7 @@ namespace LumikitApp
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Re-anchor failed: " + ex);
+                _log.Error("Playback sync failed: " + ex.Message, "Spotify");
             }
         }
 

@@ -433,8 +433,19 @@ public partial class TimelineView : UserControl
         }
         else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
         {
-            AddSelectedBlock(blockToAdd);
-            blockToAdd.isSelected = true;
+            if (_selectedBlocks.Contains(blockToAdd))
+            {
+                // Ctrl+click on an already-selected block toggles it back off, matching
+                // standard multi-select UX instead of only ever being able to add.
+                _selectedBlocks.Remove(blockToAdd);
+                blockToAdd.UpdateBackground(blockToAdd.BlockColor);
+                blockToAdd.isSelected = false;
+            }
+            else
+            {
+                AddSelectedBlock(blockToAdd);
+                blockToAdd.isSelected = true;
+            }
         }
         else
         {
@@ -556,7 +567,16 @@ public partial class TimelineView : UserControl
         foreach (var source in _selectedBlocks)
         {
             double offsetX = _lastPointerPos.X + (Canvas.GetLeft(source.Container) - leftmostX);
-            CreateAndPlaceBlock(new LightBlock(source), offsetX, source.BlockColor, source.Container.Width);
+            double snappedX = Math.Max(0, Math.Round(offsetX / _slotWidth) * _slotWidth);
+
+            // Push past whatever's already at the target (including copies pasted earlier in
+            // this same loop) and cap the width to the gap available, same as a palette drop —
+            // otherwise a paste can drop blocks on top of existing ones.
+            var (resolvedX, availableWidth) = ResolveDropPosition(snappedX);
+            double width = Math.Min(source.Container.Width, availableWidth);
+            if (width < _slotWidth) continue; // no room here — skip this block rather than overlap
+
+            CreateAndPlaceBlock(new LightBlock(source), resolvedX, source.BlockColor, width);
         }
     }
 

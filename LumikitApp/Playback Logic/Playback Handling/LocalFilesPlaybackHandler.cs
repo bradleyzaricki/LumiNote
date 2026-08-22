@@ -11,6 +11,7 @@ namespace LumikitApp
     public class LocalFilesPlaybackHandler : IPlaybackHandler
     {
         private readonly IMusicProvider _musicProvider;
+        private readonly IAppLog _log;
 
         // Serializes pause/resume/seek/play so overlapping calls (e.g. rapid seeks from the
         // timeline) can't interleave and anchor the light clock to a stale position.
@@ -28,9 +29,10 @@ namespace LumikitApp
         public event Action<int> ProgressUpdated;
         public event Action PlaybackStopped;
 
-        public LocalFilesPlaybackHandler(IMusicProvider provider)
+        public LocalFilesPlaybackHandler(IMusicProvider provider, IAppLog log)
         {
             _musicProvider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
         public async Task PauseAsync()
@@ -70,7 +72,7 @@ namespace LumikitApp
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Play Track failed: " + ex);
+                _log.Error("Play failed: " + ex.Message, "Playback");
             }
             finally
             {
@@ -127,7 +129,7 @@ namespace LumikitApp
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Pause failed: " + ex);
+                _log.Error("Pause failed: " + ex.Message, "Playback");
             }
         }
 

@@ -23,6 +23,7 @@ namespace LumikitApp
         public TrackPOCO currentTrack { get; set; }
         private int _stream;
         private bool _init;
+        private readonly IAppLog _log;
 
         public string currentlyPlayingPath {get; set;}
         /// <summary>
@@ -30,9 +31,10 @@ namespace LumikitApp
         /// </summary>
         /// <param name="clientId"></param>
         /// <param name="redirectUri"></param>
-        public MusicFileProvider()
+        public MusicFileProvider(IAppLog log)
         {
             ProviderColor = Brushes.BlueViolet.Color;
+            _log = log;
         }
         
 
@@ -44,7 +46,7 @@ namespace LumikitApp
 
         public IPlaybackHandler GetPlaybackHandler()
         {
-            return new LocalFilesPlaybackHandler(this);
+            return new LocalFilesPlaybackHandler(this, _log);
         }
         /// <summary>
         /// Resume current playback as fast as possible to avoid any latency

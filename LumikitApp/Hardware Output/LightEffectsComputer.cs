@@ -501,14 +501,15 @@ public class LightEffectsComputer
             int repeats = repeatCount;
             repeats = Math.Clamp(repeats, 1, lightcount);
 
-            int segmentSize = lightcount / repeats;
-
             Color[] repeated = new Color[lightcount];
 
             for (int r = 0; r < repeats; r++)
             {
-                int segStart = r * segmentSize;
-                int segEnd = (r == repeats - 1) ? lightcount : segStart + segmentSize;
+                // Boundaries computed per-segment (not via a fixed segmentSize) so the
+                // lightcount % repeats remainder spreads one pixel across the first few
+                // segments instead of piling entirely onto the last one.
+                int segStart = r * lightcount / repeats;
+                int segEnd = (r + 1) * lightcount / repeats;
 
                 for (int i = segStart; i < segEnd; i++)
                 {
@@ -559,13 +560,11 @@ public class LightEffectsComputer
             double relPos = Math.Clamp(localTime / (width * slotMs / slotWidth), 0.0, 1.0);
 
             Color[] blockLeds = ComputeBlockEffects(
-                block, relPos, 100,
+                block, relPos, 1.0,
                 containerWidth:   width,
                 containerLeft:    left,
                 elapsedMs:        localTime,
                 serialIntervalMs: serialIntervalMs);
-
-            if (blockLeds == null) continue; // strobe off-phase — leave LEDs dark
 
             for (int i = 0; i < finalLeds.Length; i++)
                 finalLeds[i] = blockLeds[i];

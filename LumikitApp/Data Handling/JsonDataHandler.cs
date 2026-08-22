@@ -17,6 +17,7 @@ namespace LumikitApp
         private static string TrackInfoDir => DirectoryPaths.TrackInfoDir;
 
         private readonly IMusicProvider _provider;
+        private readonly IAppLog _log;
 
 
         public string TrackFilePath(string trackId) =>
@@ -27,17 +28,28 @@ namespace LumikitApp
             if (string.IsNullOrWhiteSpace(trackID)) return null;
 
             var path = TrackFilePath(trackID);
-
             if (!File.Exists(path)) return null;
-            var json = File.ReadAllText(path);
-            var track = JsonSerializer.Deserialize<TrackData>(json);
-            track?.MigrateLegacyFields();
-            return track;
+
+            try
+            {
+                var json = File.ReadAllText(path);
+                var track = JsonSerializer.Deserialize<TrackData>(json);
+                track?.MigrateLegacyFields();
+                return track;
+            }
+            catch (Exception ex)
+            {
+                // A single corrupt track file (e.g. from a killed process mid-save) shouldn't
+                // crash whatever tried to open it — GetAllTracks already tolerates this per-file.
+                _log.Warn($"Couldn't read track {trackID}: {ex.Message}", "Data");
+                return null;
+            }
         }
 
-        public JsonDataHandler(IMusicProvider provider)
+        public JsonDataHandler(IMusicProvider provider, IAppLog log)
         {
             _provider = provider;
+            _log = log;
         }
         public List<TrackData> GetAllTracks()
         {
@@ -60,8 +72,11 @@ namespace LumikitApp
                     else
                         listBack.Add(track);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    // Otherwise an unreadable track just vanishes from the library on every
+                    // launch with no way for the user to notice it's gone.
+                    _log.Warn($"Couldn't read track file {Path.GetFileName(file)}: {ex.Message}", "Data");
                 }
             }
             listFront.AddRange(listBack);
@@ -77,7 +92,15 @@ namespace LumikitApp
             var path = TrackFilePath(track.trackGUID.ToString());
             var json = JsonSerializer.Serialize(track, JsonOpts);
 
-            File.WriteAllText(path, json);
+            // Write to a temp file and swap it in with File.Replace/Move, so a crash or force-kill
+            // mid-save (CLAUDE.md documents killing the process as a routine unstick step) can
+            // only leave the temp file behind, never a half-written track file.
+            var tempPath = path + ".tmp";
+            File.WriteAllText(tempPath, json);
+            if (File.Exists(path))
+                File.Replace(tempPath, path, null);
+            else
+                File.Move(tempPath, path);
         }
 
         public void DeleteTrack(string trackID)

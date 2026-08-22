@@ -55,7 +55,9 @@ public class SerialPanel : ISerialPanel
             }
         }
 
-        BrightnessScale = hardwareCurrent / (ledCount * 0.06);
+        // Clamp to at least 1 LED — a zero/negative count would divide by zero and leave
+        // BrightnessScale as NaN/Infinity, corrupting every subsequent frame's intensity math.
+        BrightnessScale = hardwareCurrent / (Math.Max(1, ledCount) * 0.06);
 
         try
         {

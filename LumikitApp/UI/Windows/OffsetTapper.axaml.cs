@@ -21,12 +21,17 @@ public partial class OffsetTapper : Window
 
     public int ComputedOffsetMs { get; private set; }
 
+    /// <summary>False if the user closed the window without ever landing a valid tap — callers
+    /// should leave the existing offset alone rather than persisting the unset 0 default.</summary>
+    public bool HasTaps => _tapOffsets.Count > 0;
+
     private readonly Stopwatch _offsetStopwatch = new();
     private readonly CancellationTokenSource _cts = new();
     private readonly List<int> _tapOffsets = new();
     private long _lastTickMs;
     private string _tempWavPath;
     private bool _ownsBass;
+    private int _lastStream;
 
     public OffsetTapper()
     {
@@ -80,9 +85,15 @@ public partial class OffsetTapper : Window
 
     private void PlayTick()
     {
+        // Free the previous tick's stream rather than the one we're about to create — by a
+        // second later, the short ping has already finished playing, so this never cuts audio
+        // off. Without this, every metronome tick leaked another BASS stream handle.
+        if (_lastStream != 0) Bass.StreamFree(_lastStream);
+
         int stream = Bass.CreateStream(_tempWavPath, Flags: BassFlags.Default);
         if (stream == 0) return;
         Bass.ChannelPlay(stream);
+        _lastStream = stream;
     }
 
     private void FlashAfterOffset(CancellationToken ct)
@@ -141,6 +152,7 @@ public partial class OffsetTapper : Window
     protected override void OnClosed(EventArgs e)
     {
         _cts.Cancel();
+        if (_lastStream != 0) Bass.StreamFree(_lastStream);
         if (_ownsBass) Bass.Free();
         _completedTcs.TrySetResult();
         base.OnClosed(e);

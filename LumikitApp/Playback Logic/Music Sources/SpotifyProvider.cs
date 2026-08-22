@@ -26,6 +26,7 @@ namespace LumikitApp
         public ProviderType providerName => ProviderType.Spotify;
         private readonly string _clientId;
         private readonly string _redirectUri;
+        private readonly IAppLog _log;
         private SpotifyClient _spotify;
         
         //not for spotify
@@ -41,11 +42,12 @@ namespace LumikitApp
         /// <summary>How long to wait for the browser to redirect back before giving up.</summary>
         private static readonly TimeSpan LoginTimeout = TimeSpan.FromMinutes(3);
 
-        public SpotifyProvider(string clientId, string redirectUri)
+        public SpotifyProvider(string clientId, string redirectUri, IAppLog log)
         {
             ProviderColor = new Color(255, 30, 215, 96);
             _clientId = clientId;
             _redirectUri = redirectUri;
+            _log = log;
         }
         
         /// <summary>
@@ -84,10 +86,12 @@ namespace LumikitApp
             });
 
             var http = new HttpListener();
-            http.Prefixes.Add("http://127.0.0.1:5000/callback/");
+            // Derived from _redirectUri (not a separate literal) so the listener can never drift
+            // out of sync with the URI actually registered in the user's Spotify dashboard.
+            http.Prefixes.Add(_redirectUri.TrimEnd('/') + "/");
             http.Start();
 
-            Console.WriteLine("Waiting for Spotify login...");
+            _log.Info("Waiting for Spotify login...", "Spotify");
 
             // The client id comes from the user's own developer app, so a wrong or revoked id is
             // an ordinary case rather than a bug. Spotify then renders INVALID_CLIENT in the
@@ -98,7 +102,7 @@ namespace LumikitApp
                 http.Stop();
                 throw new TimeoutException(
                     "Spotify login timed out. Check that the Client ID is correct and that " +
-                    "http://127.0.0.1:5000/callback is listed in your Spotify app's Redirect URIs.");
+                    $"{_redirectUri} is listed in your Spotify app's Redirect URIs.");
             }
 
             var context = await contextTask;
@@ -125,7 +129,12 @@ namespace LumikitApp
                 new PKCETokenRequest(_clientId, code, new Uri(_redirectUri), verifier)
             );
 
-            var config = SpotifyClientConfig.CreateDefault().WithToken(tokenResponse.AccessToken);
+            // PKCEAuthenticator (rather than a static WithToken()) transparently refreshes the
+            // access token from the retained refresh token as it expires — Spotify's access
+            // tokens last about an hour, and without this every call fails with 401 for the
+            // rest of the session once that clock runs out.
+            var authenticator = new PKCEAuthenticator(_clientId, tokenResponse);
+            var config = SpotifyClientConfig.CreateDefault().WithAuthenticator(authenticator);
             _spotify = new SpotifyClient(config);
 
             return;
@@ -152,7 +161,7 @@ namespace LumikitApp
                     $"spotify:track:{currentlyPlayingPath}"
                 }
             };
-            Console.WriteLine("Switching to " + currentlyPlayingPath);
+            _log.Info("Switching to " + currentlyPlayingPath, "Spotify");
             await _spotify.Player.ResumePlayback(request);
             //await WaitForTrackChange(oldId);
         }
@@ -174,16 +183,16 @@ namespace LumikitApp
             }
             catch (APIException ex)
             {
-                Debug.WriteLine("ResumePlayback failed: " + ex.Message);
+                _log.Warn("ResumePlayback failed: " + ex.Message, "Spotify");
 
                 if (ex.Response?.StatusCode == HttpStatusCode.Forbidden ||
                     ex.Response?.StatusCode == HttpStatusCode.NotFound)
                 {
-                    var device = await GetCurrentDeviceAsync(); 
+                    var device = await GetCurrentDeviceAsync();
 
                     if (device == null)
                     {
-                        Debug.WriteLine("No available Spotify devices found.");
+                        _log.Error("Resume failed: no available Spotify device found. Open Spotify on a device first.", "Spotify");
                         return;
                     }
 
@@ -196,11 +205,11 @@ namespace LumikitApp
                         await Task.Delay(500); // Spotify needs a second
 
                         await _spotify.Player.ResumePlayback(); // Retry
-                        Debug.WriteLine("ResumePlayback retried after transfer.");
+                        _log.Info("ResumePlayback retried after transfer.", "Spotify");
                     }
                     catch (APIException ex2)
                     {
-                        Debug.WriteLine("Retry after transfer failed: " + ex2.Message);
+                        _log.Error("Resume failed after retrying: " + ex2.Message, "Spotify");
                     }
                 }
             }
@@ -217,7 +226,7 @@ namespace LumikitApp
             }
             catch (APIException ex)
             {
-                Debug.WriteLine("PausePlayback failed: " + ex.Message);
+                _log.Warn("PausePlayback failed: " + ex.Message, "Spotify");
 
                 // If the failure is due to no active device or playback context, recover
                 if ((int?)ex.Response?.StatusCode == 403 || (int?)ex.Response?.StatusCode == 404)
@@ -226,7 +235,7 @@ namespace LumikitApp
 
                     if (device == null)
                     {
-                        Debug.WriteLine("No available Spotify devices found.");
+                        _log.Error("Pause failed: no available Spotify device found.", "Spotify");
                         return;
                     }
 
@@ -239,11 +248,11 @@ namespace LumikitApp
                         await Task.Delay(500); // let Spotify settle
 
                         await _spotify.Player.PausePlayback(); // Retry pause
-                        Debug.WriteLine("PausePlayback retried after transfer.");
+                        _log.Info("PausePlayback retried after transfer.", "Spotify");
                     }
                     catch (APIException ex2)
                     {
-                        Debug.WriteLine("Retry after transfer failed: " + ex2.Message);
+                        _log.Error("Pause failed after retrying: " + ex2.Message, "Spotify");
                     }
                 }
             }
@@ -281,19 +290,28 @@ namespace LumikitApp
                 }
 
             }
-            catch
+            catch (Exception ex)
             {
-                Console.WriteLine("Error Updating Track: Could not get CurrentlyPlaying item");
+                _log.Warn("Could not get currently-playing track: " + ex.Message, "Spotify");
             }
             return null;
 
         }
 
+        /// <summary>Null when nothing is currently playing, or the current item isn't a track (e.g. a podcast episode).</summary>
         public string GetCurrentlyPlayingTrackIdAsync()
         {
-            var playback =  _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest()).Result;
-            var track = playback.Item as FullTrack;
-            return track.Id;
+            try
+            {
+                var playback = _spotify.Player.GetCurrentlyPlaying(new PlayerCurrentlyPlayingRequest()).Result;
+                var track = playback?.Item as FullTrack;
+                return track?.Id;
+            }
+            catch (Exception ex)
+            {
+                _log.Warn("GetCurrentlyPlayingTrackIdAsync failed: " + ex.Message, "Spotify");
+                return null;
+            }
         }
 
         /// <summary>
@@ -319,7 +337,7 @@ namespace LumikitApp
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("GetTrackDurationMs failed: " + ex.Message);
+                _log.Warn("GetTrackDurationMs failed: " + ex.Message, "Spotify");
                 return 0;
             }
         }
@@ -333,12 +351,13 @@ namespace LumikitApp
             }
             catch (APIException ex)
             {
+                _log.Warn("SeekTo failed: " + ex.Message, "Spotify");
 
                 var device = await GetCurrentDeviceAsync();
 
                 if (device == null)
                 {
-                    Debug.WriteLine("No available Spotify devices found.");
+                    _log.Error("Seek failed: no available Spotify device found.", "Spotify");
                     return;
                 }
 
@@ -354,13 +373,13 @@ namespace LumikitApp
                 }
                 catch (APIException ex2)
                 {
-                    Debug.WriteLine("Pause failed after transfer: " + ex2.Message);
+                    _log.Error("Seek failed after retrying: " + ex2.Message, "Spotify");
                 }
             }
         }
         public IPlaybackHandler GetPlaybackHandler()
         {
-            return new SpotifyPlaybackHandler(this);
+            return new SpotifyPlaybackHandler(this, _log);
         }
 
 

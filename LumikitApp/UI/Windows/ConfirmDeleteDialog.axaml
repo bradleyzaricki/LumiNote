@@ -1,0 +1,46 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LumikitApp.ConfirmDeleteDialog"
+        Width="420"
+        Height="180"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Title="Delete Lightmap"
+        Background="#2E2E2E">
+
+    <Window.Styles>
+        <Style Selector="Button">
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        <Style Selector="Button.delete">
+            <Setter Property="Background" Value="#ff6b6b"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+
+        <TextBlock Grid.Row="0"
+                   Text="Delete this lightmap?"
+                   FontSize="17"
+                   FontWeight="Bold"
+                   Foreground="White"/>
+
+        <TextBlock x:Name="MessageText"
+                   Grid.Row="1"
+                   Foreground="#CCC"
+                   TextWrapping="Wrap"
+                   Margin="0,12,0,0"
+                   VerticalAlignment="Top"/>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10">
+            <Button Content="Cancel" Click="Cancel_Click"/>
+            <Button Classes="delete" Content="Delete" Click="Delete_Click"/>
+        </StackPanel>
+    </Grid>
+
+</Window>

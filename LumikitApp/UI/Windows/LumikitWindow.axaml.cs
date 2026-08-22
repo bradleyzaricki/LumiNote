@@ -305,7 +305,13 @@
                     _blockEditor.LoadBlockIntoEditor(Timeline.HandleBlockSelection(e, block));
 
                 if (point.Properties.IsRightButtonPressed)
+                {
+                    // Right-clicking a block that isn't part of the current selection should
+                    // delete that block, not whatever was previously selected.
+                    if (!block.isSelected)
+                        Timeline.HandleBlockSelection(e, block);
                     Timeline.DeleteSelectedBlocks();
+                }
             }
 
             private void OnKeyUp(object? sender, KeyEventArgs e)
@@ -444,11 +450,56 @@
             }
 
             /// <summary>
+            /// If the loaded lightmap has unsaved edits, prompts Save/Don't Save/Cancel and acts
+            /// on the choice. Returns true when it's safe for the caller to proceed (nothing was
+            /// dirty, the user discarded, or the save completed) and false when the caller should
+            /// abort (Cancel, or the save was itself cancelled/failed).
+            /// </summary>
+            private async Task<bool> ConfirmDiscardUnsavedChangesAsync()
+            {
+                if (!_lightmapDirty) return true;
+
+                // Nullable: closing via the title-bar X yields null, treated as Cancel.
+                var choice = await new UnsavedChangesPrompt().ShowDialog<UnsavedChoice?>(this);
+                if (choice is null or UnsavedChoice.Cancel)
+                    return false;
+                if (choice == UnsavedChoice.Save && !await ShowSaveLightmapDialogAsync())
+                    return false;
+
+                _lightmapDirty = false;
+                return true;
+            }
+
+            /// <summary>
             /// Shows the save-lightmap flow (overwrite an existing lightmap for this song, or save
             /// as new) and writes the current timeline to disk. Returns true if a save completed,
             /// false if the user cancelled. Shared by the Save button and the pre-switch prompt.
             /// </summary>
             private async Task<bool> ShowSaveLightmapDialogAsync()
+            {
+                // Validate before anything else runs — the rest of this method can delete a
+                // prior file (the foreign-owned remix case below) before writing the new one,
+                // so a bad BPM value must fail fast, not mid-save.
+                if (!double.TryParse(_bpmInput.Text, out double bpm) || bpm <= 0)
+                {
+                    _log.Error("Can't save: BPM must be a positive number.");
+                    return false;
+                }
+
+                try
+                {
+                    return await SaveLightmapCoreAsync(bpm);
+                }
+                catch (Exception ex)
+                {
+                    // async void: an unhandled exception here is fatal to the whole app (see
+                    // UpdateCurrentTrack), so this whole flow is guarded the same way.
+                    _log.Error($"Save failed: {ex.Message}");
+                    return false;
+                }
+            }
+
+            private async Task<bool> SaveLightmapCoreAsync(double bpm)
             {
                 var playbackId = _musicProvider.currentlyPlayingPath;
 
@@ -522,11 +573,15 @@
                 // Saving over someone else's downloaded lightmap forks it into a remix you
                 // own (move, not copy — mirrors the server's reupload rule): new identity,
                 // provenance in ParentLightmapId, and the downloaded original file removed.
+                // The removal itself is deferred until after the new file is written
+                // successfully, so a failure partway through this method can't delete the
+                // original without a replacement ever landing.
                 var prior = _jsonDataHandler.GetTrack(targetGuid.ToString());
                 bool foreignOwned = prior?.OwnerId != null && prior.OwnerId != _googleAuth.UserId;
+                string? guidToDeleteAfterSave = null;
                 if (foreignOwned)
                 {
-                    _jsonDataHandler.DeleteTrack(targetGuid.ToString());
+                    guidToDeleteAfterSave = targetGuid.ToString();
                     targetGuid = Guid.NewGuid();
                 }
 
@@ -557,7 +612,7 @@
                     OwnerId     = foreignOwned ? null : prior?.OwnerId,
                     OwnerName   = foreignOwned ? null : prior?.OwnerName,
                     CloudVersion = foreignOwned ? 0 : prior?.CloudVersion ?? 0,
-                    _BPM = double.Parse(_bpmInput.Text),
+                    _BPM = bpm,
                     _lightBlocks = Timeline.LightBlocks
                         .Select(b => new LightBlockData
                         {
@@ -578,6 +633,10 @@
                 };
                 trackData.SetSource(_musicProvider.providerName, _musicProvider.currentlyPlayingPath);
                 _jsonDataHandler.SaveTrack(trackData);
+
+                // Only now that the replacement is safely on disk, remove the forked-from original.
+                if (guidToDeleteAfterSave != null)
+                    _jsonDataHandler.DeleteTrack(guidToDeleteAfterSave);
 
                 _lightmapDirty = false;
                 _allLocalTrackItems = BuildLocalTrackItems();
@@ -962,9 +1021,15 @@
             
             private void SaveHardwareSettings(object? sender, RoutedEventArgs e)
             {
+                if (!Int32.TryParse(ActiveLightsTextBox.Text, out int ledCount) || ledCount <= 0)
+                {
+                    _log.Error("Can't connect: LED count must be a positive number.");
+                    return;
+                }
+
                 _serialPanel.Connect(
                     port: PortComboBox.SelectedItem as string,
-                    ledCount: Int32.Parse(ActiveLightsTextBox.Text),
+                    ledCount: ledCount,
                     hardwareCurrent: (int)HardwareCurrentSlider.Value);
             }
             
@@ -1104,16 +1169,32 @@
             /// </summary>
             private async void StartSpotifyLightmap()
             {
-                if (_musicProvider.providerName != ProviderType.Spotify)
-                    await _musicRouter.SwitchToAsync(ProviderType.Spotify);
+                try
+                {
+                    if (!await ConfirmDiscardUnsavedChangesAsync()) return;
 
-                var path = _musicProvider.GetCurrentlyPlayingTrackIdAsync();
-                _currentTrackDurationMs = 0;
-                _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
-                _musicProvider.currentlyPlayingPath = path;
-                await _playbackHandler.PlayAsync();
-                UpdateCurrentTrack(true, Guid.Empty);
-                _currentTrackDurationMs = await _musicProvider.GetTrackDurationMsAsync();
+                    if (_musicProvider.providerName != ProviderType.Spotify)
+                        await _musicRouter.SwitchToAsync(ProviderType.Spotify);
+
+                    var path = _musicProvider.GetCurrentlyPlayingTrackIdAsync();
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        _log.Error("Nothing is currently playing on Spotify.");
+                        return;
+                    }
+
+                    _currentTrackDurationMs = 0;
+                    _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
+                    _musicProvider.currentlyPlayingPath = path;
+                    await _playbackHandler.PlayAsync();
+                    UpdateCurrentTrack(true, Guid.Empty);
+                    _currentTrackDurationMs = await _musicProvider.GetTrackDurationMsAsync();
+                }
+                catch (Exception ex)
+                {
+                    // async void: an unhandled exception here is fatal to the whole app.
+                    _log.Error($"Couldn't start a lightmap from Spotify: {ex.Message}");
+                }
             }
             
             /// <summary>
@@ -1164,16 +1245,26 @@
             /// <param name="path"></param>
             private async void OnAudioFileSelected(string path)
             {
-                // A local file was chosen — make sure the LocalFiles source is active.
-                if (_musicProvider.providerName != ProviderType.LocalFiles)
-                    await _musicRouter.SwitchToAsync(ProviderType.LocalFiles);
+                try
+                {
+                    if (!await ConfirmDiscardUnsavedChangesAsync()) return;
 
-                _currentTrackDurationMs = 0;
-                _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
-                _musicProvider.currentlyPlayingPath = path;
-                await _playbackHandler.PlayAsync();
-                UpdateCurrentTrack(true, trackGUID: Guid.Empty); // refresh on next track
-                _currentTrackDurationMs = await _musicProvider.GetTrackDurationMsAsync();
+                    // A local file was chosen — make sure the LocalFiles source is active.
+                    if (_musicProvider.providerName != ProviderType.LocalFiles)
+                        await _musicRouter.SwitchToAsync(ProviderType.LocalFiles);
+
+                    _currentTrackDurationMs = 0;
+                    _musicProvider.currentTrack = new TrackPOCO(Guid.Empty, "Unnamed Track", "Unnamed Artists", null);
+                    _musicProvider.currentlyPlayingPath = path;
+                    await _playbackHandler.PlayAsync();
+                    UpdateCurrentTrack(true, trackGUID: Guid.Empty); // refresh on next track
+                    _currentTrackDurationMs = await _musicProvider.GetTrackDurationMsAsync();
+                }
+                catch (Exception ex)
+                {
+                    // async void: an unhandled exception here is fatal to the whole app.
+                    _log.Error($"Couldn't start a lightmap from that file: {ex.Message}");
+                }
             }
             
             /// <summary>
@@ -1306,17 +1397,8 @@
             private async Task<bool> PlayTrackByIdAsync(string trackId)
             {
                 // If the current lightmap has unsaved edits, postpone the switch and ask what to do.
-                if (_lightmapDirty)
-                {
-                    // Nullable: closing via the title-bar X yields null, treated as Cancel.
-                    var choice = await new UnsavedChangesPrompt().ShowDialog<UnsavedChoice?>(this);
-                    if (choice is null or UnsavedChoice.Cancel)
-                        return false; // abort the switch — stay on the edited lightmap
-                    if (choice == UnsavedChoice.Save && !await ShowSaveLightmapDialogAsync())
-                        return false; // backed out of the save target picker — abort the switch
-                    // Save (completed) or Don't Save → discard the dirty state and switch.
-                    _lightmapDirty = false;
-                }
+                if (!await ConfirmDiscardUnsavedChangesAsync())
+                    return false; // abort the switch — stay on the edited lightmap
 
                 var track = _jsonDataHandler.GetTrack(trackId);
                 if (track == null)
@@ -1494,18 +1576,25 @@
             /// </summary>
             /// <param name="sender"></param>
             /// <param name="e"></param>
-            private void LocalTrack_Delete_Click(object? sender, RoutedEventArgs e)
+            private async void LocalTrack_Delete_Click(object? sender, RoutedEventArgs e)
             {
                 if (sender is not Control c) return;
                 if (c.DataContext is not TrackItemUI item) return;
 
-                Console.WriteLine("Deleting file for: " + item.TrackName);
+                if (await new ConfirmDeleteDialog(item.TrackName).ShowDialog<bool>(this) != true)
+                    return;
 
-                _jsonDataHandler.DeleteTrack(item.TrackId.ToString());
-                
-                _allLocalTrackItems = BuildLocalTrackItems();
-                LocalTracksListBox.ItemsSource = _allLocalTrackItems;
-                
+                try
+                {
+                    _jsonDataHandler.DeleteTrack(item.TrackId.ToString());
+                    _allLocalTrackItems = BuildLocalTrackItems();
+                    LocalTracksListBox.ItemsSource = _allLocalTrackItems;
+                    _log.Info($"Deleted \"{item.TrackName}\".");
+                }
+                catch (Exception ex)
+                {
+                    _log.Error($"Delete failed: {ex.Message}");
+                }
             }
             
             /// <summary>
@@ -1595,6 +1684,12 @@
                 var provider = _musicProvider.providerName;
                 var tapper = new OffsetTapper();
                 await tapper.ShowDialog(this);
+
+                if (!tapper.HasTaps)
+                {
+                    _log.Info("Sync calibration closed without any taps — offset unchanged.");
+                    return;
+                }
 
                 _providerOffsets[provider] = tapper.ComputedOffsetMs;
                 SaveProviderOffsets();
@@ -1741,6 +1836,9 @@
             private async void DatabaseTrack_Delete_Click(object? sender, RoutedEventArgs e)
             {
                 if (sender is not Control c || c.DataContext is not TrackItemUI item) return;
+
+                if (await new ConfirmDeleteDialog(item.TrackName).ShowDialog<bool>(this) != true)
+                    return;
 
                 try
                 {

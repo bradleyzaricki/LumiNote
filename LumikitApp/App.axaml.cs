@@ -26,6 +26,11 @@ namespace LumikitApp
         {
             var services = new ServiceCollection();
 
+            // Built up front (rather than resolved from the container) because the provider/
+            // handler pairs below are constructed before the container exists, and they need
+            // to log through the same instance the rest of the app uses.
+            var log = new AppLog();
+
             // Build a concrete provider/handler pair for each source the user enabled. Providers
             // needing user-supplied credentials are skipped when unconfigured — the picker
             // already blocks that combination, this is the backstop.
@@ -41,12 +46,13 @@ namespace LumikitApp
                         // own Spotify developer app. See ProviderCredentialStore.
                         var sp = new SpotifyProvider(
                             credentials.Get(ProviderType.Spotify)!.ClientId,
-                            ProviderType.Spotify.RedirectUri()!);
-                        pairs.Add((sp, new SpotifyPlaybackHandler(sp)));
+                            ProviderType.Spotify.RedirectUri()!,
+                            log);
+                        pairs.Add((sp, new SpotifyPlaybackHandler(sp, log)));
                         break;
                     case ProviderType.LocalFiles:
-                        var lf = new MusicFileProvider();
-                        pairs.Add((lf, new LocalFilesPlaybackHandler(lf)));
+                        var lf = new MusicFileProvider(log);
+                        pairs.Add((lf, new LocalFilesPlaybackHandler(lf, log)));
                         break;
                 }
             }
@@ -59,7 +65,7 @@ namespace LumikitApp
             services.AddSingleton(credentials);
             services.AddSingleton<IMusicProvider>(router);
             services.AddSingleton<IPlaybackHandler>(router);
-            services.AddSingleton<IAppLog, AppLog>();
+            services.AddSingleton<IAppLog>(log);
             services.AddSingleton<JsonDataHandler>();
             services.AddSingleton<GoogleAuthService>();
             services.AddSingleton<DatabaseAccess>();

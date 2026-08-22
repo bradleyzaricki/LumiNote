@@ -59,7 +59,16 @@ namespace LumikitApp
         {
             try
             {
-                File.WriteAllText(StorePath, JsonSerializer.Serialize(_entries, JsonOptions));
+                Directory.CreateDirectory(DirectoryPaths.SettingsDir);
+
+                // Write to a temp file and swap it in, so a crash mid-save can't leave a
+                // truncated store that Load() then has to discard wholesale.
+                var tempPath = StorePath + ".tmp";
+                File.WriteAllText(tempPath, JsonSerializer.Serialize(_entries, JsonOptions));
+                if (File.Exists(StorePath))
+                    File.Replace(tempPath, StorePath, null);
+                else
+                    File.Move(tempPath, StorePath);
             }
             catch (Exception ex)
             {

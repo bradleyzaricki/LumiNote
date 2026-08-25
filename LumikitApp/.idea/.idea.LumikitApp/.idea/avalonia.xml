@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="App.axaml" value="LumikitApp.csproj" />
+        <entry key="UI/Controls/TimelineView.axaml" value="LumikitApp.csproj" />
+        <entry key="UI/Windows/LumikitWindow.axaml" value="LumikitApp.csproj" />
+        <entry key="UI/Windows/NewTrackPopup.axaml" value="LumikitApp.csproj" />
+        <entry key="UI/Windows/OffsetTapper.axaml" value="LumikitApp.csproj" />
+        <entry key="UI/Windows/ProviderPickerWindow.axaml" value="LumikitApp.csproj" />
+        <entry key="UI/Windows/StartupWindow.xaml" value="LumikitApp.csproj" />
+      </map>
+    </option>
+  </component>
+</project>
